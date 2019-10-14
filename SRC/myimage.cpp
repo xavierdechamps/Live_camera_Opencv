@@ -415,14 +415,14 @@ Mat& MyImage::get_motion_detected() {
     return this->motion;
 }
 
-int MyImage::set_Face_Cascade_Name(String &new_name) {
+bool MyImage::set_Face_Cascade_Name(String &new_name) {
     this->face_cascade_name = new_name;
 
     if ( ! this->face_cascade.load( this->face_cascade_name ) ){
         cout << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<endl;
-        return -1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 void MyImage::toBlackandWhite() {

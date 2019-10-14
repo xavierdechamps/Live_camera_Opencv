@@ -12,9 +12,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
 {
     // Initializations
     this->myFrame = new MyImage();
-    String tmp = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.0/data/haarcascades/haarcascade_frontalface_default.xml";
-    this->myFrame->set_Face_Cascade_Name(tmp);
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
+    String tmp = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml";
+    bool testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
+    while (!testCascade){
+        QString QfileNameLocal = QFileDialog::getOpenFileName(this,
+                                                         tr("Select the face cascade file haarcascade_frontalface_default.xml"),
+                                                         QString::fromStdString(this->main_directory),
+                                                         tr("Images (*.xml)") );
+        if ( ! QfileNameLocal.isEmpty() ) {
+            tmp = QfileNameLocal.toStdString() ;
+            testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
+        }
+    }
     this->file_name_save = this->main_directory + "Video-OpenCV-QMake/webcam.jpg";
     this->capture.open(0);
 
@@ -350,12 +360,20 @@ void MainWindow::treat_Button_Motion_Detection(bool state) {
 void MainWindow::treat_Button_Record(bool state) {
     this->recording = state;
     if (state) {
-        if (! this->video_out.isOpened() ) // FPS : this->capture.get(cv::CAP_PROP_FPS)
+        if (! this->video_out.isOpened() ) {// FPS : this->capture.get(cv::CAP_PROP_FPS)
+
+            QString QfileNameLocal = QFileDialog::getSaveFileName(this,
+                                                                 tr("File name to save the video"),
+                                                                 QString::fromStdString(this->main_directory),
+                                                                 tr("Images (*.avi)") );
+            this->video_out_name = QfileNameLocal.toStdString();
+
             this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
                                  10.,
                                  cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
                                           this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
                                  true);
+        }
     }
     else {
         if (this->video_out.isOpened() )

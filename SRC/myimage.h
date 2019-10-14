@@ -23,7 +23,7 @@ public:
     MyImage();
 
     void set_image_content(Mat &content);
-    int set_Face_Cascade_Name(String &new_name);
+    bool set_Face_Cascade_Name(String &new_name);
 
     void set_size_blur(int);
     void set_blur_method(int);

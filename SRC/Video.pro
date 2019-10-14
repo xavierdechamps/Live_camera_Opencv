@@ -31,10 +31,10 @@ HEADERS  += myimage.h \
             secondarywindow.h
 
 QMAKE_CXXFLAGS += -std=c++11
-QMAKE_LFLAGS += -Wl,-rpath,/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv_install_4.1.0/lib
 
-INCLUDEPATH += /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv_install_4.1.0/include/opencv4
-LIBS += -L/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv_install_4.1.0/lib
+QMAKE_LFLAGS += -Wl,-rpath,/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
+INCLUDEPATH += /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/include/opencv4
+LIBS += -L/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
 
 LIBS += -lopencv_imgcodecs \
         -lopencv_core \
