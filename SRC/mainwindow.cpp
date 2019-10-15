@@ -77,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     connect(this->dialog_object_detection, SIGNAL(Signal_hough_line_threshold_changed(int)), this, SLOT(treat_Slider_hough_line_threshold(int)) );
     this->dialog_object_detection->hide();
 
+#ifdef withstitching
     // Create a new object for stitching operations and create adequate connections to functions, depending on the received signals
     this->dialog_panorama = new Dialog_Panorama(this);
     connect(this->dialog_panorama,SIGNAL(Signal_pick_up_image_panorama()), this, SLOT(treat_Panorama_Pick_Up_Image()));
@@ -85,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     connect(this->dialog_panorama,SIGNAL(Signal_reset_panorama()), this, SLOT(treat_Panorama_Reset()));
     connect(this->dialog_panorama,SIGNAL(Signal_save_panorama()), this, SLOT(treat_Panorama_Save()));
     this->dialog_panorama->hide();
+#endif
 
     // Create a new object for motion detection and create adequate connections to functions, depending on the received signals
     this->dialog_motion_detection = new Dialog_Motion_Detection(this);
@@ -103,11 +105,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     this->thirdWindow->hide();
     this->object_detection_window_opened = false;
 
+#ifdef withstitching
     // Create a new object for a secondary window that will show the panorama resulting from the stitching operation
     this->fourthWindow = new SecondaryWindow(this);
     this->fourthWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->fourthWindow->hide();
     this->panorama_window_opened = false;
+#endif
 
     // Create a new object for a secondary window that will show the motion detection
     this->fifthWindow = new SecondaryWindow(this);
@@ -224,10 +228,12 @@ void MainWindow::createActions() {
     this->actionObjectDetection->setCheckable(true);
     connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Object_Detection(bool)));
 
+#ifdef withstitching
     this->actionPanorama = new QAction(tr("&Panorama"), this);
     this->actionPanorama->setToolTip(tr("Create a panorama from chosen images"));
     this->actionPanorama->setCheckable(true);
     connect(this->actionPanorama, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Panorama(bool)));
+#endif
 
     this->actionMotionDetection = new QAction(tr("&Motion Detection"), this);
     this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
@@ -259,7 +265,9 @@ void MainWindow::createToolBars() {
     this->editToolBar->addAction(this->actionFace);
     this->editToolBar->addAction(this->actionObjectDetection);
     this->editToolBar->addSeparator();
+#ifdef withstitching
     this->editToolBar->addAction(this->actionPanorama);
+#endif
     this->editToolBar->addAction(this->actionMotionDetection);
     this->editToolBar->addSeparator();
     this->editToolBar->addAction(this->actionRecord);
@@ -331,6 +339,7 @@ void MainWindow::treat_Button_Object_Detection(bool state) {
     }
 }
 
+#ifdef withstitching
 void MainWindow::treat_Button_Panorama(bool state) {
     this->myFrame->togglePanorama();
     this->panorama_window_opened = state;
@@ -343,6 +352,7 @@ void MainWindow::treat_Button_Panorama(bool state) {
         this->fourthWindow->hide();
     }
 }
+#endif
 
 void MainWindow::treat_Button_Motion_Detection(bool state) {
     this->myFrame->toggleMotionDetection();
@@ -462,11 +472,14 @@ void MainWindow::treat_Slider_hough_line_threshold(int value) {
     this->myFrame->set_hough_line_threshold(value);
 }
 
+#ifdef withstitching
 void MainWindow::treat_Panorama_Pick_Up_Image() {
     this->myFrame->panorama_insert_image();
     this->treat_Panorama_Update();
 }
+#endif
 
+#ifdef withstitching
 void MainWindow::treat_Panorama_Pop_Up_Image() {
     this->myFrame->panorama_pop_up_image();
     int num_imgs = this->myFrame->panorama_get_size();
@@ -474,7 +487,9 @@ void MainWindow::treat_Panorama_Pop_Up_Image() {
     std::string return_status = "Removed the last image from the stack";
     this->dialog_panorama->set_QLabel_string(return_status);
 }
+#endif
 
+#ifdef withstitching
 void MainWindow::treat_Panorama_Update() {
     std::string return_status = "Computing the new panorama...";
     this->dialog_panorama->set_QLabel_string(return_status);
@@ -488,7 +503,9 @@ void MainWindow::treat_Panorama_Update() {
     this->myFourthImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
     this->fourthWindow->set_image_content(this->myFourthImage, imageMat.cols, imageMat.rows );
 }
+#endif
 
+#ifdef withstitching
 void MainWindow::treat_Panorama_Reset() {
     this->myFrame->panorama_reset();
     int num_imgs = this->myFrame->panorama_get_size();
@@ -500,7 +517,9 @@ void MainWindow::treat_Panorama_Reset() {
     this->myFourthImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
     this->fourthWindow->set_image_content(this->myFourthImage, imageMat.cols, imageMat.rows );
 }
+#endif
 
+#ifdef withstitching
 void MainWindow::treat_Panorama_Save() {
     Mat imageMat = this->myFrame->get_image_panorama();
 
@@ -520,6 +539,7 @@ void MainWindow::treat_Panorama_Save() {
     cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
     imwrite(this->file_name_save , imageOutput , compression_params );
 }
+#endif
 
 void MainWindow::treat_Motion_Detection_Method(int method) {
     this->myFrame->set_motion_detection_method(method);

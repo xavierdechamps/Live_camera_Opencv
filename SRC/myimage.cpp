@@ -47,7 +47,9 @@ MyImage::MyImage()
     this->object_detection_method = 1;
     this->hough_line_threshold    = 100;
 
+#ifdef withstitching
     this->panorama_activated = false;
+#endif
 
     this->motion_detected              = false;
     this->motion_detection_method      = 1;
@@ -91,9 +93,11 @@ void MyImage::toggleObjectDetection() {
     this->object_detected = ! (this->object_detected);
 }
 
+#ifdef withstitching
 void MyImage::togglePanorama() {
     this->panorama_activated = ! (this->panorama_activated);
 }
+#endif
 
 void MyImage::toggleMotionDetection() {
     this->motion_detected = ! (this->motion_detected);
@@ -277,9 +281,11 @@ Mat& MyImage::get_image_histogram() {
     return this->histogram;
 }
 
+#ifdef withstitching
 Mat& MyImage::get_image_panorama() {
     return this->panorama;
 }
+#endif
 
 Mat& MyImage::get_object_detected() {
     this->objects = Mat::zeros( this->image.size(), CV_8UC3 );
@@ -647,16 +653,21 @@ void MyImage::equalizeHistogram() {
     cvtColor(this->image, this->image, COLOR_YCrCb2BGR);
 }
 
+#ifdef withstitching
 void MyImage::panorama_insert_image() {
     if (!this->image.empty())
         this->Panorama_vector.push_back(this->image);
 }
+#endif
 
+#ifdef withstitching
 void MyImage::panorama_pop_up_image() {
     if (!this->Panorama_vector.empty())
         this->Panorama_vector.pop_back();
 }
+#endif
 
+#ifdef withstitching
 std::string MyImage::panorama_compute_result() {
     Stitcher::Mode mode = Stitcher::PANORAMA; // PANORAMA or SCANS
     std::string return_status;
@@ -697,15 +708,18 @@ std::string MyImage::panorama_compute_result() {
     }
     return return_status;
 }
+#endif
 
+#ifdef withstitching
 void MyImage::panorama_reset() {
     if (!this->Panorama_vector.empty())
         this->Panorama_vector.clear();
     this->panorama = this->image;
 }
+#endif
 
+#ifdef withstitching
 int MyImage::panorama_get_size(){
     return this->Panorama_vector.size();
 }
-
-
+#endif

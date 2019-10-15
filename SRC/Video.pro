@@ -1,11 +1,17 @@
-QT       += core gui
+# If you don't have the OpenCV stiching library, comment the following line
+CONFIG += stitching
+#
+############# DO NOT MODIFY BELOW THIS LINE #############
+#
+stitching: DEFINES+=withstitching
 
+QT       = core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Video
 TEMPLATE = app
 
-SOURCES += main.cpp\
+SOURCES = main.cpp \
         myimage.cpp \
         mainwindow.cpp \
         dialog_blur.cpp \
@@ -14,9 +20,9 @@ SOURCES += main.cpp\
         dialog_transformation.cpp \
         dialog_histogram.cpp \
         dialog_object_detection.cpp \
-        dialog_panorama.cpp \
         dialog_motion_detection.cpp \
         secondarywindow.cpp
+stitching: SOURCES+=dialog_panorama.cpp
 
 HEADERS  += myimage.h \
             mainwindow.h \
@@ -26,21 +32,26 @@ HEADERS  += myimage.h \
             dialog_transformation.h \
             dialog_histogram.h \
             dialog_object_detection.h \
-            dialog_panorama.h \
             dialog_motion_detection.h \
             secondarywindow.h
+stitching: HEADERS += dialog_panorama.h \
 
+# Compilator flags
 QMAKE_CXXFLAGS += -std=c++11
 
-QMAKE_LFLAGS += -Wl,-rpath,/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
+# Path to OpenCV include directory
 INCLUDEPATH += /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/include/opencv4
-LIBS += -L/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
 
+# Linker flags
+QMAKE_LFLAGS += -Wl,-rpath,/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
+
+# Required OpenCV libraries
+LIBS = -L/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
 LIBS += -lopencv_imgcodecs \
         -lopencv_core \
         -lopencv_highgui \
         -lopencv_videoio \
         -lopencv_imgproc \
         -lopencv_objdetect \
-        -lopencv_stitching \
         -lopencv_video
+stitching: LIBS += -lopencv_stitching \

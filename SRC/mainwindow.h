@@ -19,7 +19,9 @@
 #include "dialog_transformation.h"
 #include "dialog_histogram.h"
 #include "dialog_object_detection.h"
+#ifdef withstitching
 #include "dialog_panorama.h"
+#endif
 #include "dialog_motion_detection.h"
 #include "secondarywindow.h"
 #include "myimage.h"
@@ -49,7 +51,9 @@ private:
     Dialog_Transformation* dialog_transformation;
     Dialog_Histogram* dialog_histogram;
     Dialog_Object_Detection* dialog_object_detection;
+#ifdef withstitching
     Dialog_Panorama* dialog_panorama;
+#endif
     Dialog_Motion_Detection* dialog_motion_detection;
     SecondaryWindow* secondWindow;
     SecondaryWindow* thirdWindow;
@@ -67,14 +71,18 @@ private:
     QAction *actionFace;
     QAction *actionHistoEq;
     QAction *actionObjectDetection;
+#ifdef withstitching
     QAction *actionPanorama;
+#endif
     QAction *actionMotionDetection;
     QAction *actionRecord;
     QToolBar *editToolBar;
 
     bool histogram_window_opened;
     bool object_detection_window_opened;
+#ifdef withstitching
     bool panorama_window_opened;
+#endif
     bool motion_detection_window_opened;
 
     VideoWriter video_out;
@@ -102,7 +110,9 @@ private slots:
     void treat_Button_Face_Recon() ;
     void treat_Button_Histogram(bool);
     void treat_Button_Object_Detection(bool);
+#ifdef withstitching
     void treat_Button_Panorama(bool);
+#endif
     void treat_Button_Motion_Detection(bool);
     void treat_Button_Record(bool);
 
@@ -130,11 +140,13 @@ private slots:
     void treat_Object_Detection_Method(int);
     void treat_Slider_hough_line_threshold(int);
 
+#ifdef withstitching
     void treat_Panorama_Pick_Up_Image();
     void treat_Panorama_Pop_Up_Image();
     void treat_Panorama_Update();
     void treat_Panorama_Reset();
     void treat_Panorama_Save();
+#endif
 
     void treat_Motion_Detection_Method(int);
 };

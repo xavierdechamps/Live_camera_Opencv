@@ -8,7 +8,9 @@
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/objdetect/objdetect.hpp"
+#ifdef withstitching
 #include "opencv2/stitching.hpp"
+#endif
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video.hpp"
 
@@ -50,16 +52,19 @@ public:
 
     void set_motion_detection_method(int);
 
+#ifdef withstitching
     void panorama_insert_image();
     void panorama_pop_up_image();
     std::string panorama_compute_result();
     void panorama_reset();
     int panorama_get_size();
-
+#endif
 
     Mat& get_image_content();
     Mat& get_image_histogram();
+#ifdef withstitching
     Mat& get_image_panorama();
+#endif
     Mat& get_object_detected();
     Mat& get_motion_detected();
 
@@ -72,7 +77,9 @@ public:
     void toggleFace_Recon();
     void toggleHistoEq();
     void toggleObjectDetection();
+#ifdef withstitching
     void togglePanorama();
+#endif
     void toggleMotionDetection();
 
 private:
@@ -94,8 +101,10 @@ private:
     String face_cascade_name ;
     CascadeClassifier face_cascade;
 
+#ifdef withstitching
     vector<Mat> Panorama_vector;
     Ptr<Stitcher> Panorama_stitcher;
+#endif
 
     Ptr<BackgroundSubtractor> pMOG2;
 
