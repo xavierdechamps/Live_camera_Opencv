@@ -68,7 +68,9 @@ private:
     QAction *actionThreshold;
     QAction *actionTransformation;
     QAction *actionEdge;
+#ifdef withobjdetect
     QAction *actionFace;
+#endif
     QAction *actionHistoEq;
     QAction *actionObjectDetection;
 #ifdef withstitching
@@ -107,7 +109,9 @@ private slots:
     void treat_Button_Edge(bool) ;
     void treat_Button_Threshold(bool);
     void treat_Button_Transformation(bool);
+#ifdef withobjdetect
     void treat_Button_Face_Recon() ;
+#endif
     void treat_Button_Histogram(bool);
     void treat_Button_Object_Detection(bool);
 #ifdef withstitching

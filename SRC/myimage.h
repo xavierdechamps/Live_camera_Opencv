@@ -7,7 +7,9 @@
 
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
+#ifdef withobjdetect
 #include "opencv2/objdetect/objdetect.hpp"
+#endif
 #ifdef withstitching
 #include "opencv2/stitching.hpp"
 #endif
@@ -25,7 +27,9 @@ public:
     MyImage();
 
     void set_image_content(Mat &content);
+#ifdef withobjdetect
     bool set_Face_Cascade_Name(String &new_name);
+#endif
 
     void set_size_blur(int);
     void set_blur_method(int);
@@ -74,7 +78,9 @@ public:
     void toggleThreshold();
     void toggleTransformation();
     void toggleEdge();
+#ifdef withobjdetect
     void toggleFace_Recon();
+#endif
     void toggleHistoEq();
     void toggleObjectDetection();
 #ifdef withstitching
@@ -96,12 +102,15 @@ private:
     double canny_ratio;
     bool coloured,inversed,blurred,edge_detect,face_recon,thresholded,object_detected;
     bool transformed;
-    bool panorama_activated,motion_detected,motion_background_first_time;
+    bool motion_detected,motion_background_first_time;
     bool histo_eq;
+#ifdef withobjdetect
     String face_cascade_name ;
     CascadeClassifier face_cascade;
+#endif
 
 #ifdef withstitching
+    bool panorama_activated;
     vector<Mat> Panorama_vector;
     Ptr<Stitcher> Panorama_stitcher;
 #endif
@@ -112,7 +121,9 @@ private:
     void inverseImage();
     void smoothImage(Mat &imag, int blur_range, int method);
     void detectEdges();
+#ifdef withobjdetect
     void detect_faces();
+#endif
     double thresholdImage();
     void transformImage();
     void equalizeHistogram();

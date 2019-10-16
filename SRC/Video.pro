@@ -1,9 +1,12 @@
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
+# If you don't have the OpenCV object detect library, comment the following line
+CONFIG += objdetect
 #
 ############# DO NOT MODIFY BELOW THIS LINE #############
 #
 stitching: DEFINES+=withstitching
+objdetect: DEFINES+=withobjdetect
 
 QT       = core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -34,7 +37,7 @@ HEADERS  += myimage.h \
             dialog_object_detection.h \
             dialog_motion_detection.h \
             secondarywindow.h
-stitching: HEADERS += dialog_panorama.h \
+stitching: HEADERS += dialog_panorama.h
 
 # Compilator flags
 QMAKE_CXXFLAGS += -std=c++11
@@ -52,6 +55,6 @@ LIBS += -lopencv_imgcodecs \
         -lopencv_highgui \
         -lopencv_videoio \
         -lopencv_imgproc \
-        -lopencv_objdetect \
         -lopencv_video
-stitching: LIBS += -lopencv_stitching \
+stitching: LIBS += -lopencv_stitching
+objdetect: LIBS += -lopencv_objdetect

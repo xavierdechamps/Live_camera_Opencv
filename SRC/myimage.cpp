@@ -12,7 +12,9 @@
 MyImage::MyImage()
 {
     // Initializations for the all image operations
+#ifdef withobjdetect
     this->face_cascade_name = "";
+#endif
 
     this->blurred        = false;
     this->blur_range     = 3;
@@ -81,9 +83,11 @@ void MyImage::toggleTransformation() {
     this->transformed = ! (this->transformed);
 }
 
+#ifdef withobjdetect
 void MyImage::toggleFace_Recon() {
     this->face_recon = ! (this->face_recon);
 }
+#endif
 
 void MyImage::toggleHistoEq() {
     this->histo_eq = ! (this->histo_eq);
@@ -115,6 +119,17 @@ void MyImage::set_image_content(Mat &content) {
 
     this->image = content;
 
+#ifdef withobjdetect
+    if (this->face_recon) { // Look for faces before any operation
+        detect_faces() ;
+
+        // this->mask contains the region of interest
+        this->image.copyTo( this->smoothed , this->mask ); // copy the region of interest to this->smoothed
+        smoothImage(this->smoothed, 31, 1);                // smooth this region
+        this->smoothed.copyTo(this->image , this->mask);   // replace the region in the original image by the smoothed one
+    }
+#endif
+
     if (!(this->coloured))
         toBlackandWhite();
 
@@ -123,15 +138,6 @@ void MyImage::set_image_content(Mat &content) {
 
     if (this->histo_eq)
         equalizeHistogram();
-
-    if (this->face_recon) {
-        detect_faces() ;
-
-        // this->mask contains the region of interest
-        this->image.copyTo( this->smoothed , this->mask ); // copy the region of interest to this->smoothed
-        smoothImage(this->smoothed, 31, 1);                // smooth this region
-        this->smoothed.copyTo(this->image , this->mask);   // replace the region in the original image by the smoothed one
-    }
 
     if (this->edge_detect)
         detectEdges();
@@ -421,6 +427,7 @@ Mat& MyImage::get_motion_detected() {
     return this->motion;
 }
 
+#ifdef withobjdetect
 bool MyImage::set_Face_Cascade_Name(String &new_name) {
     this->face_cascade_name = new_name;
 
@@ -430,6 +437,7 @@ bool MyImage::set_Face_Cascade_Name(String &new_name) {
     }
     return true;
 }
+#endif
 
 void MyImage::toBlackandWhite() {
     // Convert image to black and white with 3 channels
@@ -536,6 +544,7 @@ void MyImage::detectEdges() {
         }
 }
 
+#ifdef withobjdetect
 void MyImage::detect_faces() {
     this->image.copyTo(this->mask);
     this->mask.setTo(Scalar(255,255,255));
@@ -558,6 +567,7 @@ void MyImage::detect_faces() {
         fillConvexPoly(this->mask, &ROI_Poly[0], ROI_Poly.size(), Scalar( 0, 0, 0 ), 4, 0);
     }
 }
+#endif
 
 double MyImage::thresholdImage() {
     double value = this->threshold_value;

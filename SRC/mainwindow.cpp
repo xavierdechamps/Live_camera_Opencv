@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     // Initializations
     this->myFrame = new MyImage();
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
+
+#ifdef withobjdetect
     String tmp = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml";
     bool testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
     while (!testCascade){
@@ -25,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
             testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
         }
     }
+#endif
+
     this->file_name_save = this->main_directory + "Video-OpenCV-QMake/webcam.jpg";
     this->capture.open(0);
 
@@ -213,10 +217,12 @@ void MainWindow::createActions() {
     this->actionEdge->setCheckable(true);
     connect(this->actionEdge, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Edge(bool)));
 
+#ifdef withobjdetect
     this->actionFace = new QAction(tr("&Face recognition"), this);
     this->actionFace->setToolTip(tr("Find human faces in the image"));
     this->actionFace->setCheckable(true);
     connect(this->actionFace, SIGNAL(triggered()), this, SLOT(treat_Button_Face_Recon()));
+#endif
 
     this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
     this->actionHistoEq->setToolTip(tr("Equalize the histogram of the image"));
@@ -262,7 +268,9 @@ void MainWindow::createToolBars() {
     this->editToolBar->addAction(this->actionHistoEq);
     this->editToolBar->addSeparator();
     this->editToolBar->addAction(this->actionEdge);
+#ifdef withobjdetect
     this->editToolBar->addAction(this->actionFace);
+#endif
     this->editToolBar->addAction(this->actionObjectDetection);
     this->editToolBar->addSeparator();
 #ifdef withstitching
@@ -314,9 +322,11 @@ void MainWindow::treat_Button_Edge(bool state) {
         this->dialog_edge->hide();
 }
 
+#ifdef withobjdetect
 void MainWindow::treat_Button_Face_Recon() {
     this->myFrame->toggleFace_Recon();
 }
+#endif
 
 void MainWindow::treat_Button_Histogram(bool state) {
     this->myFrame->toggleHistoEq();
