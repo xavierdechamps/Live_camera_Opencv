@@ -46,6 +46,12 @@ Dialog_Object_Detection::Dialog_Object_Detection(QWidget *parent): QDialog(paren
     connect(Slider_hough_line_threshold, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_hough_line_treshold_value(int)));
     connect(Slider_hough_line_threshold, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_hough_line_treshold_value()) );
 
+    // Tool tips when hovering the buttons and sliders
+    radioButton1->setToolTip("Hough line transform: detect lines in the frame");
+    radioButton2->setToolTip("Hough circle transform: detect circles in the frame");
+    radioButton3->setToolTip("Harris corner detection: corners are regions in the image with large variation in intensity in all the directions.");
+    Slider_hough_line_threshold->setToolTip("Set the threshold value for the object detectors.");
+
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(radioButton1,                           0, 0);
     grid->addWidget(radioButton2,                           1, 0);

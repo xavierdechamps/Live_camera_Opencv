@@ -100,6 +100,18 @@ Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
     connect(radioButton_9, SIGNAL(clicked()), this, SLOT(onClick_Threshold_Method()) ) ;
     connect(thresholdType, SIGNAL(stateChanged(int)), this, SLOT(onClick_Botton_Threshold_Type(int)));
 
+    // Tool tips when hovering the buttons and sliders
+    radioButton_1->setToolTip("Binary: if the intensity of the pixel is higher than threshold, then the new pixel intensity is set to a MaxVal. Otherwise, the pixels are set to 0.");
+    radioButton_2->setToolTip("Binary inverted: If the intensity of the pixel is higher than threshold, then the new pixel intensity is set to a 0. Otherwise, it is set to MaxVal");
+    radioButton_3->setToolTip("Truncate: the maximum intensity value for the pixels is threshold, if src(x,y) is greater, then its value is truncated");
+    radioButton_4->setToolTip("To zero: if src(x,y) is lower than thresh, the new pixel value will be set to 0.");
+    radioButton_5->setToolTip("To zero inverted: if src(x,y) is greater than thresh, the new pixel value will be set to 0.");
+    radioButton_6->setToolTip("Otsu threshold: use Otsu algorithm to choose the optimal threshold value");
+    radioButton_7->setToolTip("Triangle method threshold: use Triangle algorithm to choose the optimal threshold value");
+    radioButton_8->setToolTip("Adaptive threshold (mean): the threshold is computed for small subregions of the frame");
+    radioButton_9->setToolTip("Adaptive threshold (Gaussian): the threshold is computed for small subregions of the frame");
+    thresholdType->setToolTip("Inverse the input for the adaptive threshold methods");
+
     this->RadioButtons = new QButtonGroup(this); // to have exclusive radio buttons
     this->RadioButtons->addButton(radioButton_1,1);
     this->RadioButtons->addButton(radioButton_2,2);

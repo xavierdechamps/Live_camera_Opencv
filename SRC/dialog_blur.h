@@ -13,6 +13,8 @@
 #include <QSlider>
 #include <QRadioButton>
 #include <QGroupBox>
+//#include <QToolTip> // show tool tips when hovering over buttons and sliders
+//#include <QFont>
 
 #include <iostream>
 using namespace std;
@@ -42,6 +44,9 @@ signals:
     void Signal_blur_range_changed(int value);
     void Signal_blur_element_changed(int value); // element = [1] rectangle, [2] cross or [3] ellipse
     void Signal_blur_method_changed(int value);
+
+//protected:
+//    bool event(QEvent *event) override ;
 };
 
 #endif // DIALOG_BLUR_H

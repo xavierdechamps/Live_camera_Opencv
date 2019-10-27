@@ -39,6 +39,10 @@ Dialog_Transformation::Dialog_Transformation(QWidget *parent):    QDialog(parent
     this->RadioButtons = new QButtonGroup(this);
     this->RadioButtons->addButton(radioButton_1,1);
 
+    // Tool tips when hovering the buttons and sliders
+    radioButton_1->setToolTip("Rotate the frame by a given angle around the centre of the frame");
+    Slider_rotation_value->setToolTip("Value of the angle required for the rotation");
+
     QGridLayout *grid = new QGridLayout(this);
     grid->addWidget(radioButton_1,                0,0);
     grid->addWidget(Slider_rotation_value,        1,0);

@@ -178,7 +178,7 @@ void MyImage::set_threshold_method(int method) {
 }
 
 void MyImage::set_threshold_type(int type) {
-    assert (type>0);
+    assert (type==0 || type ==1);
     this->threshold_type = type;
 }
 
@@ -406,7 +406,7 @@ Mat& MyImage::get_motion_detected() {
 
             break;
         }
-        case 2: { // Foreground extraction
+        case 2: { // Background extraction
             Mat Mask;
             if (this->motion_background_first_time) {
                 this->motion_background_first_time = false;
@@ -604,7 +604,7 @@ double MyImage::thresholdImage() {
         cvtColor(this->image,this->image,COLOR_GRAY2BGR);
         break;
     }
-    case 9: { // adaptive threshold simple mean
+    case 9: { // adaptive threshold Gaussian
         cvtColor(this->image,this->image,COLOR_RGB2GRAY);
         if (this->threshold_type == 1)
             adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY ,this->threshold_blocksize, 0. );
@@ -643,21 +643,21 @@ void MyImage::equalizeHistogram() {
     split(this->image,channels); //split the image into channels
 
     switch (this->histo_eq_method) {
-    case 1: {
-        equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
-        break;
-    }
-    case 2:{
-        Ptr<CLAHE> clahe = createCLAHE();
-        clahe->setClipLimit(this->histo_clip_limit);
-        clahe->setTilesGridSize(Size(this->histo_tiles,this->histo_tiles));
-        clahe->apply(channels[0],channels[0]);
-        break;
-    }
-    default:{
-        cout << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
-        break;
-    }
+        case 1: {
+            equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
+            break;
+        }
+        case 2:{
+            Ptr<CLAHE> clahe = createCLAHE();
+            clahe->setClipLimit(this->histo_clip_limit);
+            clahe->setTilesGridSize(Size(this->histo_tiles,this->histo_tiles));
+            clahe->apply(channels[0],channels[0]);
+            break;
+        }
+        default:{
+            cout << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
+            break;
+        }
     }
     merge(channels,this->image); //merge 3 channels including the modified 1st channel into one image
     cvtColor(this->image, this->image, COLOR_YCrCb2BGR);

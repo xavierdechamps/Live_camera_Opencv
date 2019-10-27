@@ -12,6 +12,7 @@
 #include <QSizePolicy>
 #include <QSlider>
 #include <QRadioButton>
+#include <QGroupBox>
 
 #include <iostream>
 using namespace std;

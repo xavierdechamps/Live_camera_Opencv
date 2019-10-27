@@ -13,6 +13,7 @@
 #include <QSlider>
 #include <QRadioButton>
 #include <QCheckBox>
+#include <QGroupBox>
 
 #include <iostream>
 

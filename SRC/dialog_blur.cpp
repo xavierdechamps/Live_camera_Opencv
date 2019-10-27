@@ -91,6 +91,22 @@ Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
     connect(radioButton11, SIGNAL(clicked()), this, SLOT(onClick_Radio_Blur_Method()) ) ;
     connect(radioButton12, SIGNAL(clicked()), this, SLOT(onClick_Radio_Blur_Method()) ) ;
 
+    // Tool tips when hovering the buttons
+//    QFont serifFont("Times", 14, QFont::Normal);
+//    QToolTip::setFont(serifFont);
+    radioButton1->setToolTip("Simple blur effect using a normalized box filter");
+    radioButton2->setToolTip("Blur effect using a 2D Gaussian kernel");
+    radioButton3->setToolTip("Each pixel is replaced with the median of its neighboring pixels");
+    radioButton4->setToolTip("Smooth the image but preserve the edges");
+    radioButton5->setToolTip("Erosion: compute a local minimum over the area of the kernel");
+    radioButton6->setToolTip("Dilation: compute a local maximum over the area of the kernel");
+    radioButton7->setToolTip("Opening: an erosion followed by a dilation. Useful to remove noise.");
+    radioButton8->setToolTip("Closing: a dilation followed by an erosion. Useful in closing small holes inside the foreground objects, or small black points on the object.");
+    radioButton9->setToolTip("Morphological gradient: difference between a dilation and an erosion");
+    radioButton10->setToolTip("Top hat: difference between the input image and the opening of the image");
+    radioButton11->setToolTip("Black hat: difference between the closing of the input image and the input image.");
+    radioButton12->setToolTip("Hit-or-miss: useful to find patterns in binary images.");
+
     // Radio buttons
     this->RadioButtons = new QButtonGroup(); // contains all the buttons
     this->RadioButtons->addButton(radioButton1,1);
@@ -181,3 +197,20 @@ void Dialog_Blur::show_Slider_element() {
 void Dialog_Blur::show_Slider_value() {
     this->Slider_value->setText("Range of filter: "+QString::number(this->value_Blur_Range));
 }
+
+/*bool Dialog_Blur::event(QEvent *event) {
+    if (event->type() == QEvent::ToolTip) {
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        int index = itemAt(helpEvent->pos());
+        if (index != -1) {
+            QToolTip::showText(helpEvent->globalPos(), shapeItems[index].toolTip());
+        }
+        else {
+            QToolTip::hideText();
+            event->ignore();
+        }
+
+        return true;
+     }
+     return QWidget::event(event);
+}*/

@@ -20,10 +20,13 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     this->canny_ratio_min   = 2.;
     this->canny_single_step = 0.1;
 
+    // Group box for the blur buttons
+    QGroupBox *groupBoxCanny  = new QGroupBox("Canny edge detector",this);
+
     // Build the buttons
-    QRadioButton* radioButton1 = new QRadioButton("Sobel derivatives"); radioButton1->setChecked(true);
-    QRadioButton* radioButton2 = new QRadioButton("Laplacian");
-    QRadioButton* radioButton3 = new QRadioButton("Canny edge detector");
+    QRadioButton* radioButton1 = new QRadioButton("Sobel derivatives",this); radioButton1->setChecked(true);
+    QRadioButton* radioButton2 = new QRadioButton("Laplacian",this);
+    QRadioButton* radioButton3 = new QRadioButton("Canny edge detector",groupBoxCanny);
 
     // Create connections between button click and function
     connect(radioButton1, SIGNAL(clicked()), this, SLOT(onClick_Edge_Method()) ) ;
@@ -37,14 +40,14 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     this->RadioButtons->addButton(radioButton3,3);
 
     //  QLabel to show the Canny low threshold
-    this->Slider_canny_lowthreshold_value = new QLabel("Low threshold: 150"); // To have the biggest length for the string
+    this->Slider_canny_lowthreshold_value = new QLabel("Low threshold: 150",groupBoxCanny); // To have the biggest length for the string
     this->Slider_canny_lowthreshold_value->setFixedWidth(this->Slider_canny_lowthreshold_value->sizeHint().width());
     this->Slider_canny_lowthreshold_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     this->Slider_canny_lowthreshold_value->setText("Low threshold: 50"); // Set the default string
     this->value_canny_lowthreshold = 50; // Set the default value
 
     // Slider to adapt the Canny low threshold
-    QSlider* Slider_canny_threshold = new QSlider( Qt::Horizontal );
+    QSlider* Slider_canny_threshold = new QSlider( Qt::Horizontal , groupBoxCanny);
     Slider_canny_threshold->setTickPosition(QSlider::TicksBothSides);
     Slider_canny_threshold->setTickInterval(10);
     Slider_canny_threshold->setSingleStep(1);
@@ -54,13 +57,13 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     connect(Slider_canny_threshold, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_canny_threshold_value()) );
 
     //  QLabel to show the Canny ratio
-    this->Slider_canny_ratio_value = new QLabel("Ratio: 2.5");
+    this->Slider_canny_ratio_value = new QLabel("Ratio: 2.5" , groupBoxCanny);
     this->Slider_canny_ratio_value->setFixedWidth(this->Slider_canny_ratio_value->sizeHint().width());
     this->Slider_canny_ratio_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     this->value_canny_ratio = 2.5;
 
     // Slider to adapt the Canny ratio
-    QSlider* Slider_canny_value = new QSlider( Qt::Horizontal );
+    QSlider* Slider_canny_value = new QSlider( Qt::Horizontal , groupBoxCanny);
     Slider_canny_value->setTickPosition(QSlider::TicksBothSides);
     Slider_canny_value->setTickInterval(5);
     Slider_canny_value->setSingleStep(1);
@@ -69,14 +72,25 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     connect(Slider_canny_value, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_canny_ratio_value(int)));
     connect(Slider_canny_value, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_canny_ratio_value()) );
 
+    // Tool tips when hovering the buttons and sliders
+    radioButton1->setToolTip("Sobel derivative computes an approximation of the gradient of an image intensity function. It combines Gaussian smoothing and differentiation.");
+    radioButton2->setToolTip("Laplace operator: used to detect edges.");
+    radioButton3->setToolTip("Canny edge detector: low error rate + good localization + minimal response");
+    Slider_canny_threshold->setToolTip("Canny edge detector: set the value for the lower threshold");
+    Slider_canny_value->setToolTip("Canny edge detector: ratio between the upper / lower thresholds. Optimal value between 2 and 3.");
+
+    // Vertical layout for the buttons, associated to a group
+    QVBoxLayout *verticalLayoutCanny  = new QVBoxLayout(groupBoxCanny);
+    verticalLayoutCanny->addWidget(radioButton3);
+    verticalLayoutCanny->addWidget(this->Slider_canny_lowthreshold_value);
+    verticalLayoutCanny->addWidget(Slider_canny_threshold);
+    verticalLayoutCanny->addWidget(this->Slider_canny_ratio_value);
+    verticalLayoutCanny->addWidget(Slider_canny_value);
+
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(radioButton1,          0, 0);
     grid->addWidget(radioButton2,          1, 0);
-    grid->addWidget(radioButton3,          2, 0);
-    grid->addWidget(Slider_canny_threshold,3, 0);
-    grid->addWidget(Slider_canny_lowthreshold_value,3, 1);
-    grid->addWidget(Slider_canny_value,4, 0);
-    grid->addWidget(Slider_canny_ratio_value,4, 1);
+    grid->addWidget(groupBoxCanny,         2, 0);
 
     setLayout(grid);
     setWindowTitle(tr("Edge detector control window"));

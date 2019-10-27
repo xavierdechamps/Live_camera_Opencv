@@ -37,6 +37,13 @@ Dialog_Panorama::Dialog_Panorama(QWidget *parent):    QDialog(parent)
     connect(button4, SIGNAL(clicked()), this, SLOT(onClick_Reset_Panorama()) ) ;
     connect(button5, SIGNAL(clicked()), this, SLOT(onClick_Save_Panorama()) ) ;
 
+    // Tool tips when hovering the buttons and sliders
+    button1->setToolTip("Pick up a new frame to insert in the panorama");
+    button2->setToolTip("Delete the last frame inserted in the panorama");
+    button3->setToolTip("Update the panorama");
+    button4->setToolTip("Reset the panorama");
+    button5->setToolTip("Save the panorama as an image on the local disk");
+
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(this->Panorama_value, 0, 0);
     grid->addWidget(button1, 1, 0);
