@@ -7,6 +7,7 @@
 
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
+#include "opencv2/photo.hpp"
 #ifdef withobjdetect
 #include "opencv2/objdetect/objdetect.hpp"
 #endif
@@ -55,7 +56,11 @@ public:
     void set_hough_line_threshold(int);
 
     void set_motion_detection_method(int);
-
+    
+    void set_photo_method(int);
+    void set_photo_sigmas(int);
+    void set_photo_sigmar(double);
+    
 #ifdef withstitching
     void panorama_insert_image();
     void panorama_pop_up_image();
@@ -87,6 +92,7 @@ public:
     void togglePanorama();
 #endif
     void toggleMotionDetection();
+    void togglePhoto();
 
 private:
     Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion ;
@@ -98,10 +104,10 @@ private:
     int threshold_method,threshold_value,threshold_blocksize,threshold_type;
     int transformation_method,transf_rotation_value;
     int histo_eq_method,histo_tiles,histo_clip_limit;
-    int motion_detection_method;
-    double canny_ratio;
+    int motion_detection_method,photo_method,photo_sigmas;
+    double canny_ratio,photo_sigmar;
     bool coloured,inversed,blurred,edge_detect,face_recon,thresholded,object_detected;
-    bool transformed;
+    bool transformed,photoed;
     bool motion_detected,motion_background_first_time;
     bool histo_eq;
 #ifdef withobjdetect
@@ -127,6 +133,7 @@ private:
     double thresholdImage();
     void transformImage();
     void equalizeHistogram();
+    void modulephoto();
 };
 
 #endif // MYIMAGE_H

@@ -96,7 +96,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     this->dialog_motion_detection = new Dialog_Motion_Detection(this);
     connect(this->dialog_motion_detection, SIGNAL(Signal_motion_detection_method_changed(int)), this, SLOT(treat_Motion_Detection_Method(int)) );
     this->dialog_motion_detection->hide();
-
+    
+    // Create a new object for module Photo and create adequate connections to functions, depending on the received signals
+    this->dialog_photo = new Dialog_Photo(this);
+    connect(this->dialog_photo, SIGNAL(Signal_photo_method_changed(int)), this, SLOT(treat_Photo_Method(int)) );
+    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaS_changed(int)),this, SLOT(treat_Photo_SigmaS(int)) );
+    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaR_changed(double)),this, SLOT(treat_Photo_SigmaR(double)) );
+    this->dialog_motion_detection->hide();
+    
     // Create a new object for a secondary window that will show the histogram
     this->secondWindow = new SecondaryWindow(this);
     this->secondWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
@@ -198,7 +205,7 @@ void MainWindow::createActions() {
     connect(this->actionInverse, SIGNAL(triggered()), this, SLOT(treat_Button_Inverse()));
 
     this->actionBlur = new QAction(tr("&Blur"), this);
-    this->actionBlur->setToolTip(tr("Blur the image"));
+    this->actionBlur->setToolTip(tr("Blur"));
     this->actionBlur->setCheckable(true);
     connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));
 
@@ -245,6 +252,11 @@ void MainWindow::createActions() {
     this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
     this->actionMotionDetection->setCheckable(true);
     connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Motion_Detection(bool)));
+    
+    this->actionPhoto = new QAction(tr("Module Photo"), this);
+    this->actionPhoto->setToolTip(tr("OpenCV module Photo"));
+    this->actionPhoto->setCheckable(true);
+    connect(this->actionPhoto, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Photo(bool)));
 
     this->actionRecord = new QAction(tr("&Record"), this);
     this->actionRecord->setToolTip(tr("Record the video"));
@@ -277,6 +289,7 @@ void MainWindow::createToolBars() {
     this->editToolBar->addAction(this->actionPanorama);
 #endif
     this->editToolBar->addAction(this->actionMotionDetection);
+    this->editToolBar->addAction(this->actionPhoto);
     this->editToolBar->addSeparator();
     this->editToolBar->addAction(this->actionRecord);
     addToolBar(Qt::RightToolBarArea, this->editToolBar);
@@ -377,6 +390,14 @@ void MainWindow::treat_Button_Motion_Detection(bool state) {
     }
 }
 
+void MainWindow::treat_Button_Photo(bool state) {
+    this->myFrame->togglePhoto();
+    if (state)
+        this->dialog_photo->show();
+    else
+        this->dialog_photo->hide();
+}
+
 void MainWindow::treat_Button_Record(bool state) {
     this->recording = state;
     if (state) {
@@ -413,6 +434,14 @@ void MainWindow::treat_Blur_Method(int method) {
 
 void MainWindow::treat_Slider_Blur_Element(int element) {
     this->myFrame->set_morpho_element(element);
+}
+
+void MainWindow::treat_Photo_SigmaS(int value){
+    this->myFrame->set_photo_sigmas(value);
+}
+
+void MainWindow::treat_Photo_SigmaR(double value){
+    this->myFrame->set_photo_sigmar(value);
 }
 
 void MainWindow::treat_Slider_Threshold_Value(int value) {
@@ -537,6 +566,9 @@ void MainWindow::treat_Panorama_Save() {
                                                          tr("File name to save the panorama"),
                                                          QString::fromStdString(this->main_directory),
                                                          tr("Images (*.png *.jpg)") );
+    if (QfileNameLocal.isEmpty()) // If one clicked the cancel button, the string is empty
+        return;
+
     this->file_name_save = QfileNameLocal.toStdString();
 
     vector<int> compression_params;
@@ -553,6 +585,10 @@ void MainWindow::treat_Panorama_Save() {
 
 void MainWindow::treat_Motion_Detection_Method(int method) {
     this->myFrame->set_motion_detection_method(method);
+}
+
+void MainWindow::treat_Photo_Method(int method) {
+    this->myFrame->set_photo_method(method);
 }
 
 void MainWindow::update_histogram_window() {

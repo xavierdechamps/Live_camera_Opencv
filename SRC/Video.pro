@@ -24,7 +24,8 @@ SOURCES = main.cpp \
         dialog_histogram.cpp \
         dialog_object_detection.cpp \
         dialog_motion_detection.cpp \
-        secondarywindow.cpp
+        secondarywindow.cpp \
+        dialog_photo.cpp
 stitching: SOURCES+=dialog_panorama.cpp
 
 HEADERS  += myimage.h \
@@ -36,7 +37,8 @@ HEADERS  += myimage.h \
             dialog_histogram.h \
             dialog_object_detection.h \
             dialog_motion_detection.h \
-            secondarywindow.h
+            secondarywindow.h \
+            dialog_photo.h
 stitching: HEADERS += dialog_panorama.h
 
 # Compilator flags
@@ -55,6 +57,7 @@ LIBS += -lopencv_imgcodecs \
         -lopencv_highgui \
         -lopencv_videoio \
         -lopencv_imgproc \
-        -lopencv_video
+        -lopencv_video\
+        -lopencv_photo
 stitching: LIBS += -lopencv_stitching
 objdetect: LIBS += -lopencv_objdetect

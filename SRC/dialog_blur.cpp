@@ -197,20 +197,3 @@ void Dialog_Blur::show_Slider_element() {
 void Dialog_Blur::show_Slider_value() {
     this->Slider_value->setText("Range of filter: "+QString::number(this->value_Blur_Range));
 }
-
-/*bool Dialog_Blur::event(QEvent *event) {
-    if (event->type() == QEvent::ToolTip) {
-        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-        int index = itemAt(helpEvent->pos());
-        if (index != -1) {
-            QToolTip::showText(helpEvent->globalPos(), shapeItems[index].toolTip());
-        }
-        else {
-            QToolTip::hideText();
-            event->ignore();
-        }
-
-        return true;
-     }
-     return QWidget::event(event);
-}*/

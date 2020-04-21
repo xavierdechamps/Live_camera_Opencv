@@ -65,7 +65,7 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     // Slider to adapt the Canny ratio
     QSlider* Slider_canny_value = new QSlider( Qt::Horizontal , groupBoxCanny);
     Slider_canny_value->setTickPosition(QSlider::TicksBothSides);
-    Slider_canny_value->setTickInterval(5);
+    Slider_canny_value->setTickInterval(1);
     Slider_canny_value->setSingleStep(1);
     Slider_canny_value->setRange(0,20);
     Slider_canny_value->setValue(5);

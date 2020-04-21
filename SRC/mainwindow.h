@@ -23,6 +23,7 @@
 #include "dialog_panorama.h"
 #endif
 #include "dialog_motion_detection.h"
+#include "dialog_photo.h"
 #include "secondarywindow.h"
 #include "myimage.h"
 
@@ -55,6 +56,7 @@ private:
     Dialog_Panorama* dialog_panorama;
 #endif
     Dialog_Motion_Detection* dialog_motion_detection;
+    Dialog_Photo* dialog_photo;
     SecondaryWindow* secondWindow;
     SecondaryWindow* thirdWindow;
     SecondaryWindow* fourthWindow;
@@ -77,6 +79,7 @@ private:
     QAction *actionPanorama;
 #endif
     QAction *actionMotionDetection;
+    QAction *actionPhoto;
     QAction *actionRecord;
     QToolBar *editToolBar;
 
@@ -106,7 +109,7 @@ private slots:
     void treat_Button_BW() ;
     void treat_Button_Inverse() ;
     void treat_Button_Blur(bool) ;
-    void treat_Button_Edge(bool) ;
+    void treat_Button_Edge(bool state);
     void treat_Button_Threshold(bool);
     void treat_Button_Transformation(bool);
 #ifdef withobjdetect
@@ -118,6 +121,7 @@ private slots:
     void treat_Button_Panorama(bool);
 #endif
     void treat_Button_Motion_Detection(bool);
+    void treat_Button_Photo(bool);
     void treat_Button_Record(bool);
 
     void treat_Slider_Blur_Range(int);
@@ -153,6 +157,10 @@ private slots:
 #endif
 
     void treat_Motion_Detection_Method(int);
+    
+    void treat_Photo_Method(int);
+    void treat_Photo_SigmaS(int value);
+    void treat_Photo_SigmaR(double value);
 };
 
 #endif // MAINWINDOW_H

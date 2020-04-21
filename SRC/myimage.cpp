@@ -56,6 +56,11 @@ MyImage::MyImage()
     this->motion_detected              = false;
     this->motion_detection_method      = 1;
     this->motion_background_first_time = true;
+    
+    this->photoed      = false;
+    this->photo_method = 1;
+    this->photo_sigmar = 0.15;
+    this->photo_sigmas = 50;
 }
 
 // Set of functions called by external world to toggle given types of image treatments
@@ -109,6 +114,10 @@ void MyImage::toggleMotionDetection() {
         this->motion_background_first_time = true;
 }
 
+void MyImage::togglePhoto() {
+    this->photoed = ! (this->photoed);
+}
+
 // Set of functions called by external world to set parameters for the image treatments
 void MyImage::set_image_content(Mat &content) {
     // Receives a new image from the outside world and applies the image treatments
@@ -132,7 +141,10 @@ void MyImage::set_image_content(Mat &content) {
 
     if (!(this->coloured))
         toBlackandWhite();
-
+    
+    if (this->photoed)
+        modulephoto();
+    
     if (this->inversed)
         inverseImage();
 
@@ -244,6 +256,23 @@ void MyImage::set_motion_detection_method(int method) {
     this->motion_background_first_time = true;
 }
 
+void MyImage::set_photo_method(int method){
+    assert(method>0);
+    this->photo_method = method;
+}
+
+void MyImage::set_photo_sigmas(int value){
+    assert(value >= 0) ;
+    assert(value <= 200) ;
+    this->photo_sigmas = value;
+}
+
+void MyImage::set_photo_sigmar(double value){
+    assert(value >= 0.) ;
+    assert(value <= 1.) ;
+    this->photo_sigmar = value;
+}
+
 // Set of functions called by the external world to get the content of images
 Mat& MyImage::get_image_content() {
     return this->image;
@@ -351,7 +380,7 @@ Mat& MyImage::get_object_detected() {
             break;
         }
         default :
-            cout << "MyImage::get_object_detected(): Unknown kind of object detection\n" ;
+            cerr << "MyImage::get_object_detected(): Unknown kind of object detection\n" ;
             break;
     }
     return this->objects;
@@ -419,7 +448,7 @@ Mat& MyImage::get_motion_detected() {
             break;
         }
         default: {
-            cout << "MyImage::get_motion_detected(): Unknown kind of motion detection\n" ;
+            cerr << "MyImage::get_motion_detected(): Unknown kind of motion detection\n" ;
             break;
         }
     }
@@ -432,7 +461,7 @@ bool MyImage::set_Face_Cascade_Name(String &new_name) {
     this->face_cascade_name = new_name;
 
     if ( ! this->face_cascade.load( this->face_cascade_name ) ){
-        cout << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<endl;
+        cerr << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<endl;
         return false;
     }
     return true;
@@ -497,7 +526,7 @@ void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
             break;
         }
         default :
-            cout << "MyImage::smoothImage(): Unknown kind of blur\n" ;
+            cerr << "MyImage::smoothImage(): Unknown kind of blur\n" ;
             break;
     }
 }
@@ -539,7 +568,7 @@ void MyImage::detectEdges() {
             break;
             }
         default :
-            cout << "MyImage::detectEdges(): Unknown kind of edge detection\n" ;
+            cerr << "MyImage::detectEdges(): Unknown kind of edge detection\n" ;
             break;
         }
 }
@@ -614,7 +643,7 @@ double MyImage::thresholdImage() {
         break;
     }
     default:
-        cout << "MyImage::thresholdImage(): Unknown kind of threshold\n" ;
+        cerr << "MyImage::thresholdImage(): Unknown kind of threshold\n" ;
         break;
     }
     return value;
@@ -631,7 +660,7 @@ void MyImage::transformImage() {
         break;
     }
     default:
-        cout << "MyImage::transformImage(): Unknown kind of transformation\n" ;
+        cerr << "MyImage::transformImage(): Unknown kind of transformation\n" ;
         break;
     }
 
@@ -655,12 +684,51 @@ void MyImage::equalizeHistogram() {
             break;
         }
         default:{
-            cout << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
+            cerr << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
             break;
         }
     }
     merge(channels,this->image); //merge 3 channels including the modified 1st channel into one image
     cvtColor(this->image, this->image, COLOR_YCrCb2BGR);
+}
+
+void MyImage::modulephoto(){
+    switch (this->photo_method){
+        case 1:{ // Contrast Preserving Decolorization
+            Mat gray, color_boost;
+            decolor( this->image, gray, color_boost );
+            this->image = color_boost;
+            break;
+        }
+        case 2:{ // Denoising
+            fastNlMeansDenoisingColored(this->image,this->image,3.,3.,7,21);
+            break;
+        }
+        case 3:{ // Non-Photorealistic Rendering: edge preserving filter
+            edgePreservingFilter(this->image,this->image, cv::RECURS_FILTER, this->photo_sigmas, this->photo_sigmar);
+            // cv::NORMCONV_FILTER
+            // cv::RECURS_FILTER
+            break;
+        }
+        case 4:{ // Non-Photorealistic Rendering: detail enhance
+            detailEnhance(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
+            break;
+        }
+        case 5:{ // Non-Photorealistic Rendering: pencil sketch
+            Mat img1;
+            pencilSketch(this->image,img1, this->image, this->photo_sigmas, this->photo_sigmar, 0.03f);
+            break;
+        }
+        case 6:{ // Non-Photorealistic Rendering: stylization
+            stylization(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
+            break;
+        }
+        default:{
+            cerr << "MyImage::modulephoto(): Unknown type of photo operation\n";
+            break;
+        }
+    }
+
 }
 
 #ifdef withstitching

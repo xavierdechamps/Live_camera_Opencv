@@ -31,7 +31,6 @@ private:
 private slots:
     void onClick_Slider_rotation_value(int value);
     void onClick_Transformation_Method();
-
     void show_Slider_rotation_value();
 
 signals:
