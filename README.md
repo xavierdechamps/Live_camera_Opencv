@@ -22,6 +22,10 @@ The implemented image manipulations are:
 - Object recognition (Hough line, Hough circle and Harris corner detection)
 - Image stitching to create a panorama
 - Motion detection (Farneback dense optical flow and foreground extraction)
+- Module Photo
+  *  Contrast Preserving Decolorization
+  *   Denoizing (Non-Local Means)
+  *   Non-Photorealistic Rendering (Edge preserving, Detail enhancing, Pencil sketch, Stylization)
 
 # Requirements
 This code requires an installed version of OpenCV. The program is linked against the following libraries of OpenCV:
@@ -32,6 +36,7 @@ This code requires an installed version of OpenCV. The program is linked against
 * libopencv_videoio
 * libopencv_imgproc
 * libopencv_video
+* libopencv_photo
 
 The code may also be compiled against two optional libraries:
 * libopencv_objdetect
