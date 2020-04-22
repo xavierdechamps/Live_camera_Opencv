@@ -61,4 +61,4 @@ Not tested. Should be similar to what is done for MacOS
 Not tested. No idea.
 
 ## Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering
-![Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering](https://github.com/xavierdechamps/Live_camera_Opencv/tree/master/Images/panorama_stylization3.png)
+![Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering](https://github.com/xavierdechamps/Live_camera_Opencv/blob/master/Images/panorama_stylization3.jpg)
