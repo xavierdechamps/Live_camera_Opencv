@@ -56,7 +56,7 @@ Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
     Slider_type_element->setRange(1,3);
     connect(Slider_type_element, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_Element(int)));
     connect(Slider_type_element, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_element()) );
-
+    
     // Group box for the blur buttons
     QGroupBox *groupBoxBlurs  = new QGroupBox("Bluring",this);
     QGroupBox *groupBoxMorpho = new QGroupBox("Morphological",this);
@@ -122,30 +122,30 @@ Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
     this->RadioButtons->addButton(radioButton11,11);
     this->RadioButtons->addButton(radioButton12,12);
 
-    // Vertical layout for the buttons, associated to a group
-    QVBoxLayout *verticalLayoutBlurs  = new QVBoxLayout(groupBoxBlurs);
-    QVBoxLayout *verticalLayoutMorpho = new QVBoxLayout(groupBoxMorpho);
+    // Layout for the buttons, associated to a group
+    QVBoxLayout *verticalLayoutBlurs = new QVBoxLayout(groupBoxBlurs);
+    QGridLayout *gridMorpho          = new QGridLayout(groupBoxMorpho);
 
     verticalLayoutBlurs->addWidget(radioButton1);
     verticalLayoutBlurs->addWidget(radioButton2);
     verticalLayoutBlurs->addWidget(radioButton3);
     verticalLayoutBlurs->addWidget(radioButton4);
-    verticalLayoutMorpho->addWidget(radioButton5);
-    verticalLayoutMorpho->addWidget(radioButton6);
-    verticalLayoutMorpho->addWidget(radioButton7);
-    verticalLayoutMorpho->addWidget(radioButton8);
-    verticalLayoutMorpho->addWidget(radioButton9);
-    verticalLayoutMorpho->addWidget(radioButton10);
-    verticalLayoutMorpho->addWidget(radioButton11);
-    verticalLayoutMorpho->addWidget(radioButton12);
+    gridMorpho->addWidget(Slider_type_element , 0, 0);
+    gridMorpho->addWidget(this->Slider_element, 0, 1);
+    gridMorpho->addWidget(radioButton5        , 1, 0);
+    gridMorpho->addWidget(radioButton6        , 2, 0);
+    gridMorpho->addWidget(radioButton7        , 3, 0);
+    gridMorpho->addWidget(radioButton8        , 4, 0);
+    gridMorpho->addWidget(radioButton9        , 5, 0);
+    gridMorpho->addWidget(radioButton10       , 6, 0);
+    gridMorpho->addWidget(radioButton11       , 7, 0);
+    gridMorpho->addWidget(radioButton12       , 8, 0);
 
     // Grid layout
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(Slider_range_filter, 0, 0);
     grid->addWidget(this->Slider_value,  0, 1);
     grid->addWidget(groupBoxBlurs,       1, 0);
-    grid->addWidget(Slider_type_element, 2, 0);
-    grid->addWidget(this->Slider_element,2, 1);
     grid->addWidget(groupBoxMorpho,      3, 0);
 
     setLayout(grid);

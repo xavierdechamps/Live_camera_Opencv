@@ -404,9 +404,15 @@ void MainWindow::treat_Button_Record(bool state) {
         if (! this->video_out.isOpened() ) {// FPS : this->capture.get(cv::CAP_PROP_FPS)
 
             QString QfileNameLocal = QFileDialog::getSaveFileName(this,
-                                                                 tr("File name to save the video"),
+                                                                 tr("Filename for the video"),
                                                                  QString::fromStdString(this->main_directory),
                                                                  tr("Images (*.avi)") );
+            if (QfileNameLocal.isEmpty()) {// If one clicked the cancel button, the string is empty
+                this->recording = false;
+                this->actionRecord->setChecked(false) ;
+                return;
+            }
+            
             this->video_out_name = QfileNameLocal.toStdString();
 
             this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),

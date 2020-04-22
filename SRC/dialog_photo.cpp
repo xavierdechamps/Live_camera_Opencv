@@ -48,14 +48,14 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     this->RadioButtons->addButton(radioButton_6,6);
     
     // QLabel to show the value of the sigma s
-    this->Slider_sigmas_qlabel = new QLabel("NPR Sigma s: 200");
+    this->Slider_sigmas_qlabel = new QLabel("NPR Sigma s: 200", groupBoxNPR);
     this->Slider_sigmas_qlabel->setFixedWidth(this->Slider_sigmas_qlabel->sizeHint().width());
     this->Slider_sigmas_qlabel->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     this->Slider_sigmas_qlabel->setText("NPR Sigma s: 50");
     this->value_sigmas = 50;
 
     // Slider to adapt the sigma s
-    QSlider* Slider_sigmas_value = new QSlider( Qt::Horizontal );
+    QSlider* Slider_sigmas_value = new QSlider( Qt::Horizontal , groupBoxNPR);
     Slider_sigmas_value->setTickPosition(QSlider::TicksBothSides);
     Slider_sigmas_value->setTickInterval(20);
     Slider_sigmas_value->setSingleStep(1);
@@ -65,7 +65,7 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     connect(Slider_sigmas_value, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_sigmaS_value()) );
 
     // QLabel to show the value of the sigma r
-    this->Slider_sigmar_qlabel = new QLabel("NPR Sigma r: 1.00");
+    this->Slider_sigmar_qlabel = new QLabel("NPR Sigma r: 1.00" , groupBoxNPR);
     this->Slider_sigmar_qlabel->setFixedWidth(this->Slider_sigmar_qlabel->sizeHint().width());
     this->Slider_sigmar_qlabel->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
     this->Slider_sigmar_qlabel->setText("NPR Sigma r: 0.15");
@@ -74,7 +74,7 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     this->sigmar_step  = 0.01;
 
     // Slider to adapt the sigma r
-    QSlider* Slider_sigmar_value = new QSlider( Qt::Horizontal );
+    QSlider* Slider_sigmar_value = new QSlider( Qt::Horizontal , groupBoxNPR );
     Slider_sigmar_value->setTickPosition(QSlider::TicksBothSides);
     Slider_sigmar_value->setTickInterval(5);
     Slider_sigmar_value->setSingleStep(1);
@@ -93,23 +93,22 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     Slider_sigmas_value->setToolTip("The size of the neighborhood is directly proportional to the parameter sigma_s.");
     Slider_sigmar_value->setToolTip("Sigma r controls the how dissimilar colors within the neighborhood will be averaged. A larger sigma_r results in large regions of constant color.");
 
-    // Vertical layout for the buttons, associated to a group
-    QVBoxLayout *verticalLayoutNPR  = new QVBoxLayout(groupBoxNPR);
-
-    verticalLayoutNPR->addWidget(radioButton_3);
-    verticalLayoutNPR->addWidget(radioButton_4);
-    verticalLayoutNPR->addWidget(radioButton_5);
-    verticalLayoutNPR->addWidget(radioButton_6);
+    // Grid layout for the buttons, associated to a group
+    QGridLayout *gridNPR = new QGridLayout(groupBoxNPR);
+    gridNPR->addWidget(Slider_sigmas_value       , 0, 0);
+    gridNPR->addWidget(this->Slider_sigmas_qlabel, 0, 1);
+    gridNPR->addWidget(Slider_sigmar_value       , 1, 0);
+    gridNPR->addWidget(this->Slider_sigmar_qlabel, 1, 1);
+    gridNPR->addWidget(radioButton_3             , 2, 0);
+    gridNPR->addWidget(radioButton_4             , 3, 0);
+    gridNPR->addWidget(radioButton_5             , 4, 0);
+    gridNPR->addWidget(radioButton_6             , 5, 0);
     
     // Grid layout
     QGridLayout *grid = new QGridLayout(this);
     grid->addWidget(radioButton_1,                0,0);
     grid->addWidget(radioButton_2,                1,0);
     grid->addWidget(groupBoxNPR,                  2,0);
-    grid->addWidget(Slider_sigmas_value,          3,1);
-    grid->addWidget(this->Slider_sigmas_qlabel,   3,0);
-    grid->addWidget(Slider_sigmar_value,          4,1);
-    grid->addWidget(this->Slider_sigmar_qlabel,   4,0);
     
     setLayout(grid);
     setWindowTitle(tr("OpenCV Module Photo control window"));

@@ -23,40 +23,9 @@
 
 Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
 {
-    // QLabel to show the value of the global threshold
-    this->Slider_value = new QLabel("Threshold: 127");
-    this->Slider_value->setFixedWidth(this->Slider_value->sizeHint().width());
-    this->Slider_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    this->value_threshold = 127;
-
-    // QLabel to show the value of the block size for adaptive methods
-    this->BlockSize_value = new QLabel("Block size: 31");
-    this->BlockSize_value->setFixedWidth(this->Slider_value->sizeHint().width());
-    this->BlockSize_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-    this->BlockSize_value->setText("Block size: 3");
-    this->value_blocksize = 3;
-
-    // Slider to adapt the global threshold
-    QSlider* Slider_threshold_value = new QSlider( Qt::Horizontal );
-    Slider_threshold_value->setTickPosition(QSlider::TicksBothSides);
-    Slider_threshold_value->setTickInterval(20);
-    Slider_threshold_value->setSingleStep(1);
-    Slider_threshold_value->setRange(0,255);
-    Slider_threshold_value->setSliderPosition(this->value_threshold);
-    connect(Slider_threshold_value, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_Threshold_value(int)));
-    connect(Slider_threshold_value, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_value()) );
-
-    // Slider to adapt the block size for adaptive methods
-    QSlider* Slider_adapt_thresh_blockSize = new QSlider( Qt::Horizontal );
-    Slider_adapt_thresh_blockSize->setTickPosition(QSlider::TicksBothSides);
-    Slider_adapt_thresh_blockSize->setTickInterval(2);
-    Slider_adapt_thresh_blockSize->setSingleStep(2);
-    Slider_adapt_thresh_blockSize->setRange(1,15);
-    connect(Slider_adapt_thresh_blockSize, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_Adapt_Blocksize(int)));
-    connect(Slider_adapt_thresh_blockSize, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_Adapt_BlockSize()) );
-
-    // Group box for all the global threshold methods
+    // Group boxes for all the global/adaptive threshold methods
     QGroupBox *groupBox= new QGroupBox("Global threshold",this); //groupBox->setCheckable(true);
+    QGroupBox *groupBoxAdapt= new QGroupBox("Adaptive threshold",this); //groupBox->setCheckable(true);
 
     // Build the buttons
     QRadioButton *radioButton_1 = new QRadioButton("Binary",          groupBox); radioButton_1->setChecked(true);
@@ -66,27 +35,62 @@ Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
     QRadioButton *radioButton_5 = new QRadioButton("To zero inverted",groupBox);
     QRadioButton *radioButton_6 = new QRadioButton("Otsu threshold",  groupBox);
     QRadioButton *radioButton_7 = new QRadioButton("Triangle method threshold",groupBox);
+    
+    QCheckBox    *thresholdType = new QCheckBox(tr("Adaptive threshold type (normal/inverse)"), groupBoxAdapt); thresholdType->setChecked(true);
+    QRadioButton *radioButton_8 = new QRadioButton("Adaptive threshold (mean)",                 groupBoxAdapt);
+    QRadioButton *radioButton_9 = new QRadioButton("Adaptive threshold (Gaussian)",             groupBoxAdapt);
+    
+    // QLabel to show the value of the global threshold
+    this->Slider_value = new QLabel("Threshold: 127",groupBox);
+    this->Slider_value->setFixedWidth(this->Slider_value->sizeHint().width());
+    this->Slider_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    this->value_threshold = 127;
 
-    QVBoxLayout *verticalLayout = new QVBoxLayout(groupBox); // To have a vertical layout inside the groupbox
-    verticalLayout->addWidget(radioButton_1);
-    verticalLayout->addWidget(radioButton_2);
-    verticalLayout->addWidget(radioButton_3);
-    verticalLayout->addWidget(radioButton_4);
-    verticalLayout->addWidget(radioButton_5);
-    verticalLayout->addWidget(radioButton_6);
-    verticalLayout->addWidget(radioButton_7);
+    // QLabel to show the value of the block size for adaptive methods
+    this->BlockSize_value = new QLabel("Block size: 31",groupBoxAdapt);
+    this->BlockSize_value->setFixedWidth(this->Slider_value->sizeHint().width());
+    this->BlockSize_value->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+    this->BlockSize_value->setText("Block size: 3");
+    this->value_blocksize = 3;
 
-    // Group box for all the adaptive threshold methods
-    QGroupBox *groupBoxAdapt= new QGroupBox("Adaptive threshold",this); //groupBox->setCheckable(true);
+    // Slider to adapt the global threshold
+    QSlider* Slider_threshold_value = new QSlider( Qt::Horizontal, groupBox);
+    Slider_threshold_value->setTickPosition(QSlider::TicksBothSides);
+    Slider_threshold_value->setTickInterval(20);
+    Slider_threshold_value->setSingleStep(1);
+    Slider_threshold_value->setRange(0,255);
+    Slider_threshold_value->setSliderPosition(this->value_threshold);
+    connect(Slider_threshold_value, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_Threshold_value(int)));
+    connect(Slider_threshold_value, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_value()) );
 
-    QCheckBox *thresholdType = new QCheckBox(tr("Adaptive threshold type (normal/inverse)"), groupBoxAdapt); thresholdType->setChecked(true);
-    QRadioButton *radioButton_8 = new QRadioButton("Adaptive threshold (mean)",              groupBoxAdapt);
-    QRadioButton *radioButton_9 = new QRadioButton("Adaptive threshold (Gaussian)",          groupBoxAdapt);
+    // Slider to adapt the block size for adaptive methods
+    QSlider* Slider_adapt_thresh_blockSize = new QSlider( Qt::Horizontal,groupBoxAdapt);
+    Slider_adapt_thresh_blockSize->setTickPosition(QSlider::TicksBothSides);
+    Slider_adapt_thresh_blockSize->setTickInterval(2);
+    Slider_adapt_thresh_blockSize->setSingleStep(2);
+    Slider_adapt_thresh_blockSize->setRange(1,15);
+    connect(Slider_adapt_thresh_blockSize, SIGNAL(valueChanged(int)), this, SLOT(onClick_Slider_Adapt_Blocksize(int)));
+    connect(Slider_adapt_thresh_blockSize, SIGNAL(valueChanged(int)), this, SLOT(show_Slider_Adapt_BlockSize()) );
+    
+    // Grid layout inside the groupbox for global threshod
+    QGridLayout *gridGlobal = new QGridLayout(groupBox);
+    gridGlobal->addWidget(Slider_threshold_value , 0, 0);
+    gridGlobal->addWidget(this->Slider_value           , 0, 1);
+    gridGlobal->addWidget(radioButton_1                , 1, 0);
+    gridGlobal->addWidget(radioButton_2                , 2, 0);
+    gridGlobal->addWidget(radioButton_3                , 3, 0);
+    gridGlobal->addWidget(radioButton_4                , 4, 0);
+    gridGlobal->addWidget(radioButton_5                , 5, 0);
+    gridGlobal->addWidget(radioButton_6                , 6, 0);
+    gridGlobal->addWidget(radioButton_7                , 7, 0);
 
-    QVBoxLayout *verticalLayoutAdapt = new QVBoxLayout(groupBoxAdapt); // To have a vertical layout inside the groupBoxAdapt
-    verticalLayoutAdapt->addWidget(thresholdType);
-    verticalLayoutAdapt->addWidget(radioButton_8);
-    verticalLayoutAdapt->addWidget(radioButton_9);
+    // Grid layout inside the groupbox for adaptive threshod
+    QGridLayout *gridAdaptive = new QGridLayout(groupBoxAdapt);
+    gridAdaptive->addWidget(Slider_adapt_thresh_blockSize, 0, 0 );
+    gridAdaptive->addWidget(this->BlockSize_value        , 0, 1);
+    gridAdaptive->addWidget(thresholdType                , 1, 0);
+    gridAdaptive->addWidget(radioButton_8                , 2, 0);
+    gridAdaptive->addWidget(radioButton_9                , 3, 0);
 
     // Create connections between button click and function
     connect(radioButton_1, SIGNAL(clicked()), this, SLOT(onClick_Threshold_Method()) ) ;
@@ -124,12 +128,8 @@ Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
     this->RadioButtons->addButton(radioButton_9,9);
 
     QGridLayout *grid = new QGridLayout(this);
-    grid->addWidget(Slider_threshold_value,        0,0);
-    grid->addWidget(this->Slider_value,            0,1);
-    grid->addWidget(groupBox,                      1,0);
-    grid->addWidget(Slider_adapt_thresh_blockSize, 2,0);
-    grid->addWidget(this->BlockSize_value,         2,1);
-    grid->addWidget(groupBoxAdapt,                 3,0);
+    grid->addWidget(groupBox,      0,0);
+    grid->addWidget(groupBoxAdapt, 1,0);
 
     setLayout(grid);
     setWindowTitle(tr("Threshold control window"));

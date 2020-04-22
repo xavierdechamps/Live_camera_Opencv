@@ -31,7 +31,7 @@ private:
     QLabel* Slider_value, *Slider_element;
     int value_Blur_Range, value_Element;
     QButtonGroup* RadioButtons;
-
+    
 private slots:
     void onClick_Slider_Blur_Range(int value);
     void onClick_Slider_Element(int value);
@@ -44,9 +44,6 @@ signals:
     void Signal_blur_range_changed(int value);
     void Signal_blur_element_changed(int value); // element = [1] rectangle, [2] cross or [3] ellipse
     void Signal_blur_method_changed(int value);
-
-//protected:
-//    bool event(QEvent *event) override ;
 };
 
 #endif // DIALOG_BLUR_H

@@ -76,12 +76,13 @@ Dialog_Histogram::Dialog_Histogram(QWidget *parent):    QDialog(parent)
     Slider_clip_limit->setToolTip("CLAHE: set the size of the small blocks (tiles) in pixels");
     Slider_tiles->setToolTip("CLAHE: set the clip limit to avoid noise amplification inside each tile");
 
-    QVBoxLayout *verticalLayoutCLAHE  = new QVBoxLayout(groupBoxCLAHE);
-    verticalLayoutCLAHE->addWidget(radioButton2);
-    verticalLayoutCLAHE->addWidget(this->Slider_clip_limit_value);
-    verticalLayoutCLAHE->addWidget(Slider_clip_limit);
-    verticalLayoutCLAHE->addWidget(this->Slider_tiles_value);
-    verticalLayoutCLAHE->addWidget(Slider_tiles);
+    // Grid layout for the CLAHE
+    QGridLayout *gridCLAHE = new QGridLayout(groupBoxCLAHE);
+    gridCLAHE->addWidget(radioButton2                 , 0, 0);
+    gridCLAHE->addWidget(this->Slider_clip_limit_value, 1, 1);
+    gridCLAHE->addWidget(Slider_clip_limit            , 1, 0);
+    gridCLAHE->addWidget(this->Slider_tiles_value     , 2, 1);
+    gridCLAHE->addWidget(Slider_tiles                 , 2, 0);
 
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(radioButton1,                 0, 0);

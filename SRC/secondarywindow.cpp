@@ -12,7 +12,7 @@ SecondaryWindow::SecondaryWindow(QWidget *parent): QDialog(parent)
     // Initializations
     this->window_width = 200;
     this->window_height = 200;
-    this->Window_image = new QLabel("test",this);
+    this->Window_image = new QLabel("",this);
 
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(this->Window_image, 0, 0);

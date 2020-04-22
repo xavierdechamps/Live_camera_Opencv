@@ -79,13 +79,13 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     Slider_canny_threshold->setToolTip("Canny edge detector: set the value for the lower threshold");
     Slider_canny_value->setToolTip("Canny edge detector: ratio between the upper / lower thresholds. Optimal value between 2 and 3.");
 
-    // Vertical layout for the buttons, associated to a group
-    QVBoxLayout *verticalLayoutCanny  = new QVBoxLayout(groupBoxCanny);
-    verticalLayoutCanny->addWidget(radioButton3);
-    verticalLayoutCanny->addWidget(this->Slider_canny_lowthreshold_value);
-    verticalLayoutCanny->addWidget(Slider_canny_threshold);
-    verticalLayoutCanny->addWidget(this->Slider_canny_ratio_value);
-    verticalLayoutCanny->addWidget(Slider_canny_value);
+    // Grid layout for the buttons, associated to a group
+    QGridLayout *gridCanny = new QGridLayout(groupBoxCanny);
+    gridCanny->addWidget(radioButton3                         , 0, 0);
+    gridCanny->addWidget(this->Slider_canny_lowthreshold_value, 1, 1);
+    gridCanny->addWidget(Slider_canny_threshold               , 1, 0);
+    gridCanny->addWidget(this->Slider_canny_ratio_value       , 2, 1);
+    gridCanny->addWidget(Slider_canny_value                   , 2, 0);
 
     QGridLayout *grid = new QGridLayout;
     grid->addWidget(radioButton1,          0, 0);
