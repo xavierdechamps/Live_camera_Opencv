@@ -10,6 +10,7 @@
 #include "opencv2/photo.hpp"
 #ifdef withobjdetect
 #include "opencv2/objdetect/objdetect.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #endif
 #ifdef withstitching
 #include "opencv2/stitching.hpp"
@@ -30,6 +31,7 @@ public:
     void set_image_content(Mat &content);
 #ifdef withobjdetect
     bool set_Face_Cascade_Name(String &new_name);
+    bool set_background_image(String &filename);
 #endif
 
     void set_size_blur(int);
@@ -85,6 +87,7 @@ public:
     void toggleEdge();
 #ifdef withobjdetect
     void toggleFace_Recon();
+    bool getFace_Status();
 #endif
     void toggleHistoEq();
     void toggleObjectDetection();
@@ -95,7 +98,7 @@ public:
     void togglePhoto();
 
 private:
-    Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion ;
+    Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion, background ;
     int blur_range,blur_method,morpho_element;
     int edge_method;
     int canny_threshold;

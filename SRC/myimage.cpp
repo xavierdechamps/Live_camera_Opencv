@@ -92,6 +92,11 @@ void MyImage::toggleTransformation() {
 void MyImage::toggleFace_Recon() {
     this->face_recon = ! (this->face_recon);
 }
+
+bool MyImage::getFace_Status(){
+    return this->face_recon;
+}
+
 #endif
 
 void MyImage::toggleHistoEq() {
@@ -129,13 +134,16 @@ void MyImage::set_image_content(Mat &content) {
     this->image = content;
 
 #ifdef withobjdetect
-    if (this->face_recon) { // Look for faces before any operation
+    if (this->face_recon) {
+        // Look for faces before any operation
         detect_faces() ;
 
         // this->mask contains the region of interest
-        this->image.copyTo( this->smoothed , this->mask ); // copy the region of interest to this->smoothed
+/*        this->image.copyTo( this->smoothed , this->mask ); // copy the region of interest to this->smoothed
         smoothImage(this->smoothed, 31, 1);                // smooth this region
         this->smoothed.copyTo(this->image , this->mask);   // replace the region in the original image by the smoothed one
+*/        
+        this->background.copyTo(this->image, this->mask);
     }
 #endif
 
@@ -466,6 +474,16 @@ bool MyImage::set_Face_Cascade_Name(String &new_name) {
     }
     return true;
 }
+
+bool MyImage::set_background_image(String &filename){
+    this->background = imread(filename);
+    if (!this->background.data) {
+        return false;
+    }
+    resize(this->background, this->background, this->image.size(), 0, 0, cv::INTER_CUBIC);
+    return true;
+}
+
 #endif
 
 void MyImage::toBlackandWhite() {

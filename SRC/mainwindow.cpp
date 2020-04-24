@@ -15,21 +15,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
 
 #ifdef withobjdetect
-    String tmp = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml";
-    bool testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
+    this->file_cascade = this->main_directory + "Libraries/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml";
+    bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
     while (!testCascade){
         QString QfileNameLocal = QFileDialog::getOpenFileName(this,
                                                          tr("Select the face cascade file haarcascade_frontalface_default.xml"),
                                                          QString::fromStdString(this->main_directory),
                                                          tr("Images (*.xml)") );
         if ( ! QfileNameLocal.isEmpty() ) {
-            tmp = QfileNameLocal.toStdString() ;
-            testCascade = this->myFrame->set_Face_Cascade_Name(tmp);
+            this->file_cascade = QfileNameLocal.toStdString() ;
+            testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
         }
     }
 #endif
 
-    this->file_name_save = this->main_directory + "Video-OpenCV-QMake/webcam.jpg";
+    this->file_name_save = this->main_directory + "webcam.jpg";
     this->capture.open(0);
 
     // QLabel that will actually show the video, conversion from QImage with QPixmap::fromImage
@@ -337,6 +337,22 @@ void MainWindow::treat_Button_Edge(bool state) {
 
 #ifdef withobjdetect
 void MainWindow::treat_Button_Face_Recon() {
+    
+    if (!this->myFrame->getFace_Status()) {
+        this->file_background = this->main_directory + "cartoon_background.jpg";
+        bool test = this->myFrame->set_background_image(this->file_background);
+        while (!test){
+            QString QfileNameLocal = QFileDialog::getOpenFileName(this,
+                                                             tr("Select a background image"),
+                                                             QString::fromStdString(this->main_directory),
+                                                             tr("Images (*.bmp *.png *.jpg *.jpeg *.jpe *.jp2 *.webp *.pbm *.pgm *.ppm *.pnm *.pfm *.src *.tiff *.tif *.exr *.hdr *.pic)") );
+            if ( ! QfileNameLocal.isEmpty() ) {
+                this->file_background = QfileNameLocal.toStdString() ;
+                test = this->myFrame->set_background_image(this->file_background);
+            }
+        }
+    }
+    
     this->myFrame->toggleFace_Recon();
 }
 #endif

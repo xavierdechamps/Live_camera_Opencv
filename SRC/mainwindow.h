@@ -62,7 +62,7 @@ private:
     SecondaryWindow* fourthWindow;
     SecondaryWindow* fifthWindow;
 
-    String file_name_save, main_directory;
+    String file_name_save, main_directory, file_background, file_cascade;
 
     QAction *actionColour_BW;
     QAction *actionInverse;
