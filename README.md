@@ -26,6 +26,7 @@ The implemented image manipulations are:
   *  Contrast Preserving Decolorization
   *   Denoizing (Non-Local Means)
   *   Non-Photorealistic Rendering (Edge preserving, Detail enhancing, Pencil sketch, Stylization)
+  *   White balancing (from module xphoto)
 
 # Requirements
 This code requires an installed version of OpenCV. The program is linked against the following libraries of OpenCV:
@@ -41,6 +42,7 @@ This code requires an installed version of OpenCV. The program is linked against
 The code may also be compiled against two optional libraries:
 * libopencv_objdetect
 * libopencv_stitching
+* libopencv_xphoto
 
 The first one enables face detection and the second one creates a panorama from a series of picked up frames. If you don't have these libraries inside your OpenCV installation directory, just comment the top lines in the file [Video.pro](SRC/Video.pro). If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as opencv-4.1.0/data/haarcascades/haarcascade_frontalface_default.xml in the file [mainwindow.cpp](SRC/mainwindow.cpp). This path must be adapted according to your installation.
 

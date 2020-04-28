@@ -15,6 +15,9 @@
 #ifdef withstitching
 #include "opencv2/stitching.hpp"
 #endif
+#ifdef withxphoto
+#include "opencv2/xphoto/white_balance.hpp"
+#endif
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video.hpp"
 

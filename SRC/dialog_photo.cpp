@@ -11,6 +11,7 @@
  *          2) Detail enhancing
  *          3) Pencil sketch
  *          4) Stylization
+ *      * Auto white balancing from module Xphoto
  *  Two sliders allow the adjustement of the parameters sigma_s and sigma_r
  *  for the non-photorealistic rendering
 */
@@ -29,6 +30,9 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     QRadioButton *radioButton_4 = new QRadioButton("Detail enhancing",groupBoxNPR); 
     QRadioButton *radioButton_5 = new QRadioButton("Pencil sketch",   groupBoxNPR); 
     QRadioButton *radioButton_6 = new QRadioButton("Stylization",     groupBoxNPR); 
+#ifdef withxphoto
+    QRadioButton *radioButton_7 = new QRadioButton("White balancing", this); 
+#endif
     
     // Create connections between button click and function
     connect(radioButton_1, SIGNAL(clicked()), this, SLOT(onClick_photo_Method()) ) ;
@@ -37,7 +41,10 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     connect(radioButton_4, SIGNAL(clicked()), this, SLOT(onClick_photo_Method()) ) ;
     connect(radioButton_5, SIGNAL(clicked()), this, SLOT(onClick_photo_Method()) ) ;
     connect(radioButton_6, SIGNAL(clicked()), this, SLOT(onClick_photo_Method()) ) ;
-
+#ifdef withxphoto
+    connect(radioButton_7, SIGNAL(clicked()), this, SLOT(onClick_photo_Method()) ) ;
+#endif
+    
     // Radio buttons (only one button is active at each moment)
     this->RadioButtons = new QButtonGroup(this);
     this->RadioButtons->addButton(radioButton_1,1);
@@ -46,6 +53,9 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     this->RadioButtons->addButton(radioButton_4,4);
     this->RadioButtons->addButton(radioButton_5,5);
     this->RadioButtons->addButton(radioButton_6,6);
+#ifdef withxphoto
+    this->RadioButtons->addButton(radioButton_7,7);
+#endif
     
     // QLabel to show the value of the sigma s
     this->Slider_sigmas_qlabel = new QLabel("NPR Sigma s: 200", groupBoxNPR);
@@ -92,7 +102,10 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     radioButton_6->setToolTip("Stylization aims to produce digital imagery with a wide variety of effects not focused on photorealism.");
     Slider_sigmas_value->setToolTip("The size of the neighborhood is directly proportional to the parameter sigma_s.");
     Slider_sigmar_value->setToolTip("Sigma r controls the how dissimilar colors within the neighborhood will be averaged. A larger sigma_r results in large regions of constant color.");
-
+#ifdef withxphoto
+    radioButton_7->setToolTip("Auto white balancing from module xphoto");
+#endif
+    
     // Grid layout for the buttons, associated to a group
     QGridLayout *gridNPR = new QGridLayout(groupBoxNPR);
     gridNPR->addWidget(Slider_sigmas_value       , 0, 0);
@@ -109,6 +122,9 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     grid->addWidget(radioButton_1,                0,0);
     grid->addWidget(radioButton_2,                1,0);
     grid->addWidget(groupBoxNPR,                  2,0);
+#ifdef withxphoto
+    grid->addWidget(radioButton_7,                3,0);
+#endif
     
     setLayout(grid);
     setWindowTitle(tr("OpenCV Module Photo control window"));

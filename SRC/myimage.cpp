@@ -388,7 +388,7 @@ Mat& MyImage::get_object_detected() {
             break;
         }
         default :
-            cerr << "MyImage::get_object_detected(): Unknown kind of object detection\n" ;
+            cerr << "MyImage::get_object_detected(): Unknown kind of object detection "<<this->object_detection_method<<endl ;
             break;
     }
     return this->objects;
@@ -456,7 +456,7 @@ Mat& MyImage::get_motion_detected() {
             break;
         }
         default: {
-            cerr << "MyImage::get_motion_detected(): Unknown kind of motion detection\n" ;
+            cerr << "MyImage::get_motion_detected(): Unknown kind of motion detection "<<this->motion_detection_method<<endl ;
             break;
         }
     }
@@ -544,7 +544,7 @@ void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
             break;
         }
         default :
-            cerr << "MyImage::smoothImage(): Unknown kind of blur\n" ;
+            cerr << "MyImage::smoothImage(): Unknown kind of blur "<<method<<endl ;
             break;
     }
 }
@@ -586,7 +586,7 @@ void MyImage::detectEdges() {
             break;
             }
         default :
-            cerr << "MyImage::detectEdges(): Unknown kind of edge detection\n" ;
+            cerr << "MyImage::detectEdges(): Unknown kind of edge detection "<<this->edge_method<<endl ;
             break;
         }
 }
@@ -661,7 +661,7 @@ double MyImage::thresholdImage() {
         break;
     }
     default:
-        cerr << "MyImage::thresholdImage(): Unknown kind of threshold\n" ;
+        cerr << "MyImage::thresholdImage(): Unknown kind of threshold "<<this->threshold_method<<endl ;
         break;
     }
     return value;
@@ -678,7 +678,7 @@ void MyImage::transformImage() {
         break;
     }
     default:
-        cerr << "MyImage::transformImage(): Unknown kind of transformation\n" ;
+        cerr << "MyImage::transformImage(): Unknown kind of transformation "<<this->transformation_method<<endl ;
         break;
     }
 
@@ -741,8 +741,16 @@ void MyImage::modulephoto(){
             stylization(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
             break;
         }
+#ifdef withxphoto
+        case 7: { // xphoto white balance
+            Ptr<xphoto::WhiteBalancer> wb = xphoto::createSimpleWB(); // significant modification
+            // Ptr<xphoto::WhiteBalancer> wb = xphoto::createGrayworldWB(); // not wonderful with my camera
+            wb->balanceWhite(this->image, this->image);
+            break;
+        }
+#endif
         default:{
-            cerr << "MyImage::modulephoto(): Unknown type of photo operation\n";
+            cerr << "MyImage::modulephoto(): Unknown type of photo operation "<<this->photo_method<<endl;
             break;
         }
     }

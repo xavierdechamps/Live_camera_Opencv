@@ -1,12 +1,17 @@
+# Path to global OpenCV installation directory
+MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
 # If you don't have the OpenCV object detect library, comment the following line
 CONFIG += objdetect
+# If you don't have the OpenCV xphoto library, comment the following line
+CONFIG += xphoto
 #
 ############# DO NOT MODIFY BELOW THIS LINE #############
 #
 stitching: DEFINES+=withstitching
 objdetect: DEFINES+=withobjdetect
+xphoto: DEFINES+=withxphoto
 
 QT       = core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -45,13 +50,13 @@ stitching: HEADERS += dialog_panorama.h
 QMAKE_CXXFLAGS += -std=c++11
 
 # Path to OpenCV include directory
-INCLUDEPATH += /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/include/opencv4
+INCLUDEPATH += $${MY_OPENCV_DIR}/include/opencv4
 
 # Linker flags
-QMAKE_LFLAGS += -Wl,-rpath,/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
+QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
 
 # Required OpenCV libraries
-LIBS = -L/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install/lib
+LIBS = -L$${MY_OPENCV_DIR}/lib
 LIBS += -lopencv_imgcodecs \
         -lopencv_core \
         -lopencv_highgui \
@@ -61,3 +66,4 @@ LIBS += -lopencv_imgcodecs \
         -lopencv_photo
 stitching: LIBS += -lopencv_stitching
 objdetect: LIBS += -lopencv_objdetect
+xphoto: LIBS += -lopencv_xphoto
