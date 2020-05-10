@@ -52,6 +52,10 @@ MyImage::MyImage()
 #ifdef withstitching
     this->panorama_activated = false;
 #endif
+    
+#ifdef withzbar
+    this->qrcodeactivated = false;
+#endif
 
     this->motion_detected              = false;
     this->motion_detection_method      = 1;
@@ -123,6 +127,12 @@ void MyImage::togglePhoto() {
     this->photoed = ! (this->photoed);
 }
 
+#ifdef withzbar
+void MyImage::toggleQRcode(){
+    this->qrcodeactivated = ! (this->qrcodeactivated);
+}
+#endif
+
 // Set of functions called by external world to set parameters for the image treatments
 void MyImage::set_image_content(Mat &content) {
     // Receives a new image from the outside world and applies the image treatments
@@ -170,6 +180,11 @@ void MyImage::set_image_content(Mat &content) {
 
     if (this->transformed)
         transformImage();
+    
+#ifdef withzbar
+    if (this->qrcodeactivated)
+        getQRcode();
+#endif
 }
 
 void MyImage::set_size_blur(int value) {
@@ -826,4 +841,73 @@ void MyImage::panorama_reset() {
 int MyImage::panorama_get_size(){
     return this->Panorama_vector.size();
 }
+#endif
+
+#ifdef withzbar
+void MyImage::getQRcode(){
+    // Create zbar scanner
+    zbar::ImageScanner scanner;
+    // Configure scanner
+    scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
+    
+    // Convert image to grayscale
+    Mat imGray;
+    cv::cvtColor(this->image, imGray,cv::COLOR_BGR2GRAY); 
+    
+    // Wrap image data in a zbar image
+    zbar::Image image(this->image.cols, this->image.rows, "Y800", (uchar *)imGray.data, this->image.cols * this->image.rows);
+    
+    // Scan the image for barcodes and QRCodes
+    int nscan = scanner.scan(image);
+    
+    int current_code = 0;
+    for(zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
+        // Print type and data
+        cout << "Type : " << symbol->get_type_name() << endl;
+        cout << "Data : " << symbol->get_data() << endl << endl;
+        
+        // Obtain location
+        vector <Point> location;
+        for(int i = 0; i< symbol->get_location_size(); i++) {
+            location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+        }
+        
+        vector<Point> hull;
+        // If the points do not form a quad, find convex hull
+        if(location.size() > 4)
+            cv::convexHull(location, hull);
+        else
+            hull = location;
+        
+        // Plot the convex hull
+        int n = hull.size();
+        for(int j = 0; j < n; j++) {
+            cv::line(this->image, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
+        }
+        
+        // Print the text
+        cv::putText(this->image, //target image
+                    symbol->get_type_name(), //text
+                    cv::Point(10, current_code * 50 + 40 ), //top-left position
+                    cv::FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    CV_RGB(118, 185, 0), //font color
+                    2);
+        
+        current_code++;
+        cv::putText(this->image, //target image
+                    symbol->get_data(), //text
+                    cv::Point(10, current_code * 50 + 40 ), //top-left position
+                    cv::FONT_HERSHEY_DUPLEX,
+                    1.0,
+                    CV_RGB(118, 185, 0), //font color
+                    2);
+        
+        current_code++;
+        
+    } 
+    
+    
+}
+
 #endif

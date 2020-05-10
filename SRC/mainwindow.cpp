@@ -262,6 +262,18 @@ void MainWindow::createActions() {
     this->actionRecord->setToolTip(tr("Record the video"));
     this->actionRecord->setCheckable(true);
     connect(this->actionRecord, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Record(bool)));
+    
+    this->actionSaveImage = new QAction(tr("&Save"), this );
+    this->actionSaveImage->setToolTip(tr("Save the current image"));
+//    this->actionSaveImage->setCheckable(true);
+    connect(this->actionSaveImage, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Save(bool)) );
+    
+#ifdef withzbar
+    this->actionQRcode = new QAction(tr("&QR code"), this);
+    this->actionQRcode->setToolTip(tr("Detect QR codes in the video"));
+    this->actionQRcode->setCheckable(true);
+    connect(this->actionQRcode, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_QRcode(bool)) );
+#endif
 }
 
 void MainWindow::createToolBars() {
@@ -292,6 +304,11 @@ void MainWindow::createToolBars() {
     this->editToolBar->addAction(this->actionPhoto);
     this->editToolBar->addSeparator();
     this->editToolBar->addAction(this->actionRecord);
+    this->editToolBar->addAction(this->actionSaveImage);
+#ifdef withzbar
+    this->editToolBar->addAction(this->actionQRcode);
+#endif
+    
     addToolBar(Qt::RightToolBarArea, this->editToolBar);
 }
 
@@ -432,7 +449,7 @@ void MainWindow::treat_Button_Record(bool state) {
             this->video_out_name = QfileNameLocal.toStdString();
 
             this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
-                                 10.,
+                                 4.,
                                  cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
                                           this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
                                  true);
@@ -445,6 +462,34 @@ void MainWindow::treat_Button_Record(bool state) {
         this->record_time_blink = 0;
     }
 }
+
+void MainWindow::treat_Button_Save(bool state) {
+    QString QfileNameLocal = QFileDialog::getSaveFileName(this,
+                                                         tr("File name to save the image"),
+                                                         QString::fromStdString(this->main_directory),
+                                                         tr("Images (*.png *.jpg)") );
+    if (QfileNameLocal.isEmpty()) // If one clicked the cancel button, the string is empty
+        return;
+
+    this->file_name_save = QfileNameLocal.toStdString();
+
+    vector<int> compression_params;
+    compression_params.push_back(IMWRITE_JPEG_QUALITY);
+    compression_params.push_back(100);
+    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(4);
+
+    Mat imageMat = myFrame->get_image_content();
+    Mat imageOutput;
+    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
+    imwrite(this->file_name_save , imageOutput , compression_params );
+}
+
+#ifdef withzbar
+void MainWindow::treat_Button_QRcode(bool state) {
+    this->myFrame->toggleQRcode();
+}
+#endif
 
 void MainWindow::treat_Slider_Blur_Range(int value) {
     this->myFrame->set_size_blur(value);

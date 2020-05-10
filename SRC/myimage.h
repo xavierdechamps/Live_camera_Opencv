@@ -21,6 +21,10 @@
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video.hpp"
 
+#ifdef withzbar
+#include "zbar.h"
+#endif
+
 #include <iostream>
 
 using namespace cv;
@@ -99,6 +103,9 @@ public:
 #endif
     void toggleMotionDetection();
     void togglePhoto();
+#ifdef withzbar
+    void toggleQRcode();
+#endif
 
 private:
     Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion, background ;
@@ -126,9 +133,13 @@ private:
     vector<Mat> Panorama_vector;
     Ptr<Stitcher> Panorama_stitcher;
 #endif
+#ifdef withzbar
+    bool qrcodeactivated;
+#endif
 
     Ptr<BackgroundSubtractor> pMOG2;
 
+    // Methods
     void toBlackandWhite();
     void inverseImage();
     void smoothImage(Mat &imag, int blur_range, int method);
@@ -140,6 +151,9 @@ private:
     void transformImage();
     void equalizeHistogram();
     void modulephoto();
+#ifdef withzbar
+    void getQRcode();
+#endif
 };
 
 #endif // MYIMAGE_H

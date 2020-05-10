@@ -1,17 +1,21 @@
 # Path to global OpenCV installation directory
-MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.1.2/install
+MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
 # If you don't have the OpenCV object detect library, comment the following line
 CONFIG += objdetect
 # If you don't have the OpenCV xphoto library, comment the following line
 CONFIG += xphoto
+# If you don't have the ZBar library, comment the following line
+CONFIG += zbar
+MY_ZBAR_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/zbar-0.10/install
 #
 ############# DO NOT MODIFY BELOW THIS LINE #############
 #
 stitching: DEFINES+=withstitching
 objdetect: DEFINES+=withobjdetect
 xphoto: DEFINES+=withxphoto
+zbar: DEFINES+=withzbar
 
 QT       = core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -51,9 +55,13 @@ QMAKE_CXXFLAGS += -std=c++11
 
 # Path to OpenCV include directory
 INCLUDEPATH += $${MY_OPENCV_DIR}/include/opencv4
+# Include the header from ZBar
+zbar: INCLUDEPATH += $${MY_ZBAR_DIR}/include
 
 # Linker flags
 QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
+# Include libraries from ZBar
+zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_ZBAR_DIR}/lib
 
 # Required OpenCV libraries
 LIBS = -L$${MY_OPENCV_DIR}/lib
@@ -67,3 +75,4 @@ LIBS += -lopencv_imgcodecs \
 stitching: LIBS += -lopencv_stitching
 objdetect: LIBS += -lopencv_objdetect
 xphoto: LIBS += -lopencv_xphoto
+zbar: LIBS += -L$${MY_ZBAR_DIR}/lib -lzbar

@@ -27,6 +27,7 @@ The implemented image manipulations are:
   *   Denoizing (Non-Local Means)
   *   Non-Photorealistic Rendering (Edge preserving, Detail enhancing, Pencil sketch, Stylization)
   *   White balancing (from module xphoto)
+- Barcode and QR code decoder (through the external library [ZBar](https://github.com/ZBar/ZBar))
 
 # Requirements
 This code requires an installed version of OpenCV. The program is linked against the following libraries of OpenCV:
@@ -39,12 +40,13 @@ This code requires an installed version of OpenCV. The program is linked against
 * libopencv_video
 * libopencv_photo
 
-The code may also be compiled against two optional libraries:
-* libopencv_objdetect
-* libopencv_stitching
-* libopencv_xphoto
+The code can also be compiled against four optional libraries:
+* libopencv_objdetect (enables face detection)
+* libopencv_stitching (enables the panorama creation)
+* libopencv_xphoto (enables features from xphoto)
+* libzbar (enables decryption of barcodes and QR codes)
 
-The first one enables face detection and the second one creates a panorama from a series of picked up frames. If you don't have these libraries inside your OpenCV installation directory, just comment the top lines in the file [Video.pro](SRC/Video.pro). If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as opencv-4.1.0/data/haarcascades/haarcascade_frontalface_default.xml in the file [mainwindow.cpp](SRC/mainwindow.cpp). This path must be adapted according to your installation.
+If you don't have these libraries inside your OpenCV installation directory, just comment the top lines in the file [Video.pro](SRC/Video.pro). If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as opencv-4.3.0/data/haarcascades/haarcascade_frontalface_default.xml in the file [mainwindow.cpp](SRC/mainwindow.cpp). This path must be adapted according to your installation. The ZBar library must also be compiled in order to be able to decode the barcodes / QR codes. For this library to function, it is not mandatory to compile ZBar with gtk, python or qt4 options enabled (only the headers and the library are required, not the executable).
 
 Your C++ compiler must accept c++11 directives.
 
@@ -64,3 +66,6 @@ Not tested. No idea.
 
 ## Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering
 ![Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering](https://github.com/xavierdechamps/Live_camera_Opencv/blob/master/Images/panorama_stylization3.jpg)
+
+## Decoding of a barcode with the library ZBar
+![Decoding of a barcode with the library ZBar](https://github.com/xavierdechamps/Live_camera_Opencv/blob/master/Images/QR_code.jpg)

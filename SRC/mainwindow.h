@@ -81,6 +81,10 @@ private:
     QAction *actionMotionDetection;
     QAction *actionPhoto;
     QAction *actionRecord;
+    QAction *actionSaveImage;
+#ifdef withzbar
+    QAction *actionQRcode;
+#endif@
     QToolBar *editToolBar;
 
     bool histogram_window_opened;
@@ -123,6 +127,10 @@ private slots:
     void treat_Button_Motion_Detection(bool);
     void treat_Button_Photo(bool);
     void treat_Button_Record(bool);
+    void treat_Button_Save(bool);
+#ifdef withzbar
+    void treat_Button_QRcode(bool);
+#endif
 
     void treat_Slider_Blur_Range(int);
     void treat_Blur_Method(int);
