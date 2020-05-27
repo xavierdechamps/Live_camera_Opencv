@@ -17,7 +17,7 @@ objdetect: DEFINES+=withobjdetect
 xphoto: DEFINES+=withxphoto
 zbar: DEFINES+=withzbar
 
-QT       = core gui
+QT       = core gui multimedia concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Video
@@ -34,7 +34,8 @@ SOURCES = main.cpp \
         dialog_object_detection.cpp \
         dialog_motion_detection.cpp \
         secondarywindow.cpp \
-        dialog_photo.cpp
+        dialog_photo.cpp \
+        capturethread.cpp
 stitching: SOURCES+=dialog_panorama.cpp
 
 HEADERS  += myimage.h \
@@ -47,7 +48,8 @@ HEADERS  += myimage.h \
             dialog_object_detection.h \
             dialog_motion_detection.h \
             secondarywindow.h \
-            dialog_photo.h
+            dialog_photo.h \
+            capturethread.h
 stitching: HEADERS += dialog_panorama.h
 
 # Compilator flags

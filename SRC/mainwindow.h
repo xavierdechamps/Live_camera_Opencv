@@ -10,8 +10,20 @@
 #include <QPainter>
 #include <QTimer>
 #include <QAction>
-#include <QToolBar>
+//#include <QToolBar>
 #include <QFileDialog>
+#ifdef withzbar
+#include <QDesktopServices> // to open URL links from QR codes
+#include <QUrl>             // to open URL links from QR codes
+#include <QMessageBox>
+#endif
+#include <QCameraInfo> // From Qt5
+#include <QMenuBar>
+#include <QGraphicsScene> // To show the content of the camera in the Qt window
+#include <QGraphicsView>  // To show the content of the camera in the Qt window
+#include <QGraphicsPixmapItem>
+#include <QStatusBar>
+#include <QMutex>
 
 #include "dialog_blur.h"
 #include "dialog_edge.h"
@@ -25,7 +37,9 @@
 #include "dialog_motion_detection.h"
 #include "dialog_photo.h"
 #include "secondarywindow.h"
+
 #include "myimage.h"
+#include "capturethread.h"
 
 #include "opencv2/core.hpp"
 #include "opencv2/videoio.hpp"
@@ -37,15 +51,31 @@ using namespace std;
 class MainWindow: public QMainWindow
 {
 public:
-    explicit MainWindow(QWidget * parent = 0);
+    explicit MainWindow(QWidget * parent = nullptr);
 
 private:
     Q_OBJECT
+    
+    // For capture thread
+    CaptureThread *capturer;
+    QMutex *data_lock;
+    
     MyImage* myFrame;
     QImage myQimage,mySecondQimage,myThirdImage,myFourthImage,myFifthImage;
     VideoCapture capture;
+
     QLabel *Window_image;
+    
     QTimer my_Timer;
+    QMenu *menu_File , *menu_Filters, *menu_Detection, *menu_Transformations, *menu_Operations;
+    
+    QGraphicsScene *imageScene;
+    QGraphicsView *imageView;
+    QGraphicsPixmapItem *currentImage;
+    
+    QStatusBar *mainStatusBar;
+    QLabel *mainStatusLabel;
+    
     Dialog_Blur* dialog_blur;
     Dialog_Edge* dialog_edge;
     Dialog_Threshold* dialog_threshold;
@@ -63,7 +93,25 @@ private:
     SecondaryWindow* fifthWindow;
 
     String file_name_save, main_directory, file_background, file_cascade;
+#ifdef withzbar
+    bool qrdecoder_activated;
+#endif
+    
+    //    QToolBar *editToolBar;
+    
+    bool histogram_window_opened;
+    bool object_detection_window_opened;
+#ifdef withstitching
+    bool panorama_window_opened;
+#endif
+    bool motion_detection_window_opened;
+    
+    VideoWriter video_out;
+    String video_out_name;
+    bool recording;
+    int record_time_blink;
 
+    // List of QActions
     QAction *actionColour_BW;
     QAction *actionInverse;
     QAction *actionBlur;
@@ -84,20 +132,7 @@ private:
     QAction *actionSaveImage;
 #ifdef withzbar
     QAction *actionQRcode;
-#endif@
-    QToolBar *editToolBar;
-
-    bool histogram_window_opened;
-    bool object_detection_window_opened;
-#ifdef withstitching
-    bool panorama_window_opened;
 #endif
-    bool motion_detection_window_opened;
-
-    VideoWriter video_out;
-    String video_out_name;
-    bool recording;
-    int record_time_blink;
 
     void update_frame();
     void update_histogram_window();
@@ -105,19 +140,23 @@ private:
     void update_motion_window();
     void createActions();
     void createToolBars();
+    void createWindows();
+#ifdef withzbar
+    void look_for_qrURL();
+#endif
 
 protected:
     void paintEvent(QPaintEvent* );
 
 private slots:
-    void treat_Button_BW() ;
-    void treat_Button_Inverse() ;
+    void treat_Button_BW(bool) ;
+    void treat_Button_Inverse(bool) ;
     void treat_Button_Blur(bool) ;
-    void treat_Button_Edge(bool state);
+    void treat_Button_Edge(bool);
     void treat_Button_Threshold(bool);
     void treat_Button_Transformation(bool);
 #ifdef withobjdetect
-    void treat_Button_Face_Recon() ;
+    void treat_Button_Face_Recon(bool) ;
 #endif
     void treat_Button_Histogram(bool);
     void treat_Button_Object_Detection(bool);
@@ -127,7 +166,7 @@ private slots:
     void treat_Button_Motion_Detection(bool);
     void treat_Button_Photo(bool);
     void treat_Button_Record(bool);
-    void treat_Button_Save(bool);
+    void treat_Button_Save();
 #ifdef withzbar
     void treat_Button_QRcode(bool);
 #endif

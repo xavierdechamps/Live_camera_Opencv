@@ -8,14 +8,56 @@
 
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), 
+                                          my_Timer(this),
+                                          menu_File(nullptr),
+                                          menu_Filters(nullptr),
+                                          currentImage(nullptr)
 {
+    // Get the number and name of the available cameras
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    
+    int camID = cameras.size()-1;
+    
+    if (cameras.size() > 1) {
+        QString info = QString("Available Cameras: \n");
+        foreach (const QCameraInfo &cameraInfo, cameras) {
+            info += " - " + cameraInfo.deviceName() + " : ";
+            info += cameraInfo.description() + " : " ;
+        }
+        QMessageBox::information(this, "Cameras", info); 
+    }
+    
+    // For capture thread
+    data_lock = new QMutex();
+    capturer = new CaptureThread(camID, data_lock);
+//    capturer->start();
+    
+    this->resize(800, 600); 
+    
+    // Setup menubar
+    this->menu_File      = menuBar()->addMenu(tr("&File"));
+    this->menu_Filters   = menuBar()->addMenu(tr("Filters"));
+    this->menu_Detection = menuBar()->addMenu(tr("&Detection"));
+    this->menu_Transformations = menuBar()->addMenu(tr("&Transformations"));
+    this->menu_Operations = menuBar()->addMenu(tr("&Operations"));
+    
+    // QLabel that will actually show the video, conversion from QImage with QPixmap::fromImage
+    this->Window_image = new QLabel(this);
+    this->setCentralWidget(this->Window_image);
+    
+    // Setup status bar
+    this->mainStatusBar = statusBar();
+    this->mainStatusLabel = new QLabel(this->mainStatusBar);
+    this->mainStatusBar->addPermanentWidget(this->mainStatusLabel);
+    this->mainStatusLabel->setText("Image Information will be here!");
+    
     // Initializations
     this->myFrame = new MyImage();
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
 
 #ifdef withobjdetect
-    this->file_cascade = this->main_directory + "Libraries/opencv-4.1.2/data/haarcascades/haarcascade_frontalface_default.xml";
+    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
     bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
     while (!testCascade){
         QString QfileNameLocal = QFileDialog::getOpenFileName(this,
@@ -26,19 +68,209 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
             this->file_cascade = QfileNameLocal.toStdString() ;
             testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
         }
+        else {
+            this->mainStatusLabel->setText("Could not load the face cascade file");
+        }
     }
 #endif
 
     this->file_name_save = this->main_directory + "webcam.jpg";
-    this->capture.open(0);
+    this->capture.open(camID);
 
-    // QLabel that will actually show the video, conversion from QImage with QPixmap::fromImage
-    this->Window_image = new QLabel(this);
-    this->setCentralWidget(this->Window_image);
-
+    // Main area for image display // pretty slow... -> much faster with the QLabel
+/*    this->imageScene = new QGraphicsScene(this);
+    this->imageView = new QGraphicsView(this->imageScene);
+    this->setCentralWidget(this->imageView);
+*/
+    
     createActions();
     createToolBars();
+    createWindows();
 
+    // Concerns the recording of the video
+    this->record_time_blink = 0;
+    this->recording = false;
+    this->video_out_name = this->main_directory + "Video-OpenCV-QMake/my_video.avi";
+
+//    this->setFixedSize(740, 480);   
+
+    // Update the image every 10ms
+    this->my_Timer.start(10);
+    connect(&this->my_Timer, SIGNAL(timeout()), this, SLOT(repaint()));
+}
+
+void MainWindow::update_frame() {
+    // Called by paint event every 10ms
+    // Gets the content of the camera and push the image to the opencv container
+    // Apply the transformations that are activated
+    // Record the video if the option is activated
+
+    Mat imageMat;
+
+    if(capture.isOpened()) {
+
+        capture >> imageMat;
+        while (imageMat.empty()) {
+            capture >> imageMat;
+            cout << "empty image\n";
+        }
+
+        // Send the frame to the class MyImage for post-processing
+        myFrame->set_image_content(imageMat);
+
+        // Get the image after post-processing
+        imageMat = myFrame->get_image_content();
+
+        // Record the video
+        if (this->recording) {
+            this->video_out << imageMat; // save the image before the colour conversion
+            if (this->record_time_blink <= 20) // Display a blinking red circle
+                cv::circle(imageMat,cv::Point(20,20),15, Scalar(0,0,255), -1, 8);
+            this->record_time_blink ++;
+            if (this->record_time_blink >= 40)
+                this->record_time_blink = 0;
+        }
+
+        // Convert the opencv image to a QImage that will be displayed on the main window
+        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
+        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
+    }
+    else
+    {
+        cout << "No capture" << endl;
+        imageMat = Mat::zeros(480, 640, CV_8UC1);
+        myFrame->set_image_content(imageMat);
+        imageMat = myFrame->get_image_content();
+
+        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
+        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
+    }
+}
+
+void MainWindow::createActions() {
+    // Create actions for the buttons in toolbar
+    // Show a tooltip when mouse hovers the buttons
+
+    this->actionColour_BW = new QAction(tr("&Colour/BW"), this);
+    this->actionColour_BW->setToolTip(tr("Switch between a coloured image and a black and white image"));
+    this->actionColour_BW->setCheckable(true);
+    connect(this->actionColour_BW, SIGNAL(triggered(bool)), this, SLOT(treat_Button_BW(bool)));
+
+    this->actionInverse = new QAction(tr("&Inverse"), this);
+    this->actionInverse->setToolTip(tr("Inverse the image"));
+    this->actionInverse->setCheckable(true);
+    connect(this->actionInverse, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Inverse(bool)));
+
+    this->actionBlur = new QAction(tr("&Blur"), this);
+    this->actionBlur->setToolTip(tr("Blur"));
+    this->actionBlur->setCheckable(true);
+    connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));
+
+    this->actionThreshold = new QAction(tr("&Threshold"), this);
+    this->actionThreshold->setToolTip(tr("Threshold the image"));
+    this->actionThreshold->setCheckable(true);
+    connect(this->actionThreshold, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Threshold(bool)));
+
+    this->actionTransformation = new QAction(tr("&Transformation"), this);
+    this->actionTransformation->setToolTip(tr("Apply geometric transformations to the image"));
+    this->actionTransformation->setCheckable(true);
+    connect(this->actionTransformation, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Transformation(bool)));
+
+    this->actionEdge = new QAction(tr("&Edge recognition"), this);
+    this->actionEdge->setToolTip(tr("Find the edges in the image"));
+    this->actionEdge->setCheckable(true);
+    connect(this->actionEdge, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Edge(bool)));
+
+#ifdef withobjdetect
+    this->actionFace = new QAction(tr("&Face recognition"), this);
+    this->actionFace->setToolTip(tr("Find human faces in the image"));
+    this->actionFace->setCheckable(true);
+    connect(this->actionFace, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Face_Recon(bool)));
+#endif
+
+    this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
+    this->actionHistoEq->setToolTip(tr("Equalize the histogram of the image"));
+    this->actionHistoEq->setCheckable(true);
+    connect(this->actionHistoEq, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Histogram(bool)));
+
+    this->actionObjectDetection = new QAction(tr("&Object detection"), this);
+    this->actionObjectDetection->setToolTip(tr("Detect patterns in the image"));
+    this->actionObjectDetection->setCheckable(true);
+    connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Object_Detection(bool)));
+
+#ifdef withstitching
+    this->actionPanorama = new QAction(tr("&Panorama"), this);
+    this->actionPanorama->setToolTip(tr("Create a panorama from chosen images"));
+    this->actionPanorama->setCheckable(true);
+    connect(this->actionPanorama, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Panorama(bool)));
+#endif
+
+    this->actionMotionDetection = new QAction(tr("&Motion Detection"), this);
+    this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
+    this->actionMotionDetection->setCheckable(true);
+    connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Motion_Detection(bool)));
+    
+    this->actionPhoto = new QAction(tr("Module Photo"), this);
+    this->actionPhoto->setToolTip(tr("OpenCV module Photo"));
+    this->actionPhoto->setCheckable(true);
+    connect(this->actionPhoto, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Photo(bool)));
+
+    this->actionRecord = new QAction(tr("&Record"), this);
+    this->actionRecord->setToolTip(tr("Record the video"));
+    this->actionRecord->setCheckable(true);
+    connect(this->actionRecord, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Record(bool)));
+    
+    this->actionSaveImage = new QAction(tr("&Save"), this );
+    this->actionSaveImage->setToolTip(tr("Save the current image"));
+//    this->actionSaveImage->setCheckable(true);
+    connect(this->actionSaveImage, SIGNAL(triggered()), this, SLOT(treat_Button_Save()) );
+    
+#ifdef withzbar
+    this->actionQRcode = new QAction(tr("&QR code"), this);
+    this->actionQRcode->setToolTip(tr("Detect QR codes in the video"));
+    this->actionQRcode->setCheckable(true);
+    connect(this->actionQRcode, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_QRcode(bool)) );
+#endif
+}
+
+void MainWindow::createToolBars() {
+    // Build the toolbar with all the buttons to open the secondary windows for image treatment
+//    this->editToolBar = new QToolBar(tr("&Edit"), this);
+//    this->editToolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
+//    this->editToolBar->setFixedWidth(100);
+    
+    this->menu_File->addAction(this->actionSaveImage);
+    this->menu_File->addAction(this->actionRecord);
+    
+    this->menu_Filters->addAction(this->actionColour_BW);
+    this->menu_Filters->addAction(this->actionInverse);
+    this->menu_Filters->addAction(this->actionBlur);
+    this->menu_Filters->addAction(this->actionThreshold);
+    
+    this->menu_Transformations->addAction(this->actionTransformation);
+    this->menu_Transformations->addAction(this->actionHistoEq);
+    
+    this->menu_Detection->addAction(this->actionEdge);
+    this->menu_Detection->addAction(this->actionMotionDetection);
+#ifdef withobjdetect
+    this->menu_Detection->addAction(this->actionFace);
+#endif
+    this->menu_Detection->addAction(this->actionObjectDetection);
+#ifdef withzbar
+    this->menu_Detection->addAction(this->actionQRcode);
+#endif
+    
+#ifdef withstitching
+    this->menu_Operations->addAction(this->actionPanorama);
+#endif
+    
+    this->menu_Operations->addAction(this->actionPhoto);
+
+//    this->editToolBar->addSeparator();
+//    addToolBar(Qt::RightToolBarArea, this->editToolBar);
+}
+
+void MainWindow::createWindows(){
     // Create a new object for blur operations and create adequate connections to functions, depending on the received signals
     this->dialog_blur = new Dialog_Blur(this);
     connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)), this, SLOT(treat_Slider_Blur_Range(int)) );
@@ -104,6 +336,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaR_changed(double)),this, SLOT(treat_Photo_SigmaR(double)) );
     this->dialog_motion_detection->hide();
     
+#ifdef withzbar
+    this->qrdecoder_activated = false;
+#endif
+    
     // Create a new object for a secondary window that will show the histogram
     this->secondWindow = new SecondaryWindow(this);
     this->secondWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
@@ -129,231 +365,74 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), my_Timer(this)
     this->fifthWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->fifthWindow->hide();
     this->motion_detection_window_opened = false;
-
-    // Concerns the recording of the video
-    this->record_time_blink = 0;
-    this->recording = false;
-    this->video_out_name = this->main_directory + "Video-OpenCV-QMake/my_video.avi";
-
-    this->setFixedSize(740, 480);
-
-    // Update the image every 10ms
-    this->my_Timer.start(10);
-    connect(&this->my_Timer, SIGNAL(timeout()), this, SLOT(repaint()));
 }
 
-void MainWindow::update_frame() {
-    // Called by paint event every 10ms
-    // Gets the content of the camera and push the image to the opencv container
-    // Apply the transformations that are activated
-    // Record the video if the option is activated
-
-    Mat imageMat;
-
-    if(capture.isOpened()) {
-
-        capture >> imageMat;
-        while (imageMat.empty()) {
-            capture >> imageMat;
-            cout << "empty image\n";
-        }
-
-        // Send the frame to the class MyImage for post-processing
-        myFrame->set_image_content(imageMat);
-
-        // Get the image after post-processing
-        imageMat = myFrame->get_image_content();
-
-        // Record the video
-        if (this->recording) {
-            this->video_out << imageMat; // save the image before the colour conversion
-            if (this->record_time_blink <= 20) // Display a blinking red circle
-                cv::circle(imageMat,cv::Point(20,20),15, Scalar(0,0,255), -1, 8);
-            this->record_time_blink ++;
-            if (this->record_time_blink >= 40)
-                this->record_time_blink = 0;
-        }
-
-        // Convert the opencv image to a QImage that will be displayed on the main window
-        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    }
-    else
-    {
-        cout << "No capture" << endl;
-        imageMat = Mat::zeros(480, 640, CV_8UC1);
-        myFrame->set_image_content(imageMat);
-        imageMat = myFrame->get_image_content();
-
-        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    }
-}
-
-void MainWindow::createActions() {
-    // Create actions for the buttons in toolbar
-    // Show a tooltip when mouse hovers the buttons
-
-    this->actionColour_BW = new QAction(tr("&Colour/BW"), this);
-    this->actionColour_BW->setToolTip(tr("Switch between a coloured image and a black and white image"));
-    this->actionColour_BW->setCheckable(true);
-    connect(this->actionColour_BW, SIGNAL(triggered()), this, SLOT(treat_Button_BW()));
-
-    this->actionInverse = new QAction(tr("&Inverse"), this);
-    this->actionInverse->setToolTip(tr("Inverse the image"));
-    this->actionInverse->setCheckable(true);
-    connect(this->actionInverse, SIGNAL(triggered()), this, SLOT(treat_Button_Inverse()));
-
-    this->actionBlur = new QAction(tr("&Blur"), this);
-    this->actionBlur->setToolTip(tr("Blur"));
-    this->actionBlur->setCheckable(true);
-    connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));
-
-    this->actionThreshold = new QAction(tr("&Threshold"), this);
-    this->actionThreshold->setToolTip(tr("Threshold the image"));
-    this->actionThreshold->setCheckable(true);
-    connect(this->actionThreshold, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Threshold(bool)));
-
-    this->actionTransformation = new QAction(tr("&Transformation"), this);
-    this->actionTransformation->setToolTip(tr("Apply geometric transformations to the image"));
-    this->actionTransformation->setCheckable(true);
-    connect(this->actionTransformation, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Transformation(bool)));
-
-    this->actionEdge = new QAction(tr("&Edge recognition"), this);
-    this->actionEdge->setToolTip(tr("Find the edges in the image"));
-    this->actionEdge->setCheckable(true);
-    connect(this->actionEdge, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Edge(bool)));
-
-#ifdef withobjdetect
-    this->actionFace = new QAction(tr("&Face recognition"), this);
-    this->actionFace->setToolTip(tr("Find human faces in the image"));
-    this->actionFace->setCheckable(true);
-    connect(this->actionFace, SIGNAL(triggered()), this, SLOT(treat_Button_Face_Recon()));
-#endif
-
-    this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
-    this->actionHistoEq->setToolTip(tr("Equalize the histogram of the image"));
-    this->actionHistoEq->setCheckable(true);
-    connect(this->actionHistoEq, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Histogram(bool)));
-
-    this->actionObjectDetection = new QAction(tr("&Object detection"), this);
-    this->actionObjectDetection->setToolTip(tr("Detect patterns in the image"));
-    this->actionObjectDetection->setCheckable(true);
-    connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Object_Detection(bool)));
-
-#ifdef withstitching
-    this->actionPanorama = new QAction(tr("&Panorama"), this);
-    this->actionPanorama->setToolTip(tr("Create a panorama from chosen images"));
-    this->actionPanorama->setCheckable(true);
-    connect(this->actionPanorama, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Panorama(bool)));
-#endif
-
-    this->actionMotionDetection = new QAction(tr("&Motion Detection"), this);
-    this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
-    this->actionMotionDetection->setCheckable(true);
-    connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Motion_Detection(bool)));
-    
-    this->actionPhoto = new QAction(tr("Module Photo"), this);
-    this->actionPhoto->setToolTip(tr("OpenCV module Photo"));
-    this->actionPhoto->setCheckable(true);
-    connect(this->actionPhoto, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Photo(bool)));
-
-    this->actionRecord = new QAction(tr("&Record"), this);
-    this->actionRecord->setToolTip(tr("Record the video"));
-    this->actionRecord->setCheckable(true);
-    connect(this->actionRecord, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Record(bool)));
-    
-    this->actionSaveImage = new QAction(tr("&Save"), this );
-    this->actionSaveImage->setToolTip(tr("Save the current image"));
-//    this->actionSaveImage->setCheckable(true);
-    connect(this->actionSaveImage, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Save(bool)) );
-    
-#ifdef withzbar
-    this->actionQRcode = new QAction(tr("&QR code"), this);
-    this->actionQRcode->setToolTip(tr("Detect QR codes in the video"));
-    this->actionQRcode->setCheckable(true);
-    connect(this->actionQRcode, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_QRcode(bool)) );
-#endif
-}
-
-void MainWindow::createToolBars() {
-    // Build the toolbar with all the buttons to open the secondary windows for image treatment
-
-    this->editToolBar = new QToolBar(tr("&Edit"), this);
-    this->editToolBar->setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
-    this->editToolBar->setFixedWidth(100);
-
-    this->editToolBar->addAction(this->actionColour_BW);
-    this->editToolBar->addAction(this->actionInverse);
-    this->editToolBar->addSeparator();
-    this->editToolBar->addAction(this->actionTransformation);
-    this->editToolBar->addAction(this->actionBlur);
-    this->editToolBar->addAction(this->actionThreshold);
-    this->editToolBar->addAction(this->actionHistoEq);
-    this->editToolBar->addSeparator();
-    this->editToolBar->addAction(this->actionEdge);
-#ifdef withobjdetect
-    this->editToolBar->addAction(this->actionFace);
-#endif
-    this->editToolBar->addAction(this->actionObjectDetection);
-    this->editToolBar->addSeparator();
-#ifdef withstitching
-    this->editToolBar->addAction(this->actionPanorama);
-#endif
-    this->editToolBar->addAction(this->actionMotionDetection);
-    this->editToolBar->addAction(this->actionPhoto);
-    this->editToolBar->addSeparator();
-    this->editToolBar->addAction(this->actionRecord);
-    this->editToolBar->addAction(this->actionSaveImage);
-#ifdef withzbar
-    this->editToolBar->addAction(this->actionQRcode);
-#endif
-    
-    addToolBar(Qt::RightToolBarArea, this->editToolBar);
-}
-
-void MainWindow::treat_Button_BW() {
+void MainWindow::treat_Button_BW(bool state) {
     this->myFrame->toggleBW() ;
+    if (state)
+        this->mainStatusLabel->setText("Black and White activated");
+    else
+        this->mainStatusLabel->setText("Black and White desactivated");
 }
 
-void MainWindow::treat_Button_Inverse() {
+void MainWindow::treat_Button_Inverse(bool state) {
     this->myFrame->toggleInverse() ;
+    if (state)
+        this->mainStatusLabel->setText("Inversed colours activated");
+    else
+        this->mainStatusLabel->setText("Inversed colours desactivated");
 }
 
 void MainWindow::treat_Button_Blur(bool state) {
     this->myFrame->toggleBlur();
-    if (state)
+    if (state){
         this->dialog_blur->show();
-    else
+        this->mainStatusLabel->setText("Blur filter activated");
+    }
+    else {
         this->dialog_blur->hide();
+        this->mainStatusLabel->setText("Blur filter desactivated");
+    }
 }
 
 void MainWindow::treat_Button_Threshold(bool state) {
     this->myFrame->toggleThreshold();
-    if (state)
+    if (state){
         this->dialog_threshold->show();
-    else
+        this->mainStatusLabel->setText("Threshold activated");
+    }
+    else {
         this->dialog_threshold->hide();
+        this->mainStatusLabel->setText("Threshold desactivated");
+    }
 }
 
 void MainWindow::treat_Button_Transformation(bool state) {
     this->myFrame->toggleTransformation();
-    if (state)
+    if (state) {
         this->dialog_transformation->show();
-    else
+        this->mainStatusLabel->setText("Transformations activated");
+    }
+    else {
         this->dialog_transformation->hide();
+        this->mainStatusLabel->setText("Transformations desactivated");
+    }
 }
 
 void MainWindow::treat_Button_Edge(bool state) {
     this->myFrame->toggleEdge();
-    if (state)
+    if (state) {
         this->dialog_edge->show();
-    else
+        this->mainStatusLabel->setText("Edge detection activated");
+    }
+    else {
         this->dialog_edge->hide();
+        this->mainStatusLabel->setText("Edge detection desactivated");
+    }
 }
 
 #ifdef withobjdetect
-void MainWindow::treat_Button_Face_Recon() {
+void MainWindow::treat_Button_Face_Recon(bool state) {
     
     if (!this->myFrame->getFace_Status()) {
         this->file_background = this->main_directory + "cartoon_background.jpg";
@@ -371,15 +450,23 @@ void MainWindow::treat_Button_Face_Recon() {
     }
     
     this->myFrame->toggleFace_Recon();
+    if (state)
+        this->mainStatusLabel->setText("Face detection activated");
+    else
+        this->mainStatusLabel->setText("Face detection desactivated");
 }
 #endif
 
 void MainWindow::treat_Button_Histogram(bool state) {
     this->myFrame->toggleHistoEq();
-    if (state)
+    if (state) {
         this->dialog_histogram->show();
-    else
+        this->mainStatusLabel->setText("Histogram equalization activated");
+    }
+    else {
         this->dialog_histogram->hide();
+        this->mainStatusLabel->setText("Histogram equalization desactivated");
+    }
 }
 
 void MainWindow::treat_Button_Object_Detection(bool state) {
@@ -388,10 +475,12 @@ void MainWindow::treat_Button_Object_Detection(bool state) {
     if (state) {
         this->dialog_object_detection->show();
         this->thirdWindow->show();
+        this->mainStatusLabel->setText("Point/line/circle detection activated");
     }
     else {
         this->dialog_object_detection->hide();
         this->thirdWindow->hide();
+        this->mainStatusLabel->setText("Point/line/circle detection desactivated");
     }
 }
 
@@ -402,10 +491,12 @@ void MainWindow::treat_Button_Panorama(bool state) {
     if (state) {
         this->dialog_panorama->show();
         this->fourthWindow->show();
+        this->mainStatusLabel->setText("Panorama creation activated");
     }
     else {
         this->dialog_panorama->hide();
         this->fourthWindow->hide();
+        this->mainStatusLabel->setText("Panorama creation desactivated");
     }
 }
 #endif
@@ -416,19 +507,25 @@ void MainWindow::treat_Button_Motion_Detection(bool state) {
     if (state) {
         this->dialog_motion_detection->show();
         this->fifthWindow->show();
+        this->mainStatusLabel->setText("Motion detection activated");
     }
     else {
         this->dialog_motion_detection->hide();
         this->fifthWindow->hide();
+        this->mainStatusLabel->setText("Motion detection desactivated");
     }
 }
 
 void MainWindow::treat_Button_Photo(bool state) {
     this->myFrame->togglePhoto();
-    if (state)
+    if (state) {
         this->dialog_photo->show();
-    else
+        this->mainStatusLabel->setText("Module Photo activated");
+    }
+    else {
         this->dialog_photo->hide();
+        this->mainStatusLabel->setText("Module Photo desactivated");
+    }
 }
 
 void MainWindow::treat_Button_Record(bool state) {
@@ -449,21 +546,23 @@ void MainWindow::treat_Button_Record(bool state) {
             this->video_out_name = QfileNameLocal.toStdString();
 
             this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
-                                 4.,
+                                 10.,
                                  cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
                                           this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
                                  true);
         }
+        this->mainStatusLabel->setText("Saving the video under "+QString::fromStdString(this->video_out_name));
     }
     else {
         if (this->video_out.isOpened() )
             this->video_out.release();
 
         this->record_time_blink = 0;
+        this->mainStatusLabel->setText("Saved the video under "+QString::fromStdString(this->video_out_name));
     }
 }
 
-void MainWindow::treat_Button_Save(bool state) {
+void MainWindow::treat_Button_Save() {
     QString QfileNameLocal = QFileDialog::getSaveFileName(this,
                                                          tr("File name to save the image"),
                                                          QString::fromStdString(this->main_directory),
@@ -483,11 +582,18 @@ void MainWindow::treat_Button_Save(bool state) {
     Mat imageOutput;
     cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
     imwrite(this->file_name_save , imageOutput , compression_params );
+    
+    this->mainStatusLabel->setText("Saved the image under "+QfileNameLocal);
 }
 
 #ifdef withzbar
 void MainWindow::treat_Button_QRcode(bool state) {
     this->myFrame->toggleQRcode();
+    this->qrdecoder_activated = state;
+    if (state)
+        this->mainStatusLabel->setText("QR code detection activated");
+    else
+        this->mainStatusLabel->setText("QR code detection desactivated");
 }
 #endif
 
@@ -682,6 +788,54 @@ void MainWindow::update_motion_window() {
     this->fifthWindow->set_image_content(this->myFifthImage, imageMat.cols, imageMat.rows );
 }
 
+#ifdef withzbar
+// Look for data from QRcode decoded by ZBar. URLs and ISBN codes can be opened in an external web browser
+void MainWindow::look_for_qrURL(){
+    if (this->qrdecoder_activated){
+        string qrdata,qrtype;
+        if ( this->myFrame->getQRcodedata(qrdata,qrtype) ) {
+            
+            if( (qrdata.find("http://" ) == 0) 
+                    || (qrdata.find("https://") == 0) 
+                    || (qrdata.find("www.") == 0)   ) {
+                // Standard URLs
+                this->qrdecoder_activated = false;
+                
+                QMessageBox msgBox;
+                msgBox.setText("Do you want to open the URL in an external window?");
+                msgBox.setInformativeText( QString::fromStdString ( qrdata ) );
+                msgBox.setStandardButtons( QMessageBox::Ok | QMessageBox::Cancel );
+                msgBox.setDefaultButton( QMessageBox::Ok );
+                int ret = msgBox.exec() ;
+                
+                if (ret == QMessageBox::Ok)
+                    QDesktopServices::openUrl( QUrl( QString::fromStdString ( qrdata ) ) ) ;
+            }
+            
+            else if ( qrtype.find("ISBN" ) == 0 ) {
+                this->qrdecoder_activated = false;
+                
+                QMessageBox msgBox;
+                msgBox.setText("Do you want to search for the ISBN in an external window?");
+                msgBox.setInformativeText( QString::fromStdString ( qrtype ) + 
+                                            " = " +
+                                           QString::fromStdString ( qrdata ) );
+                msgBox.setStandardButtons( QMessageBox::Ok | QMessageBox::Cancel );
+                msgBox.setDefaultButton( QMessageBox::Ok );
+                int ret = msgBox.exec() ;
+                
+                if (ret == QMessageBox::Ok) {
+                    // Search the web for the given ISBN
+                    QUrl myURL = "https://www.ecosia.org/search?q="+QString::fromStdString ( qrtype )+
+                            "+"+QString::fromStdString ( qrdata );
+                    QDesktopServices::openUrl( myURL ) ;
+                }
+            }
+        }
+    }
+}
+#endif
+
 void MainWindow::paintEvent(QPaintEvent* ) {
     update_frame();
 
@@ -695,5 +849,21 @@ void MainWindow::paintEvent(QPaintEvent* ) {
         update_motion_window();
 
     // Convert the QImage to a QLabel and set the content of the main window
+/*    this->imageScene->clear();
+    this->imageView->resetMatrix();
+    QPixmap image = QPixmap::fromImage(this->myQimage) ;
+    this->currentImage = imageScene->addPixmap(image);
+    imageScene->update();
+    imageView->setSceneRect(image.rect());
+*/    
+    //QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width())
+    //        .arg(image.height()).arg(QFile(path).size());
+    //    mainStatusLabel->setText(status);
+    //    currentImagePath = path;
+    
     this->Window_image->setPixmap(QPixmap::fromImage(this->myQimage));
+    
+#ifdef withzbar
+    look_for_qrURL();
+#endif
 }

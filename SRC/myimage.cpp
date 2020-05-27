@@ -130,6 +130,10 @@ void MyImage::togglePhoto() {
 #ifdef withzbar
 void MyImage::toggleQRcode(){
     this->qrcodeactivated = ! (this->qrcodeactivated);
+    if (!this->qrcodeactivated) {
+        this->qrcodedata.clear();
+        this->qrcodetype.clear();
+    }
 }
 #endif
 
@@ -861,53 +865,68 @@ void MyImage::getQRcode(){
     int nscan = scanner.scan(image);
     
     int current_code = 0;
-    for(zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
-        // Print type and data
-        cout << "Type : " << symbol->get_type_name() << endl;
-        cout << "Data : " << symbol->get_data() << endl << endl;
-        
-        // Obtain location
-        vector <Point> location;
-        for(int i = 0; i< symbol->get_location_size(); i++) {
-            location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+    if (nscan>0) {
+        for(zbar::Image::SymbolIterator symbol = image.symbol_begin(); symbol != image.symbol_end(); ++symbol) {
+            // Print type and data
+            
+            this->qrcodedata = symbol->get_data();
+            this->qrcodetype = symbol->get_type_name() ;
+            
+            cout << "Type : " << this->qrcodedata << endl;
+            cout << "Data : " << this->qrcodetype << endl << endl;
+            
+            // Obtain location
+            vector <Point> location;
+            for(int i = 0; i< symbol->get_location_size(); i++) {
+                location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+            }
+            
+            vector<Point> hull;
+            // If the points do not form a quad, find convex hull
+            if(location.size() > 4)
+                cv::convexHull(location, hull);
+            else
+                hull = location;
+            
+            // Plot the convex hull
+            int n = hull.size();
+            for(int j = 0; j < n; j++) {
+                cv::line(this->image, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
+            }
+            
+            // Print the text
+            cv::putText(this->image, //target image
+                        this->qrcodetype, //text
+                        cv::Point(10, current_code * 50 + 40 ), //top-left position
+                        cv::FONT_HERSHEY_DUPLEX,
+                        1.0,
+                        CV_RGB(118, 185, 0), //font color
+                        2);
+            
+            current_code++;
+            cv::putText(this->image, //target image
+                        this->qrcodedata, //text
+                        cv::Point(10, current_code * 50 + 40 ), //top-left position
+                        cv::FONT_HERSHEY_DUPLEX,
+                        1.0,
+                        CV_RGB(118, 185, 0), //font color
+                        2);
+            
+            current_code++;
+            
         }
-        
-        vector<Point> hull;
-        // If the points do not form a quad, find convex hull
-        if(location.size() > 4)
-            cv::convexHull(location, hull);
-        else
-            hull = location;
-        
-        // Plot the convex hull
-        int n = hull.size();
-        for(int j = 0; j < n; j++) {
-            cv::line(this->image, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
-        }
-        
-        // Print the text
-        cv::putText(this->image, //target image
-                    symbol->get_type_name(), //text
-                    cv::Point(10, current_code * 50 + 40 ), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
-        
-        current_code++;
-        cv::putText(this->image, //target image
-                    symbol->get_data(), //text
-                    cv::Point(10, current_code * 50 + 40 ), //top-left position
-                    cv::FONT_HERSHEY_DUPLEX,
-                    1.0,
-                    CV_RGB(118, 185, 0), //font color
-                    2);
-        
-        current_code++;
-        
-    } 
+    }
     
     
+}
+
+bool MyImage::getQRcodedata(string &data, string &type) {
+    if ( ! this->qrcodedata.empty() ){
+        data = this->qrcodedata ;
+        type = this->qrcodetype ;
+        return true;
+    }
+    return false;
 }
 
 #endif

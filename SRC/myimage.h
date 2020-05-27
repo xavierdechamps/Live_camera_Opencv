@@ -105,6 +105,7 @@ public:
     void togglePhoto();
 #ifdef withzbar
     void toggleQRcode();
+    bool getQRcodedata(string &, string &);
 #endif
 
 private:
@@ -135,6 +136,7 @@ private:
 #endif
 #ifdef withzbar
     bool qrcodeactivated;
+    String qrcodedata,qrcodetype;
 #endif
 
     Ptr<BackgroundSubtractor> pMOG2;
