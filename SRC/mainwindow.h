@@ -66,7 +66,6 @@ private:
     captureVideo *worker;
     QThread thread;
     
-//    CaptureThread *capturer;
     QMutex *data_lock;
     
     MyImage* myFrame;
@@ -177,10 +176,6 @@ private slots:
 #ifdef withzbar
     void treat_Button_QRcode(bool);
 #endif
-
-//    void treat_Slider_Blur_Range(int);
-//    void treat_Blur_Method(int);
-    void treat_Slider_Blur_Element(int);
 
     void treat_Slider_Threshold_Value(int);
     void treat_Slider_Threshold_Blocksize_Value(int);

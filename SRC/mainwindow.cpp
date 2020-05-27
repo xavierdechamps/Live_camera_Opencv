@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), 
+                                          worker(nullptr),
                                           my_Timer(this),
                                           menu_File(nullptr),
                                           menu_Filters(nullptr),
@@ -30,24 +31,19 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     
     // For capture thread
     this->data_lock = new QMutex();
-    worker = new captureVideo(this, this->data_lock);
+    
+    worker = new captureVideo(this->data_lock);
     
     // Links signals from the video capturer to functions that update the display
     connect(worker, &captureVideo::frameCaptured, this, &MainWindow::updateFrame );
     connect(worker, &captureVideo::changeInfo   , this, &MainWindow::updateMainStatusLabel );
-    
-    connect(&thread_timer, SIGNAL(timeout()), worker, SLOT(onTimeOut()) );
-    thread_timer.start(40); // triggers every 40ms = 25FPS
-    
-    thread_timer.moveToThread(&thread); // send the timer to the new thread, the timer is inside the same thread as the video capturer
-    worker->moveToThread(&thread); // send the video capturer to the new thread
     
     worker->setCamera(camID);
     worker->openCamera() ;
     worker->setParent(this);
     worker->setCascadeFile(); // call this one AFTER setparent() because worker needs a pointer to mainwindow
     
-    thread.start(); // Launch the new thread (call to run() in capturevideo)
+    this->worker->start(); // Launch the new thread (call to run() in capturevideo)
     
     this->resize(800, 600); 
     
@@ -59,20 +55,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     this->menu_Operations = menuBar()->addMenu(tr("&Operations"));
     
     // QLabel that will actually show the video, conversion from QImage with QPixmap::fromImage
-    this->Window_image = new QLabel(this);
-    this->setCentralWidget(this->Window_image);
+    //this->Window_image = new QLabel(this);
+    //this->setCentralWidget(this->Window_image);
+    
+    this->imageScene = new QGraphicsScene(this);
+    this->imageView = new QGraphicsView(imageScene);
+    this->setCentralWidget(this->imageView);
     
     // Setup status bar
     this->mainStatusBar = statusBar();
     this->mainStatusLabel = new QLabel(this->mainStatusBar);
     this->mainStatusBar->addPermanentWidget(this->mainStatusLabel);
     this->mainStatusLabel->setText("Image Information will be here!");
-    
-    // Main area for image display // pretty slow... -> much faster with the QLabel
-/*    this->imageScene = new QGraphicsScene(this);
-    this->imageView = new QGraphicsView(this->imageScene);
-    this->setCentralWidget(this->imageView);
-*/
     
     createActions();
     createToolBars();
@@ -220,7 +214,7 @@ void MainWindow::createWindows(){
     this->dialog_blur = new Dialog_Blur(this);
     connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)), this->worker, SLOT(change_blur_range(int)) );
     connect(this->dialog_blur, SIGNAL(Signal_blur_method_changed(int)),this->worker, SLOT(change_blur_method(int)) );
-    connect(this->dialog_blur, SIGNAL(Signal_blur_element_changed(int)), this, SLOT(treat_Slider_Blur_Element(int)) );
+    connect(this->dialog_blur, SIGNAL(Signal_blur_element_changed(int)), this->worker, SLOT(change_blur_element(int)) );
     this->dialog_blur->hide();
 
     // Create a new object for edge detection and create adequate connections to functions, depending on the received signals
@@ -520,18 +514,6 @@ void MainWindow::treat_Button_QRcode(bool state) {
         this->mainStatusLabel->setText("QR code detection desactivated");
 }
 #endif
-/*
-void MainWindow::treat_Slider_Blur_Range(int value) {
-    this->myFrame->set_size_blur(value);
-}*/
-/*
-void MainWindow::treat_Blur_Method(int method) {
-    this->myFrame->set_blur_method(method);
-}*/
-
-void MainWindow::treat_Slider_Blur_Element(int element) {
-    this->myFrame->set_morpho_element(element);
-}
 
 void MainWindow::treat_Photo_SigmaS(int value){
     this->myFrame->set_photo_sigmas(value);
@@ -761,7 +743,9 @@ void MainWindow::look_for_qrURL(){
 #endif
 
 void MainWindow::updateFrame(QImage *image){
+    data_lock->lock();
     this->myQimage = *image;
+    data_lock->unlock();
     repaint();
 }
 
@@ -770,7 +754,6 @@ void MainWindow::updateMainStatusLabel(QString newstring){
 }
 
 void MainWindow::paintEvent(QPaintEvent* ) {
-//    update_frame();
 
     if (this->histogram_window_opened)
         update_histogram_window();
@@ -780,21 +763,16 @@ void MainWindow::paintEvent(QPaintEvent* ) {
 
     if (this->motion_detection_window_opened)
         update_motion_window();
-
-    // Convert the QImage to a QLabel and set the content of the main window
-/*    this->imageScene->clear();
-    this->imageView->resetMatrix();
-    QPixmap image = QPixmap::fromImage(this->myQimage) ;
-    this->currentImage = imageScene->addPixmap(image);
-    imageScene->update();
-    imageView->setSceneRect(image.rect());
-*/    
-    //QString status = QString("%1, %2x%3, %4 Bytes").arg(path).arg(image.width())
-    //        .arg(image.height()).arg(QFile(path).size());
-    //    mainStatusLabel->setText(status);
-    //    currentImagePath = path;
     
-    this->Window_image->setPixmap(QPixmap::fromImage(this->myQimage));
+//    this->Window_image->setPixmap(QPixmap::fromImage(this->myQimage));
+    
+    QPixmap piximage = QPixmap::fromImage(this->myQimage);
+
+    imageScene->clear();
+    imageView->resetMatrix();
+    imageScene->addPixmap(piximage);
+    imageScene->update();
+    imageView->setSceneRect(piximage.rect());
     
 #ifdef withzbar
     look_for_qrURL();

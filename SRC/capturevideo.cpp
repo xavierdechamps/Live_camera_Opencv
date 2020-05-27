@@ -1,10 +1,12 @@
 #include "capturevideo.h"
 
-captureVideo::captureVideo(QObject *parent, QMutex *data_lock) : QObject(parent), data_lock(data_lock)
+captureVideo::captureVideo(QMutex *data_lock) : data_lock(data_lock)
 {
     //-------------------------------------------------------------
     // DO NOT allocate heap objects (using new) in this constructor
     //-------------------------------------------------------------
+    
+    running = false;
     
     this->camID = -1;
     this->mainWindowParent = nullptr;
@@ -32,19 +34,22 @@ bool captureVideo::openCamera(){
         qDebug() << "captureVideo::openCamera - Cannot open camera";
         return false;
     }
-    if (cameraIsOpen()){
-        qDebug() << "captureVideo::openCamera - Camera already opened";
-        qDebug() << "                           Closing it and opening new camera";
-        this->capture.release();
-        if (this->myFrame != nullptr )
-            delete this->myFrame ;
-    }
+    closeCamera();
     
     // Create a new OpenCV MyImage, don't initialize it in the constructor otherwise 
     // myFrame is owned by mainWindow
     this->myFrame = new MyImage();
     
     return this->capture.open(this->camID);
+}
+
+bool captureVideo::closeCamera() {
+    if (cameraIsOpen()){
+        this->capture.release();
+        if (this->myFrame != nullptr )
+            delete this->myFrame ;
+    }
+    return true;
 }
 
 bool captureVideo::cameraIsOpen(){
@@ -72,6 +77,55 @@ void captureVideo::setCascadeFile(){
         qDebug() << "captureVideo::setCascadeFile() : mainWindowParent is not set";
     }
 #endif
+}
+
+void captureVideo::run() {
+    running = true;
+    Mat imageMat;
+    
+    while (running) {
+        if(cameraIsOpen()) {
+            this->capture >> imageMat;
+            while (imageMat.empty()) {
+                this->capture >> imageMat;
+                qDebug() << "captureVideo::onTimeOut() : Empty image";
+            }
+    
+            // Send the frame to the class MyImage for post-processing
+            this->myFrame->set_image_content(imageMat);
+    
+            // Get the image after post-processing
+            imageMat = myFrame->get_image_content();
+    
+            // Record the video
+            if (this->recording) {
+                this->video_out << imageMat; // save the image before the colour conversion
+                if (this->record_time_blink <= 20) // Display a blinking red circle
+                    cv::circle(imageMat,cv::Point(20,20),15, Scalar(0,0,255), -1, 8);
+                this->record_time_blink ++;
+                if (this->record_time_blink >= 40)
+                    this->record_time_blink = 0;
+            }
+        }
+        else
+        {
+            qDebug() << "captureVideo::onTimeOut() : Camera is not open";
+            imageMat = Mat::zeros(480, 640, CV_8UC1);
+            myFrame->set_image_content(imageMat);
+            imageMat = myFrame->get_image_content();
+        }
+        
+        // Convert the opencv image to a QImage that will be displayed on the main window
+        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
+        
+        data_lock->lock();
+        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
+        data_lock->unlock();
+        
+        emit frameCaptured(&this->myQimage);
+    }
+    closeCamera();
+    running = false;
 }
 
 void captureVideo::onTimeOut(){
@@ -114,9 +168,7 @@ void captureVideo::onTimeOut(){
     
     // Convert the opencv image to a QImage that will be displayed on the main window
     cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-    this->data_lock->lock();
     this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->data_lock->unlock();
     emit frameCaptured(&this->myQimage);
     
 //    qDebug()<<"Worker::onTimeout get called from?: "<<QThread::currentThreadId();
@@ -152,4 +204,8 @@ void captureVideo::change_blur_range(int value) {
 
 void captureVideo::change_blur_method(int method) {
     this->myFrame->set_blur_method(method);
+}
+
+void captureVideo::change_blur_element(int element) {
+    this->myFrame->set_morpho_element(element);
 }
