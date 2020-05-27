@@ -7,14 +7,15 @@
 */
 
 #include <QApplication>
+
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    MainWindow w ;
+    MainWindow *window =new MainWindow() ;
 
-    w.show();
+    window->show();
 
     return app.exec();
 }

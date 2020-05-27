@@ -35,7 +35,7 @@ SOURCES = main.cpp \
         dialog_motion_detection.cpp \
         secondarywindow.cpp \
         dialog_photo.cpp \
-        capturethread.cpp
+        capturevideo.cpp
 stitching: SOURCES+=dialog_panorama.cpp
 
 HEADERS  += myimage.h \
@@ -49,7 +49,7 @@ HEADERS  += myimage.h \
             dialog_motion_detection.h \
             secondarywindow.h \
             dialog_photo.h \
-            capturethread.h
+            capturevideo.h
 stitching: HEADERS += dialog_panorama.h
 
 # Compilator flags

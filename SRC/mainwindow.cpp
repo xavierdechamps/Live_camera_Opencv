@@ -29,9 +29,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     }
     
     // For capture thread
-    data_lock = new QMutex();
-    capturer = new CaptureThread(camID, data_lock);
-//    capturer->start();
+    this->data_lock = new QMutex();
+    worker = new captureVideo(this, this->data_lock);
+    
+    // Links signals from the video capturer to functions that update the display
+    connect(worker, &captureVideo::frameCaptured, this, &MainWindow::updateFrame );
+    connect(worker, &captureVideo::changeInfo   , this, &MainWindow::updateMainStatusLabel );
+    
+    connect(&thread_timer, SIGNAL(timeout()), worker, SLOT(onTimeOut()) );
+    thread_timer.start(40); // triggers every 40ms = 25FPS
+    
+    thread_timer.moveToThread(&thread); // send the timer to the new thread, the timer is inside the same thread as the video capturer
+    worker->moveToThread(&thread); // send the video capturer to the new thread
+    
+    worker->setCamera(camID);
+    worker->openCamera() ;
+    worker->setParent(this);
+    worker->setCascadeFile(); // call this one AFTER setparent() because worker needs a pointer to mainwindow
+    
+    thread.start(); // Launch the new thread (call to run() in capturevideo)
     
     this->resize(800, 600); 
     
@@ -52,31 +68,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     this->mainStatusBar->addPermanentWidget(this->mainStatusLabel);
     this->mainStatusLabel->setText("Image Information will be here!");
     
-    // Initializations
-    this->myFrame = new MyImage();
-    this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
-
-#ifdef withobjdetect
-    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
-    bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
-    while (!testCascade){
-        QString QfileNameLocal = QFileDialog::getOpenFileName(this,
-                                                         tr("Select the face cascade file haarcascade_frontalface_default.xml"),
-                                                         QString::fromStdString(this->main_directory),
-                                                         tr("Images (*.xml)") );
-        if ( ! QfileNameLocal.isEmpty() ) {
-            this->file_cascade = QfileNameLocal.toStdString() ;
-            testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
-        }
-        else {
-            this->mainStatusLabel->setText("Could not load the face cascade file");
-        }
-    }
-#endif
-
-    this->file_name_save = this->main_directory + "webcam.jpg";
-    this->capture.open(camID);
-
     // Main area for image display // pretty slow... -> much faster with the QLabel
 /*    this->imageScene = new QGraphicsScene(this);
     this->imageView = new QGraphicsView(this->imageScene);
@@ -87,63 +78,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     createToolBars();
     createWindows();
 
-    // Concerns the recording of the video
-    this->record_time_blink = 0;
-    this->recording = false;
-    this->video_out_name = this->main_directory + "Video-OpenCV-QMake/my_video.avi";
-
 //    this->setFixedSize(740, 480);   
-
-    // Update the image every 10ms
-    this->my_Timer.start(10);
-    connect(&this->my_Timer, SIGNAL(timeout()), this, SLOT(repaint()));
+    
 }
 
-void MainWindow::update_frame() {
-    // Called by paint event every 10ms
-    // Gets the content of the camera and push the image to the opencv container
-    // Apply the transformations that are activated
-    // Record the video if the option is activated
-
-    Mat imageMat;
-
-    if(capture.isOpened()) {
-
-        capture >> imageMat;
-        while (imageMat.empty()) {
-            capture >> imageMat;
-            cout << "empty image\n";
-        }
-
-        // Send the frame to the class MyImage for post-processing
-        myFrame->set_image_content(imageMat);
-
-        // Get the image after post-processing
-        imageMat = myFrame->get_image_content();
-
-        // Record the video
-        if (this->recording) {
-            this->video_out << imageMat; // save the image before the colour conversion
-            if (this->record_time_blink <= 20) // Display a blinking red circle
-                cv::circle(imageMat,cv::Point(20,20),15, Scalar(0,0,255), -1, 8);
-            this->record_time_blink ++;
-            if (this->record_time_blink >= 40)
-                this->record_time_blink = 0;
-        }
-
-        // Convert the opencv image to a QImage that will be displayed on the main window
-        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    }
-    else
+MainWindow::~MainWindow() {
+    this->thread.quit(); // Nice way to tell the other thread to stop
+    if(!this->thread.wait(3000)) //Wait until it actually has terminated (max. 3 sec)
     {
-        cout << "No capture" << endl;
-        imageMat = Mat::zeros(480, 640, CV_8UC1);
-        myFrame->set_image_content(imageMat);
-        imageMat = myFrame->get_image_content();
-
-        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-        this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
+        this->thread.terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
+        this->thread.wait(); //We have to wait again here!
     }
 }
 
@@ -154,18 +98,19 @@ void MainWindow::createActions() {
     this->actionColour_BW = new QAction(tr("&Colour/BW"), this);
     this->actionColour_BW->setToolTip(tr("Switch between a coloured image and a black and white image"));
     this->actionColour_BW->setCheckable(true);
-    connect(this->actionColour_BW, SIGNAL(triggered(bool)), this, SLOT(treat_Button_BW(bool)));
+    connect(this->actionColour_BW, SIGNAL(triggered(bool)), this->worker, SLOT(toggleBW(bool) ) ) ;
 
     this->actionInverse = new QAction(tr("&Inverse"), this);
     this->actionInverse->setToolTip(tr("Inverse the image"));
     this->actionInverse->setCheckable(true);
-    connect(this->actionInverse, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Inverse(bool)));
-
+    connect(this->actionInverse, SIGNAL(triggered(bool)), this->worker, SLOT(toggleInverse(bool) ) ) ;
+    
     this->actionBlur = new QAction(tr("&Blur"), this);
     this->actionBlur->setToolTip(tr("Blur"));
     this->actionBlur->setCheckable(true);
-    connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));
-
+    connect(this->actionBlur, SIGNAL(triggered(bool)), this->worker, SLOT(toggleBlur(bool)));
+    connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));    
+            
     this->actionThreshold = new QAction(tr("&Threshold"), this);
     this->actionThreshold->setToolTip(tr("Threshold the image"));
     this->actionThreshold->setCheckable(true);
@@ -273,8 +218,8 @@ void MainWindow::createToolBars() {
 void MainWindow::createWindows(){
     // Create a new object for blur operations and create adequate connections to functions, depending on the received signals
     this->dialog_blur = new Dialog_Blur(this);
-    connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)), this, SLOT(treat_Slider_Blur_Range(int)) );
-    connect(this->dialog_blur, SIGNAL(Signal_blur_method_changed(int)),this, SLOT(treat_Blur_Method(int)) );
+    connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)), this->worker, SLOT(change_blur_range(int)) );
+    connect(this->dialog_blur, SIGNAL(Signal_blur_method_changed(int)),this->worker, SLOT(change_blur_method(int)) );
     connect(this->dialog_blur, SIGNAL(Signal_blur_element_changed(int)), this, SLOT(treat_Slider_Blur_Element(int)) );
     this->dialog_blur->hide();
 
@@ -367,32 +312,11 @@ void MainWindow::createWindows(){
     this->motion_detection_window_opened = false;
 }
 
-void MainWindow::treat_Button_BW(bool state) {
-    this->myFrame->toggleBW() ;
-    if (state)
-        this->mainStatusLabel->setText("Black and White activated");
-    else
-        this->mainStatusLabel->setText("Black and White desactivated");
-}
-
-void MainWindow::treat_Button_Inverse(bool state) {
-    this->myFrame->toggleInverse() ;
-    if (state)
-        this->mainStatusLabel->setText("Inversed colours activated");
-    else
-        this->mainStatusLabel->setText("Inversed colours desactivated");
-}
-
 void MainWindow::treat_Button_Blur(bool state) {
-    this->myFrame->toggleBlur();
-    if (state){
+    if (state)
         this->dialog_blur->show();
-        this->mainStatusLabel->setText("Blur filter activated");
-    }
-    else {
+    else 
         this->dialog_blur->hide();
-        this->mainStatusLabel->setText("Blur filter desactivated");
-    }
 }
 
 void MainWindow::treat_Button_Threshold(bool state) {
@@ -596,14 +520,14 @@ void MainWindow::treat_Button_QRcode(bool state) {
         this->mainStatusLabel->setText("QR code detection desactivated");
 }
 #endif
-
+/*
 void MainWindow::treat_Slider_Blur_Range(int value) {
     this->myFrame->set_size_blur(value);
-}
-
+}*/
+/*
 void MainWindow::treat_Blur_Method(int method) {
     this->myFrame->set_blur_method(method);
-}
+}*/
 
 void MainWindow::treat_Slider_Blur_Element(int element) {
     this->myFrame->set_morpho_element(element);
@@ -836,8 +760,17 @@ void MainWindow::look_for_qrURL(){
 }
 #endif
 
+void MainWindow::updateFrame(QImage *image){
+    this->myQimage = *image;
+    repaint();
+}
+
+void MainWindow::updateMainStatusLabel(QString newstring){
+    this->mainStatusLabel->setText(newstring);
+}
+
 void MainWindow::paintEvent(QPaintEvent* ) {
-    update_frame();
+//    update_frame();
 
     if (this->histogram_window_opened)
         update_histogram_window();

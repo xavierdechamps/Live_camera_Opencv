@@ -10,7 +10,6 @@
 #include <QPainter>
 #include <QTimer>
 #include <QAction>
-//#include <QToolBar>
 #include <QFileDialog>
 #ifdef withzbar
 #include <QDesktopServices> // to open URL links from QR codes
@@ -23,7 +22,11 @@
 #include <QGraphicsView>  // To show the content of the camera in the Qt window
 #include <QGraphicsPixmapItem>
 #include <QStatusBar>
+
 #include <QMutex>
+#include <QThread>
+
+
 
 #include "dialog_blur.h"
 #include "dialog_edge.h"
@@ -39,7 +42,9 @@
 #include "secondarywindow.h"
 
 #include "myimage.h"
-#include "capturethread.h"
+
+#include "capturevideo.h"
+//#include "capturethread.h"
 
 #include "opencv2/core.hpp"
 #include "opencv2/videoio.hpp"
@@ -52,12 +57,16 @@ class MainWindow: public QMainWindow
 {
 public:
     explicit MainWindow(QWidget * parent = nullptr);
-
+    ~MainWindow() ;
+    
 private:
     Q_OBJECT
     
     // For capture thread
-    CaptureThread *capturer;
+    captureVideo *worker;
+    QThread thread;
+    
+//    CaptureThread *capturer;
     QMutex *data_lock;
     
     MyImage* myFrame;
@@ -66,7 +75,7 @@ private:
 
     QLabel *Window_image;
     
-    QTimer my_Timer;
+    QTimer my_Timer , thread_timer;
     QMenu *menu_File , *menu_Filters, *menu_Detection, *menu_Transformations, *menu_Operations;
     
     QGraphicsScene *imageScene;
@@ -96,8 +105,6 @@ private:
 #ifdef withzbar
     bool qrdecoder_activated;
 #endif
-    
-    //    QToolBar *editToolBar;
     
     bool histogram_window_opened;
     bool object_detection_window_opened;
@@ -134,7 +141,6 @@ private:
     QAction *actionQRcode;
 #endif
 
-    void update_frame();
     void update_histogram_window();
     void update_objects_window();
     void update_motion_window();
@@ -149,8 +155,9 @@ protected:
     void paintEvent(QPaintEvent* );
 
 private slots:
-    void treat_Button_BW(bool) ;
-    void treat_Button_Inverse(bool) ;
+    void updateFrame(QImage *image);
+    void updateMainStatusLabel(QString);
+
     void treat_Button_Blur(bool) ;
     void treat_Button_Edge(bool);
     void treat_Button_Threshold(bool);
@@ -171,8 +178,8 @@ private slots:
     void treat_Button_QRcode(bool);
 #endif
 
-    void treat_Slider_Blur_Range(int);
-    void treat_Blur_Method(int);
+//    void treat_Slider_Blur_Range(int);
+//    void treat_Blur_Method(int);
     void treat_Slider_Blur_Element(int);
 
     void treat_Slider_Threshold_Value(int);

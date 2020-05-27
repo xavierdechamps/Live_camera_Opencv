@@ -1,14 +1,12 @@
 #ifndef CAPTURETHREAD_H
 #define CAPTURETHREAD_H
 
-
 #include <QString>
 #include <QThread>
 #include <QMutex>
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/videoio.hpp"
-#include "opencv2/video/background_segm.hpp"
 
 using namespace std;
 
