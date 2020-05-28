@@ -32,16 +32,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     // For capture thread
     this->data_lock = new QMutex();
     
-    worker = new captureVideo(this->data_lock);
+    worker = new captureVideo(this,this->data_lock);
     
     // Links signals from the video capturer to functions that update the display
-    connect(worker, &captureVideo::frameCaptured, this, &MainWindow::updateFrame );
-    connect(worker, &captureVideo::changeInfo   , this, &MainWindow::updateMainStatusLabel );
+    connect(worker, &captureVideo::frameCaptured,   this, &MainWindow::updateFrame );
+    connect(worker, &captureVideo::changeInfo   ,   this, &MainWindow::updateMainStatusLabel );
+    connect(worker, &captureVideo::motionCaptured,  this, &MainWindow::update_motion_window );
+    connect(worker, &captureVideo::objectsCaptured, this, &MainWindow::update_objects_window );
     
     worker->setCamera(camID);
     worker->openCamera() ;
-    worker->setParent(this);
-    worker->setCascadeFile(); // call this one AFTER setparent() because worker needs a pointer to mainwindow
+//    worker->setParent(this);
+//    worker->setCascadeFile(); // call this one AFTER setparent() because worker needs a pointer to mainwindow
     
     this->worker->start(); // Launch the new thread (call to run() in capturevideo)
     
@@ -103,28 +105,36 @@ void MainWindow::createActions() {
     this->actionBlur->setToolTip(tr("Blur"));
     this->actionBlur->setCheckable(true);
     connect(this->actionBlur, SIGNAL(triggered(bool)), this->worker, SLOT(toggleBlur(bool)));
-    connect(this->actionBlur, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Blur(bool)));    
+    connect(this->actionBlur, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Blur(bool)));    
             
     this->actionThreshold = new QAction(tr("&Threshold"), this);
     this->actionThreshold->setToolTip(tr("Threshold the image"));
     this->actionThreshold->setCheckable(true);
-    connect(this->actionThreshold, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Threshold(bool)));
-
+    connect(this->actionThreshold, SIGNAL(triggered(bool)), this->worker, SLOT(toggleThreshold(bool)));
+    connect(this->actionThreshold, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Threshold(bool)));
+    
+    this->actionEdge = new QAction(tr("&Edge recognition"), this);
+    this->actionEdge->setToolTip(tr("Find the edges in the image"));
+    this->actionEdge->setCheckable(true);
+    connect(this->actionEdge, SIGNAL(triggered(bool)), this->worker, SLOT(toggleEdge(bool)));
+    connect(this->actionEdge, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Edge(bool)));
+    
+    this->actionMotionDetection = new QAction(tr("&Motion Detection"), this);
+    this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
+    this->actionMotionDetection->setCheckable(true);
+    connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this->worker, SLOT(toggleMotionDetection(bool)));
+    connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Motion_Detection(bool)));    
+    
     this->actionTransformation = new QAction(tr("&Transformation"), this);
     this->actionTransformation->setToolTip(tr("Apply geometric transformations to the image"));
     this->actionTransformation->setCheckable(true);
     connect(this->actionTransformation, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Transformation(bool)));
 
-    this->actionEdge = new QAction(tr("&Edge recognition"), this);
-    this->actionEdge->setToolTip(tr("Find the edges in the image"));
-    this->actionEdge->setCheckable(true);
-    connect(this->actionEdge, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Edge(bool)));
-
 #ifdef withobjdetect
     this->actionFace = new QAction(tr("&Face recognition"), this);
     this->actionFace->setToolTip(tr("Find human faces in the image"));
     this->actionFace->setCheckable(true);
-    connect(this->actionFace, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Face_Recon(bool)));
+    connect(this->actionFace, SIGNAL(triggered(bool)), this->worker, SLOT(toggleFaceDetection(bool)));
 #endif
 
     this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
@@ -135,7 +145,8 @@ void MainWindow::createActions() {
     this->actionObjectDetection = new QAction(tr("&Object detection"), this);
     this->actionObjectDetection->setToolTip(tr("Detect patterns in the image"));
     this->actionObjectDetection->setCheckable(true);
-    connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Object_Detection(bool)));
+    connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this->worker, SLOT(toggleObjectDetection(bool)));
+    connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Object_Detection(bool)));
 
 #ifdef withstitching
     this->actionPanorama = new QAction(tr("&Panorama"), this);
@@ -144,11 +155,6 @@ void MainWindow::createActions() {
     connect(this->actionPanorama, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Panorama(bool)));
 #endif
 
-    this->actionMotionDetection = new QAction(tr("&Motion Detection"), this);
-    this->actionMotionDetection->setToolTip(tr("Detect the motion in the webcam"));
-    this->actionMotionDetection->setCheckable(true);
-    connect(this->actionMotionDetection, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Motion_Detection(bool)));
-    
     this->actionPhoto = new QAction(tr("Module Photo"), this);
     this->actionPhoto->setToolTip(tr("OpenCV module Photo"));
     this->actionPhoto->setCheckable(true);
@@ -168,6 +174,7 @@ void MainWindow::createActions() {
     this->actionQRcode = new QAction(tr("&QR code"), this);
     this->actionQRcode->setToolTip(tr("Detect QR codes in the video"));
     this->actionQRcode->setCheckable(true);
+    connect(this->actionQRcode, SIGNAL(triggered(bool)) , this->worker, SLOT(toggleQRcode(bool)) );
     connect(this->actionQRcode, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_QRcode(bool)) );
 #endif
 }
@@ -212,26 +219,31 @@ void MainWindow::createToolBars() {
 void MainWindow::createWindows(){
     // Create a new object for blur operations and create adequate connections to functions, depending on the received signals
     this->dialog_blur = new Dialog_Blur(this);
-    connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)), this->worker, SLOT(change_blur_range(int)) );
-    connect(this->dialog_blur, SIGNAL(Signal_blur_method_changed(int)),this->worker, SLOT(change_blur_method(int)) );
+    connect(this->dialog_blur, SIGNAL(Signal_blur_range_changed(int)),   this->worker, SLOT(change_blur_range(int)) );
+    connect(this->dialog_blur, SIGNAL(Signal_blur_method_changed(int)),  this->worker, SLOT(change_blur_method(int)) );
     connect(this->dialog_blur, SIGNAL(Signal_blur_element_changed(int)), this->worker, SLOT(change_blur_element(int)) );
     this->dialog_blur->hide();
+    
+    // Create a new object for threshold operations and create adequate connections to functions, depending on the received signals
+    this->dialog_threshold = new Dialog_Threshold(this);
+    connect(this->dialog_threshold, SIGNAL(Signal_threshold_method_changed(int)), this->worker, SLOT(change_threshold_method(int)) );
+    connect(this->dialog_threshold, SIGNAL(Signal_threshold_value_changed(int)),  this->worker, SLOT(change_threshold_value(int)) );
+    connect(this->dialog_threshold, SIGNAL(Signal_blocksize_changed(int)),        this->worker, SLOT(change_threshold_blocksize(int)) );
+    connect(this->dialog_threshold, SIGNAL(Signal_adaptive_threshold_type(int)),  this->worker, SLOT(change_threshold_type(int)) );
+    this->dialog_threshold->hide();
 
     // Create a new object for edge detection and create adequate connections to functions, depending on the received signals
     this->dialog_edge = new Dialog_Edge(this);
-    connect(this->dialog_edge, SIGNAL(Signal_edge_method_changed(int)),this, SLOT(treat_Edge_Method(int)) );
-    connect(this->dialog_edge, SIGNAL(Signal_canny_lowthreshold_changed(int)), this, SLOT(treat_Slider_canny_lowthreshold(int)) );
-    connect(this->dialog_edge, SIGNAL(Signal_canny_ratio_changed(double)), this, SLOT(treat_Slider_canny_ratio(double)) );
+    connect(this->dialog_edge, SIGNAL(Signal_edge_method_changed(int)),        this->worker, SLOT(change_edge_method(int)) );
+    connect(this->dialog_edge, SIGNAL(Signal_canny_lowthreshold_changed(int)), this->worker, SLOT(change_edge_canny_lowthreshold(int)) );
+    connect(this->dialog_edge, SIGNAL(Signal_canny_ratio_changed(double)),     this->worker, SLOT(change_edge_canny_ratio(double)) );
     this->dialog_edge->hide();
-
-    // Create a new object for threshold operations and create adequate connections to functions, depending on the received signals
-    this->dialog_threshold = new Dialog_Threshold(this);
-    connect(this->dialog_threshold, SIGNAL(Signal_threshold_method_changed(int)), this, SLOT(treat_Threshold_Method(int)) );
-    connect(this->dialog_threshold, SIGNAL(Signal_threshold_value_changed(int)), this, SLOT(treat_Slider_Threshold_Value(int)) );
-    connect(this->dialog_threshold, SIGNAL(Signal_blocksize_changed(int)), this, SLOT(treat_Slider_Threshold_Blocksize_Value(int)) );
-    connect(this->dialog_threshold, SIGNAL(Signal_adaptive_threshold_type(int)), this, SLOT(treat_Threshold_Type(int)) );
-    this->dialog_threshold->hide();
-
+    
+    // Create a new object for motion detection and create adequate connections to functions, depending on the received signals
+    this->dialog_motion_detection = new Dialog_Motion_Detection(this);
+    connect(this->dialog_motion_detection, SIGNAL(Signal_motion_detection_method_changed(int)), this->worker, SLOT(change_motion_detection_method(int)) );
+    this->dialog_motion_detection->hide();
+    
     // Create a new object for geometric transformations and create adequate connections to functions, depending on the received signals
     this->dialog_transformation = new Dialog_Transformation(this);
     connect(this->dialog_transformation, SIGNAL(Signal_transformation_method_changed(int)), this, SLOT(treat_Transformation_Method(int)) );
@@ -248,8 +260,8 @@ void MainWindow::createWindows(){
 
     // Create a new object for object detections and create adequate connections to functions, depending on the received signals
     this->dialog_object_detection = new Dialog_Object_Detection(this);
-    connect(this->dialog_object_detection, SIGNAL(Signal_object_detection_method_changed(int)), this, SLOT(treat_Object_Detection_Method(int)) );
-    connect(this->dialog_object_detection, SIGNAL(Signal_hough_line_threshold_changed(int)), this, SLOT(treat_Slider_hough_line_threshold(int)) );
+    connect(this->dialog_object_detection, SIGNAL(Signal_object_detection_method_changed(int)), this->worker, SLOT(change_object_detection_method(int)) );
+    connect(this->dialog_object_detection, SIGNAL(Signal_hough_line_threshold_changed(int)),    this->worker, SLOT(change_object_hough_line_threshold(int)) );
     this->dialog_object_detection->hide();
 
 #ifdef withstitching
@@ -263,11 +275,6 @@ void MainWindow::createWindows(){
     this->dialog_panorama->hide();
 #endif
 
-    // Create a new object for motion detection and create adequate connections to functions, depending on the received signals
-    this->dialog_motion_detection = new Dialog_Motion_Detection(this);
-    connect(this->dialog_motion_detection, SIGNAL(Signal_motion_detection_method_changed(int)), this, SLOT(treat_Motion_Detection_Method(int)) );
-    this->dialog_motion_detection->hide();
-    
     // Create a new object for module Photo and create adequate connections to functions, depending on the received signals
     this->dialog_photo = new Dialog_Photo(this);
     connect(this->dialog_photo, SIGNAL(Signal_photo_method_changed(int)), this, SLOT(treat_Photo_Method(int)) );
@@ -281,12 +288,14 @@ void MainWindow::createWindows(){
     
     // Create a new object for a secondary window that will show the histogram
     this->secondWindow = new SecondaryWindow(this);
+    this->secondWindow->set_window_title("Histogram");
     this->secondWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->secondWindow->hide();
     this->histogram_window_opened = false;
 
     // Create a new object for a secondary window that will show the the detected objects
     this->thirdWindow = new SecondaryWindow(this);
+    this->thirdWindow->set_window_title("Objects detection");
     this->thirdWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->thirdWindow->hide();
     this->object_detection_window_opened = false;
@@ -294,6 +303,7 @@ void MainWindow::createWindows(){
 #ifdef withstitching
     // Create a new object for a secondary window that will show the panorama resulting from the stitching operation
     this->fourthWindow = new SecondaryWindow(this);
+    this->fourthWindow->set_window_title("Panorama stitching");
     this->fourthWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->fourthWindow->hide();
     this->panorama_window_opened = false;
@@ -301,6 +311,7 @@ void MainWindow::createWindows(){
 
     // Create a new object for a secondary window that will show the motion detection
     this->fifthWindow = new SecondaryWindow(this);
+    this->fifthWindow->set_window_title("Motion detection");
     this->fifthWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->fifthWindow->hide();
     this->motion_detection_window_opened = false;
@@ -314,15 +325,10 @@ void MainWindow::treat_Button_Blur(bool state) {
 }
 
 void MainWindow::treat_Button_Threshold(bool state) {
-    this->myFrame->toggleThreshold();
-    if (state){
+    if (state)
         this->dialog_threshold->show();
-        this->mainStatusLabel->setText("Threshold activated");
-    }
-    else {
+    else 
         this->dialog_threshold->hide();
-        this->mainStatusLabel->setText("Threshold desactivated");
-    }
 }
 
 void MainWindow::treat_Button_Transformation(bool state) {
@@ -338,42 +344,11 @@ void MainWindow::treat_Button_Transformation(bool state) {
 }
 
 void MainWindow::treat_Button_Edge(bool state) {
-    this->myFrame->toggleEdge();
-    if (state) {
+    if (state) 
         this->dialog_edge->show();
-        this->mainStatusLabel->setText("Edge detection activated");
-    }
-    else {
+    else 
         this->dialog_edge->hide();
-        this->mainStatusLabel->setText("Edge detection desactivated");
-    }
 }
-
-#ifdef withobjdetect
-void MainWindow::treat_Button_Face_Recon(bool state) {
-    
-    if (!this->myFrame->getFace_Status()) {
-        this->file_background = this->main_directory + "cartoon_background.jpg";
-        bool test = this->myFrame->set_background_image(this->file_background);
-        while (!test){
-            QString QfileNameLocal = QFileDialog::getOpenFileName(this,
-                                                             tr("Select a background image"),
-                                                             QString::fromStdString(this->main_directory),
-                                                             tr("Images (*.bmp *.png *.jpg *.jpeg *.jpe *.jp2 *.webp *.pbm *.pgm *.ppm *.pnm *.pfm *.src *.tiff *.tif *.exr *.hdr *.pic)") );
-            if ( ! QfileNameLocal.isEmpty() ) {
-                this->file_background = QfileNameLocal.toStdString() ;
-                test = this->myFrame->set_background_image(this->file_background);
-            }
-        }
-    }
-    
-    this->myFrame->toggleFace_Recon();
-    if (state)
-        this->mainStatusLabel->setText("Face detection activated");
-    else
-        this->mainStatusLabel->setText("Face detection desactivated");
-}
-#endif
 
 void MainWindow::treat_Button_Histogram(bool state) {
     this->myFrame->toggleHistoEq();
@@ -388,17 +363,14 @@ void MainWindow::treat_Button_Histogram(bool state) {
 }
 
 void MainWindow::treat_Button_Object_Detection(bool state) {
-    this->myFrame->toggleObjectDetection();
     this->object_detection_window_opened = state;
     if (state) {
         this->dialog_object_detection->show();
         this->thirdWindow->show();
-        this->mainStatusLabel->setText("Point/line/circle detection activated");
     }
     else {
         this->dialog_object_detection->hide();
         this->thirdWindow->hide();
-        this->mainStatusLabel->setText("Point/line/circle detection desactivated");
     }
 }
 
@@ -420,17 +392,14 @@ void MainWindow::treat_Button_Panorama(bool state) {
 #endif
 
 void MainWindow::treat_Button_Motion_Detection(bool state) {
-    this->myFrame->toggleMotionDetection();
     this->motion_detection_window_opened = state;
     if (state) {
         this->dialog_motion_detection->show();
         this->fifthWindow->show();
-        this->mainStatusLabel->setText("Motion detection activated");
     }
     else {
         this->dialog_motion_detection->hide();
         this->fifthWindow->hide();
-        this->mainStatusLabel->setText("Motion detection desactivated");
     }
 }
 
@@ -506,12 +475,7 @@ void MainWindow::treat_Button_Save() {
 
 #ifdef withzbar
 void MainWindow::treat_Button_QRcode(bool state) {
-    this->myFrame->toggleQRcode();
     this->qrdecoder_activated = state;
-    if (state)
-        this->mainStatusLabel->setText("QR code detection activated");
-    else
-        this->mainStatusLabel->setText("QR code detection desactivated");
 }
 #endif
 
@@ -523,43 +487,12 @@ void MainWindow::treat_Photo_SigmaR(double value){
     this->myFrame->set_photo_sigmar(value);
 }
 
-void MainWindow::treat_Slider_Threshold_Value(int value) {
-    this->myFrame->set_threshold_value(value);
-}
-
-void MainWindow::treat_Slider_Threshold_Blocksize_Value(int value) {
-    this->myFrame->set_threshold_blocksize(value);
-}
-
-void MainWindow::treat_Threshold_Method(int method) {
-    this->myFrame->set_threshold_method(method);
-}
-
-void MainWindow::treat_Threshold_Type(int type) {
-    if (type == Qt::Checked)
-        this->myFrame->set_threshold_type(1);
-    else
-        this->myFrame->set_threshold_type(0);
-}
-
 void MainWindow::treat_Transformation_Method(int method) {
     this->myFrame->set_transf_method(method);
 }
 
 void MainWindow::treat_Slider_Transformation_Rotation_Value(int value) {
     this->myFrame->set_transf_rotation_value(value);
-}
-
-void MainWindow::treat_Edge_Method(int method) {
-    this->myFrame->set_edge_method(method);
-}
-
-void MainWindow::treat_Slider_canny_lowthreshold(int value) {
-    this->myFrame->set_canny_threshold(value);
-}
-
-void MainWindow::treat_Slider_canny_ratio(double value) {
-    this->myFrame->set_canny_ratio(value);
 }
 
 void MainWindow::treat_Histogram_method(int method) {
@@ -580,14 +513,6 @@ void MainWindow::treat_Histogram_show_histogram(bool checked) {
         this->secondWindow->show();
     else
         this->secondWindow->hide();
-}
-
-void MainWindow::treat_Object_Detection_Method(int method) {
-    this->myFrame->set_object_detection_method(method);
-}
-
-void MainWindow::treat_Slider_hough_line_threshold(int value) {
-    this->myFrame->set_hough_line_threshold(value);
 }
 
 #ifdef withstitching
@@ -662,10 +587,6 @@ void MainWindow::treat_Panorama_Save() {
 }
 #endif
 
-void MainWindow::treat_Motion_Detection_Method(int method) {
-    this->myFrame->set_motion_detection_method(method);
-}
-
 void MainWindow::treat_Photo_Method(int method) {
     this->myFrame->set_photo_method(method);
 }
@@ -678,20 +599,14 @@ void MainWindow::update_histogram_window() {
     this->secondWindow->set_image_content(this->mySecondQimage, imageMat.cols, imageMat.rows );
 }
 
-void MainWindow::update_objects_window() {
-    // Called by repaint event every 10ms
-    // Update the display of the objects detection in the secondary window
-    Mat imageMat = this->myFrame->get_object_detected();
-    this->myThirdImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->thirdWindow->set_image_content(this->myThirdImage, imageMat.cols, imageMat.rows );
+void MainWindow::update_objects_window(QImage *image) {
+    if (this->object_detection_window_opened)
+        this->thirdWindow->set_image_content(*image);
 }
 
-void MainWindow::update_motion_window() {
-    // Called by repaint event every 10ms
-    // Update the display of the motion detection in the secondary window
-    Mat imageMat = this->myFrame->get_motion_detected();
-    this->myFifthImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->fifthWindow->set_image_content(this->myFifthImage, imageMat.cols, imageMat.rows );
+void MainWindow::update_motion_window(QImage *image) {
+    if (this->motion_detection_window_opened)
+        this->fifthWindow->set_image_content(*image);
 }
 
 #ifdef withzbar
@@ -699,7 +614,7 @@ void MainWindow::update_motion_window() {
 void MainWindow::look_for_qrURL(){
     if (this->qrdecoder_activated){
         string qrdata,qrtype;
-        if ( this->myFrame->getQRcodedata(qrdata,qrtype) ) {
+        if ( this->worker->getQRcodedata(qrdata,qrtype) ) {
             
             if( (qrdata.find("http://" ) == 0) 
                     || (qrdata.find("https://") == 0) 
@@ -758,11 +673,11 @@ void MainWindow::paintEvent(QPaintEvent* ) {
     if (this->histogram_window_opened)
         update_histogram_window();
 
-    if (this->object_detection_window_opened)
-        update_objects_window();
+//    if (this->object_detection_window_opened)
+//        update_objects_window();
 
-    if (this->motion_detection_window_opened)
-        update_motion_window();
+//    if (this->motion_detection_window_opened)
+//        update_motion_window();
     
 //    this->Window_image->setPixmap(QPixmap::fromImage(this->myQimage));
     

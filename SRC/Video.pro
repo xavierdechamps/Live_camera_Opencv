@@ -20,6 +20,8 @@ zbar: DEFINES+=withzbar
 QT       = core gui multimedia concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+#!versionAtLeast(QT_VERSION, 4.6):error("Use at least Qt version 4.6")
+
 TARGET = Video
 TEMPLATE = app
 

@@ -141,8 +141,8 @@ private:
 #endif
 
     void update_histogram_window();
-    void update_objects_window();
-    void update_motion_window();
+    void update_objects_window(QImage *image);
+    void update_motion_window(QImage *image);
     void createActions();
     void createToolBars();
     void createWindows();
@@ -161,9 +161,6 @@ private slots:
     void treat_Button_Edge(bool);
     void treat_Button_Threshold(bool);
     void treat_Button_Transformation(bool);
-#ifdef withobjdetect
-    void treat_Button_Face_Recon(bool) ;
-#endif
     void treat_Button_Histogram(bool);
     void treat_Button_Object_Detection(bool);
 #ifdef withstitching
@@ -177,25 +174,13 @@ private slots:
     void treat_Button_QRcode(bool);
 #endif
 
-    void treat_Slider_Threshold_Value(int);
-    void treat_Slider_Threshold_Blocksize_Value(int);
-    void treat_Threshold_Method(int);
-    void treat_Threshold_Type(int);
-
     void treat_Transformation_Method(int);
     void treat_Slider_Transformation_Rotation_Value(int);
-
-    void treat_Edge_Method(int);
-    void treat_Slider_canny_lowthreshold(int);
-    void treat_Slider_canny_ratio(double);
 
     void treat_Histogram_method(int);
     void treat_Histogram_tiles(int);
     void treat_Histogram_clip_limit(int);
     void treat_Histogram_show_histogram(bool);
-
-    void treat_Object_Detection_Method(int);
-    void treat_Slider_hough_line_threshold(int);
 
 #ifdef withstitching
     void treat_Panorama_Pick_Up_Image();
@@ -204,8 +189,6 @@ private slots:
     void treat_Panorama_Reset();
     void treat_Panorama_Save();
 #endif
-
-    void treat_Motion_Detection_Method(int);
     
     void treat_Photo_Method(int);
     void treat_Photo_SigmaS(int value);

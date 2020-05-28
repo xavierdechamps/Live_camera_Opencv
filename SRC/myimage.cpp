@@ -417,52 +417,7 @@ Mat& MyImage::get_motion_detected() {
     this->motion = Mat::zeros( this->image.size(), CV_8UC3 );
 
     switch (this->motion_detection_method) {
-        case 1: { // Farneback dense optical flow
-            UMat input_fback_prev, input_fback_current, uflow; // UMat
-            Mat flow; // Mat
-
-            cvtColor(this->image, input_fback_current, COLOR_BGR2GRAY);
-            cvtColor(this->previmage, input_fback_prev, COLOR_BGR2GRAY);
-
-            calcOpticalFlowFarneback(input_fback_prev, input_fback_current, uflow, 0.5, 3, 15, 3, 5, 1.2, 0);
-            uflow.copyTo(flow);
-            cvtColor(input_fback_prev, this->motion, COLOR_GRAY2BGR);
-
-            // colour with amplitude / phase in HSV format
-            Mat out,tmp,umag,uphase,components_flow[3];
-            cv::split(flow,components_flow);
-            cv::cartToPolar(components_flow[0],components_flow[1],umag,uphase, true);
-            vector<Mat> channels_out;
-            tmp = uphase * 0.5;
-            tmp.convertTo(tmp, CV_8U);
-            channels_out.push_back( tmp  ); // * 180 / 3.14159265359
-            channels_out.push_back( Mat::ones(uphase.rows, uphase.cols,CV_8U)*255 );
-            normalize( umag, tmp, 0,255,NORM_MINMAX );
-
-            Mat mask = tmp < 0.4; // threshold to remove background noise
-            tmp.setTo(0, mask);
-
-            tmp.convertTo(tmp, CV_8U);
-            channels_out.push_back( tmp );
-            merge(channels_out, out);
-            cv::cvtColor( out , this->motion , COLOR_HSV2BGR );
-
-
-            // add line to get direction of motion
-            int step = 8;
-            for(int y = 0; y < this->motion.rows; y += step) {
-                for(int x = 0; x < this->motion.cols; x += step) {
-                    const Point2f& fxy = flow.at<Point2f>(y, x);
-
-                    if (abs(fxy.x) >= 0.2 && abs(fxy.y) >=0.2) // threshold to remove background noise
-                        line(this->motion, Point(x,y), Point(cvRound(x+fxy.x), cvRound(y+fxy.y)),Scalar(0, 0, 255));
-                    //circle(this->motion, Point(x,y), 2, Scalar(0, 255, 0), -1);
-                }
-            }
-
-            break;
-        }
-        case 2: { // Background extraction
+        case 1: { // Background extraction
             Mat Mask;
             if (this->motion_background_first_time) {
                 this->motion_background_first_time = false;

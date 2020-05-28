@@ -12,10 +12,15 @@ SecondaryWindow::SecondaryWindow(QWidget *parent): QDialog(parent)
     // Initializations
     this->window_width = 200;
     this->window_height = 200;
-    this->Window_image = new QLabel("",this);
+    
+    this->imageScene = new QGraphicsScene(this);
+    this->imageView = new QGraphicsView(imageScene);
+//    this->setCentralWidget(this->imageView);
+    
+//    this->Window_image = new QLabel("",this);
 
     QGridLayout *grid = new QGridLayout;
-    grid->addWidget(this->Window_image, 0, 0);
+    grid->addWidget(this->imageView, 0, 0);
 
     setLayout(grid);
     setWindowTitle(tr("Secondary window"));
@@ -23,12 +28,40 @@ SecondaryWindow::SecondaryWindow(QWidget *parent): QDialog(parent)
     this->resize(this->window_width, this->window_height);
 }
 
+void SecondaryWindow::set_image_content(QImage &new_content) {
+    // Receive and update the new content for the image with dimensions
+    this->my_QImage = new_content;
+    this->window_width = new_content.width() ;
+    this->window_height = new_content.height();
+    
+    QPixmap piximage = QPixmap::fromImage(this->my_QImage);
+    imageScene->clear();
+    imageView->resetMatrix();
+    imageScene->addPixmap(piximage);
+    imageScene->update();
+    imageView->setSceneRect(piximage.rect());
+    
+    this->resize(1.2*this->window_width, 1.2*this->window_height);
+    repaint();
+}
+
 void SecondaryWindow::set_image_content(QImage &new_content, int width, int height) {
     // Receive and update the new content for the image with dimensions
     this->my_QImage = new_content;
     this->window_width = width;
     this->window_height = height;
-    this->Window_image->setPixmap(QPixmap::fromImage(this->my_QImage));
-    this->setFixedSize(this->window_width, this->window_height);
+    
+    QPixmap piximage = QPixmap::fromImage(this->my_QImage);
+    imageScene->clear();
+    imageView->resetMatrix();
+    imageScene->addPixmap(piximage);
+    imageScene->update();
+    imageView->setSceneRect(piximage.rect());
+    
+    this->resize(1.2*this->window_width, 1.2*this->window_height);
     repaint();
+}
+
+void SecondaryWindow::set_window_title(QString title){
+    setWindowTitle(title);
 }

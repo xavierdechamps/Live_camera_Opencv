@@ -24,7 +24,7 @@ class Dialog_Blur : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Blur(QWidget *parent = 0);
+    explicit Dialog_Blur(QWidget *parent = nullptr);
     ~Dialog_Blur();
 
 private:

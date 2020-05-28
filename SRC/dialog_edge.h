@@ -22,7 +22,7 @@ class Dialog_Edge : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Edge(QWidget *parent = 0);
+    explicit Dialog_Edge(QWidget *parent = nullptr);
 
 private:
     QLabel* Slider_canny_lowthreshold_value;

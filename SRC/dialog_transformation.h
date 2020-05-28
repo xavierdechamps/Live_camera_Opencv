@@ -21,7 +21,7 @@ class Dialog_Transformation : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Transformation(QWidget *parent = 0);
+    explicit Dialog_Transformation(QWidget *parent = nullptr);
 
 private:
     QLabel* Slider_rotation_qlabel;

@@ -22,7 +22,7 @@ class Dialog_Histogram : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Histogram(QWidget *parent = 0);
+    explicit Dialog_Histogram(QWidget *parent = nullptr);
 
 private:
     int value_clip_limit;

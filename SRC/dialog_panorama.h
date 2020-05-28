@@ -17,7 +17,7 @@ class Dialog_Panorama: public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Panorama(QWidget *parent = 0);
+    explicit Dialog_Panorama(QWidget *parent = nullptr);
     void set_QLabel_number_images(int);
     void set_QLabel_string(std::string);
 

@@ -17,7 +17,7 @@ class Dialog_Motion_Detection : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Motion_Detection(QWidget *parent = 0);
+    explicit Dialog_Motion_Detection(QWidget *parent = nullptr);
 
 private:
     QButtonGroup* RadioButtons;

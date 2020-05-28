@@ -22,7 +22,7 @@ class Dialog_Photo: public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Photo(QWidget *parent = 0);
+    explicit Dialog_Photo(QWidget *parent = nullptr);
 
 private:
     QButtonGroup* RadioButtons;

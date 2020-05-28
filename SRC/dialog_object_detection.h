@@ -21,7 +21,7 @@ class Dialog_Object_Detection: public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Object_Detection(QWidget *parent = 0);
+    explicit Dialog_Object_Detection(QWidget *parent = nullptr);
 
 private:
     int value_hough_line_threshold;

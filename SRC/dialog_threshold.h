@@ -23,7 +23,7 @@ class Dialog_Threshold : public QDialog
     Q_OBJECT
 
 public:
-    explicit Dialog_Threshold(QWidget *parent = 0);
+    explicit Dialog_Threshold(QWidget *parent = nullptr);
 
 private:
     QLabel* Slider_value;
