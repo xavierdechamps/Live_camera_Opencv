@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
 */
 
 #ifndef DIALOG_HISTOGRAM_H
@@ -16,6 +16,7 @@
 #include <QGroupBox>
 
 #include <iostream>
+using namespace std;
 
 class Dialog_Histogram : public QDialog
 {

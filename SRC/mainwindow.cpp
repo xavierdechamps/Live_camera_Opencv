@@ -10,7 +10,6 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), 
                                           worker(nullptr),
-                                          my_Timer(this),
                                           menu_File(nullptr),
                                           menu_Filters(nullptr),
                                           currentImage(nullptr)
@@ -35,10 +34,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     worker = new captureVideo(this,this->data_lock);
     
     // Links signals from the video capturer to functions that update the display
-    connect(worker, &captureVideo::frameCaptured,   this, &MainWindow::updateFrame );
-    connect(worker, &captureVideo::changeInfo   ,   this, &MainWindow::updateMainStatusLabel );
-    connect(worker, &captureVideo::motionCaptured,  this, &MainWindow::update_motion_window );
-    connect(worker, &captureVideo::objectsCaptured, this, &MainWindow::update_objects_window );
+    connect(worker, &captureVideo::frameCaptured,     this, &MainWindow::updateFrame );
+    connect(worker, &captureVideo::changeInfo   ,     this, &MainWindow::updateMainStatusLabel );
+    connect(worker, &captureVideo::motionCaptured,    this, &MainWindow::update_motion_window );
+    connect(worker, &captureVideo::objectsCaptured,   this, &MainWindow::update_objects_window );
+    connect(worker, &captureVideo::histogramCaptured, this, &MainWindow::update_histogram_window );
+#ifdef withstitching
+    connect(worker, &captureVideo::panoramaCaptured,  this, &MainWindow::update_panorama_window );
+#endif
     
     worker->setCamera(camID);
     worker->openCamera() ;
@@ -50,15 +53,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     this->resize(800, 600); 
     
     // Setup menubar
-    this->menu_File      = menuBar()->addMenu(tr("&File"));
-    this->menu_Filters   = menuBar()->addMenu(tr("Filters"));
-    this->menu_Detection = menuBar()->addMenu(tr("&Detection"));
+    this->menu_File            = menuBar()->addMenu(tr("&File"));
+    this->menu_Filters         = menuBar()->addMenu(tr("Filters"));
+    this->menu_Detection       = menuBar()->addMenu(tr("&Detection"));
     this->menu_Transformations = menuBar()->addMenu(tr("&Transformations"));
-    this->menu_Operations = menuBar()->addMenu(tr("&Operations"));
-    
-    // QLabel that will actually show the video, conversion from QImage with QPixmap::fromImage
-    //this->Window_image = new QLabel(this);
-    //this->setCentralWidget(this->Window_image);
+    this->menu_Operations      = menuBar()->addMenu(tr("&Operations"));
     
     this->imageScene = new QGraphicsScene(this);
     this->imageView = new QGraphicsView(imageScene);
@@ -128,7 +127,8 @@ void MainWindow::createActions() {
     this->actionTransformation = new QAction(tr("&Transformation"), this);
     this->actionTransformation->setToolTip(tr("Apply geometric transformations to the image"));
     this->actionTransformation->setCheckable(true);
-    connect(this->actionTransformation, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Transformation(bool)));
+    connect(this->actionTransformation, SIGNAL(triggered(bool)), this->worker, SLOT(toggleTransformation(bool)));
+    connect(this->actionTransformation, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Transformation(bool)));
 
 #ifdef withobjdetect
     this->actionFace = new QAction(tr("&Face recognition"), this);
@@ -137,28 +137,31 @@ void MainWindow::createActions() {
     connect(this->actionFace, SIGNAL(triggered(bool)), this->worker, SLOT(toggleFaceDetection(bool)));
 #endif
 
-    this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
-    this->actionHistoEq->setToolTip(tr("Equalize the histogram of the image"));
-    this->actionHistoEq->setCheckable(true);
-    connect(this->actionHistoEq, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Histogram(bool)));
-
     this->actionObjectDetection = new QAction(tr("&Object detection"), this);
     this->actionObjectDetection->setToolTip(tr("Detect patterns in the image"));
     this->actionObjectDetection->setCheckable(true);
     connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this->worker, SLOT(toggleObjectDetection(bool)));
     connect(this->actionObjectDetection, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Object_Detection(bool)));
 
+    this->actionHistoEq = new QAction(tr("&Histogram equalization"), this);
+    this->actionHistoEq->setToolTip(tr("Equalize the histogram of the image"));
+    this->actionHistoEq->setCheckable(true);
+    connect(this->actionHistoEq, SIGNAL(triggered(bool)), this->worker, SLOT(toggleHistogramEqualization(bool)));
+    connect(this->actionHistoEq, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Histogram(bool)));
+    
 #ifdef withstitching
     this->actionPanorama = new QAction(tr("&Panorama"), this);
     this->actionPanorama->setToolTip(tr("Create a panorama from chosen images"));
     this->actionPanorama->setCheckable(true);
-    connect(this->actionPanorama, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Panorama(bool)));
+    connect(this->actionPanorama, SIGNAL(triggered(bool)), this->worker, SLOT(togglePanorama(bool)));
+    connect(this->actionPanorama, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Panorama(bool)));
 #endif
 
     this->actionPhoto = new QAction(tr("Module Photo"), this);
     this->actionPhoto->setToolTip(tr("OpenCV module Photo"));
     this->actionPhoto->setCheckable(true);
-    connect(this->actionPhoto, SIGNAL(triggered(bool)), this, SLOT(treat_Button_Photo(bool)));
+    connect(this->actionPhoto, SIGNAL(triggered(bool)), this->worker, SLOT(togglePhoto(bool)));
+    connect(this->actionPhoto, SIGNAL(triggered(bool)), this,         SLOT(treat_Button_Photo(bool)));
 
     this->actionRecord = new QAction(tr("&Record"), this);
     this->actionRecord->setToolTip(tr("Record the video"));
@@ -168,7 +171,7 @@ void MainWindow::createActions() {
     this->actionSaveImage = new QAction(tr("&Save"), this );
     this->actionSaveImage->setToolTip(tr("Save the current image"));
 //    this->actionSaveImage->setCheckable(true);
-    connect(this->actionSaveImage, SIGNAL(triggered()), this, SLOT(treat_Button_Save()) );
+    connect(this->actionSaveImage, SIGNAL(triggered()), this->worker, SLOT(file_save_image()) );
     
 #ifdef withzbar
     this->actionQRcode = new QAction(tr("&QR code"), this);
@@ -244,42 +247,47 @@ void MainWindow::createWindows(){
     connect(this->dialog_motion_detection, SIGNAL(Signal_motion_detection_method_changed(int)), this->worker, SLOT(change_motion_detection_method(int)) );
     this->dialog_motion_detection->hide();
     
-    // Create a new object for geometric transformations and create adequate connections to functions, depending on the received signals
-    this->dialog_transformation = new Dialog_Transformation(this);
-    connect(this->dialog_transformation, SIGNAL(Signal_transformation_method_changed(int)), this, SLOT(treat_Transformation_Method(int)) );
-    connect(this->dialog_transformation, SIGNAL(Signal_transformation_rotation_changed(int)), this, SLOT(treat_Slider_Transformation_Rotation_Value(int)) );
-    this->dialog_transformation->hide();
-
-    // Create a new object for histogram operations and create adequate connections to functions, depending on the received signals
-    this->dialog_histogram = new Dialog_Histogram(this);
-    connect(dialog_histogram, SIGNAL(Signal_histogram_method_changed(int)), this, SLOT(treat_Histogram_method(int)) );
-    connect(dialog_histogram, SIGNAL(Signal_histogram_clip_limit_changed(int)), this, SLOT(treat_Histogram_clip_limit(int)) );
-    connect(dialog_histogram, SIGNAL(Signal_histogram_tiles_changed(int)), this, SLOT(treat_Histogram_tiles(int)) );
-    connect(dialog_histogram, SIGNAL(Signal_histogram_show_histogram(bool)), this, SLOT(treat_Histogram_show_histogram(bool)) );
-    this->dialog_histogram->hide();
-
     // Create a new object for object detections and create adequate connections to functions, depending on the received signals
     this->dialog_object_detection = new Dialog_Object_Detection(this);
     connect(this->dialog_object_detection, SIGNAL(Signal_object_detection_method_changed(int)), this->worker, SLOT(change_object_detection_method(int)) );
     connect(this->dialog_object_detection, SIGNAL(Signal_hough_line_threshold_changed(int)),    this->worker, SLOT(change_object_hough_line_threshold(int)) );
     this->dialog_object_detection->hide();
+    
+    // Create a new object for geometric transformations and create adequate connections to functions, depending on the received signals
+    this->dialog_transformation = new Dialog_Transformation(this);
+    connect(this->dialog_transformation, SIGNAL(Signal_transformation_method_changed(int)),   this->worker, SLOT(change_transformation_method(int)) );
+    connect(this->dialog_transformation, SIGNAL(Signal_transformation_rotation_changed(int)), this->worker, SLOT(change_transformation_value_rotation(int)) );
+    this->dialog_transformation->hide();
+
+    // Create a new object for histogram operations and create adequate connections to functions, depending on the received signals
+    this->dialog_histogram = new Dialog_Histogram(this);
+    connect(dialog_histogram, SIGNAL(Signal_histogram_method_changed(int)),     this->worker, SLOT(change_histogram_method(int)) );
+    connect(dialog_histogram, SIGNAL(Signal_histogram_clip_limit_changed(int)), this->worker, SLOT(change_histogram_clip_limit(int)) );
+    connect(dialog_histogram, SIGNAL(Signal_histogram_tiles_changed(int)),      this->worker, SLOT(change_histogram_tiles(int)) );
+    connect(dialog_histogram, SIGNAL(Signal_histogram_show_histogram(bool)),     this->worker, SLOT(change_histogram_show(bool)) );
+    connect(dialog_histogram, SIGNAL(Signal_histogram_show_histogram(bool)),    this, SLOT(treat_Histogram_show_histogram(bool)) );
+    this->dialog_histogram->hide();
 
 #ifdef withstitching
     // Create a new object for stitching operations and create adequate connections to functions, depending on the received signals
     this->dialog_panorama = new Dialog_Panorama(this);
-    connect(this->dialog_panorama,SIGNAL(Signal_pick_up_image_panorama()), this, SLOT(treat_Panorama_Pick_Up_Image()));
-    connect(this->dialog_panorama,SIGNAL(Signal_pop_up_image_panorama()), this, SLOT(treat_Panorama_Pop_Up_Image()));
-    connect(this->dialog_panorama,SIGNAL(Signal_update_panorama()), this, SLOT(treat_Panorama_Update()));
-    connect(this->dialog_panorama,SIGNAL(Signal_reset_panorama()), this, SLOT(treat_Panorama_Reset()));
-    connect(this->dialog_panorama,SIGNAL(Signal_save_panorama()), this, SLOT(treat_Panorama_Save()));
+    connect(this->dialog_panorama,SIGNAL(Signal_pick_up_image_panorama()), this->worker, SLOT(panorama_pick_up_image()));
+    connect(this->dialog_panorama,SIGNAL(Signal_pop_up_image_panorama()),  this->worker, SLOT(panorama_pop_out_image()));
+    connect(this->dialog_panorama,SIGNAL(Signal_reset_panorama()),         this->worker, SLOT(panorama_reset()));
+    connect(this->dialog_panorama,SIGNAL(Signal_update_panorama()),        this->worker, SLOT(panorama_update()));
+    connect(this->dialog_panorama,SIGNAL(Signal_save_panorama()),          this->worker, SLOT(panorama_save()));
+    
+    connect(this->worker,SIGNAL(panoramaInfo(QString)),     this->dialog_panorama, SLOT(set_QLabel_string(QString)));
+    connect(this->worker,SIGNAL(panoramaNumberImages(int)), this->dialog_panorama, SLOT(set_QLabel_number_images(int)));
+    
     this->dialog_panorama->hide();
 #endif
 
     // Create a new object for module Photo and create adequate connections to functions, depending on the received signals
     this->dialog_photo = new Dialog_Photo(this);
-    connect(this->dialog_photo, SIGNAL(Signal_photo_method_changed(int)), this, SLOT(treat_Photo_Method(int)) );
-    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaS_changed(int)),this, SLOT(treat_Photo_SigmaS(int)) );
-    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaR_changed(double)),this, SLOT(treat_Photo_SigmaR(double)) );
+    connect(this->dialog_photo, SIGNAL(Signal_photo_method_changed(int)),   this->worker, SLOT(change_photo_method(int)) );
+    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaS_changed(int)),   this->worker, SLOT(change_photo_sigmas(int)) );
+    connect(this->dialog_photo, SIGNAL(Signal_photo_sigmaR_changed(double)),this->worker, SLOT(change_photo_sigmar(double)) );
     this->dialog_motion_detection->hide();
     
 #ifdef withzbar
@@ -332,15 +340,10 @@ void MainWindow::treat_Button_Threshold(bool state) {
 }
 
 void MainWindow::treat_Button_Transformation(bool state) {
-    this->myFrame->toggleTransformation();
-    if (state) {
+    if (state) 
         this->dialog_transformation->show();
-        this->mainStatusLabel->setText("Transformations activated");
-    }
-    else {
+    else 
         this->dialog_transformation->hide();
-        this->mainStatusLabel->setText("Transformations desactivated");
-    }
 }
 
 void MainWindow::treat_Button_Edge(bool state) {
@@ -351,15 +354,10 @@ void MainWindow::treat_Button_Edge(bool state) {
 }
 
 void MainWindow::treat_Button_Histogram(bool state) {
-    this->myFrame->toggleHistoEq();
-    if (state) {
+    if (state) 
         this->dialog_histogram->show();
-        this->mainStatusLabel->setText("Histogram equalization activated");
-    }
-    else {
+    else 
         this->dialog_histogram->hide();
-        this->mainStatusLabel->setText("Histogram equalization desactivated");
-    }
 }
 
 void MainWindow::treat_Button_Object_Detection(bool state) {
@@ -376,17 +374,14 @@ void MainWindow::treat_Button_Object_Detection(bool state) {
 
 #ifdef withstitching
 void MainWindow::treat_Button_Panorama(bool state) {
-    this->myFrame->togglePanorama();
     this->panorama_window_opened = state;
     if (state) {
         this->dialog_panorama->show();
         this->fourthWindow->show();
-        this->mainStatusLabel->setText("Panorama creation activated");
     }
     else {
         this->dialog_panorama->hide();
         this->fourthWindow->hide();
-        this->mainStatusLabel->setText("Panorama creation desactivated");
     }
 }
 #endif
@@ -404,73 +399,17 @@ void MainWindow::treat_Button_Motion_Detection(bool state) {
 }
 
 void MainWindow::treat_Button_Photo(bool state) {
-    this->myFrame->togglePhoto();
-    if (state) {
+    if (state) 
         this->dialog_photo->show();
-        this->mainStatusLabel->setText("Module Photo activated");
-    }
-    else {
+    else 
         this->dialog_photo->hide();
-        this->mainStatusLabel->setText("Module Photo desactivated");
-    }
 }
 
 void MainWindow::treat_Button_Record(bool state) {
-    this->recording = state;
-    if (state) {
-        if (! this->video_out.isOpened() ) {// FPS : this->capture.get(cv::CAP_PROP_FPS)
-
-            QString QfileNameLocal = QFileDialog::getSaveFileName(this,
-                                                                 tr("Filename for the video"),
-                                                                 QString::fromStdString(this->main_directory),
-                                                                 tr("Images (*.avi)") );
-            if (QfileNameLocal.isEmpty()) {// If one clicked the cancel button, the string is empty
-                this->recording = false;
-                this->actionRecord->setChecked(false) ;
-                return;
-            }
-            
-            this->video_out_name = QfileNameLocal.toStdString();
-
-            this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
-                                 10.,
-                                 cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
-                                          this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
-                                 true);
-        }
-        this->mainStatusLabel->setText("Saving the video under "+QString::fromStdString(this->video_out_name));
-    }
-    else {
-        if (this->video_out.isOpened() )
-            this->video_out.release();
-
-        this->record_time_blink = 0;
-        this->mainStatusLabel->setText("Saved the video under "+QString::fromStdString(this->video_out_name));
-    }
-}
-
-void MainWindow::treat_Button_Save() {
-    QString QfileNameLocal = QFileDialog::getSaveFileName(this,
-                                                         tr("File name to save the image"),
-                                                         QString::fromStdString(this->main_directory),
-                                                         tr("Images (*.png *.jpg)") );
-    if (QfileNameLocal.isEmpty()) // If one clicked the cancel button, the string is empty
-        return;
-
-    this->file_name_save = QfileNameLocal.toStdString();
-
-    vector<int> compression_params;
-    compression_params.push_back(IMWRITE_JPEG_QUALITY);
-    compression_params.push_back(100);
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(4);
-
-    Mat imageMat = myFrame->get_image_content();
-    Mat imageOutput;
-    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
-    imwrite(this->file_name_save , imageOutput , compression_params );
-    
-    this->mainStatusLabel->setText("Saved the image under "+QfileNameLocal);
+    if ( ! this->worker->file_save_movie(state) )
+        // in the case there is a problem with saving the movie
+        // (clicked on cancel in filename window)
+        this->actionRecord->setChecked(false) ; 
 }
 
 #ifdef withzbar
@@ -478,34 +417,6 @@ void MainWindow::treat_Button_QRcode(bool state) {
     this->qrdecoder_activated = state;
 }
 #endif
-
-void MainWindow::treat_Photo_SigmaS(int value){
-    this->myFrame->set_photo_sigmas(value);
-}
-
-void MainWindow::treat_Photo_SigmaR(double value){
-    this->myFrame->set_photo_sigmar(value);
-}
-
-void MainWindow::treat_Transformation_Method(int method) {
-    this->myFrame->set_transf_method(method);
-}
-
-void MainWindow::treat_Slider_Transformation_Rotation_Value(int value) {
-    this->myFrame->set_transf_rotation_value(value);
-}
-
-void MainWindow::treat_Histogram_method(int method) {
-    this->myFrame->set_histo_eq_method(method);
-}
-
-void MainWindow::treat_Histogram_tiles(int value) {
-    this->myFrame->set_histo_eq_tiles(value);
-}
-
-void MainWindow::treat_Histogram_clip_limit(int value) {
-    this->myFrame->set_histo_eq_clip_limit(value);
-}
 
 void MainWindow::treat_Histogram_show_histogram(bool checked) {
     this->histogram_window_opened = checked;
@@ -516,87 +427,14 @@ void MainWindow::treat_Histogram_show_histogram(bool checked) {
 }
 
 #ifdef withstitching
-void MainWindow::treat_Panorama_Pick_Up_Image() {
-    this->myFrame->panorama_insert_image();
-    this->treat_Panorama_Update();
+void MainWindow::update_panorama_window(QImage *image) {
+    this->fourthWindow->set_image_content(*image);
 }
 #endif
 
-#ifdef withstitching
-void MainWindow::treat_Panorama_Pop_Up_Image() {
-    this->myFrame->panorama_pop_up_image();
-    int num_imgs = this->myFrame->panorama_get_size();
-    this->dialog_panorama->set_QLabel_number_images(num_imgs);
-    std::string return_status = "Removed the last image from the stack";
-    this->dialog_panorama->set_QLabel_string(return_status);
-}
-#endif
-
-#ifdef withstitching
-void MainWindow::treat_Panorama_Update() {
-    std::string return_status = "Computing the new panorama...";
-    this->dialog_panorama->set_QLabel_string(return_status);
-
-    return_status = this->myFrame->panorama_compute_result();
-    Mat imageMat = this->myFrame->get_image_panorama();
-    int num_imgs = this->myFrame->panorama_get_size();
-    this->dialog_panorama->set_QLabel_number_images(num_imgs);
-    this->dialog_panorama->set_QLabel_string(return_status);
-
-    this->myFourthImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->fourthWindow->set_image_content(this->myFourthImage, imageMat.cols, imageMat.rows );
-}
-#endif
-
-#ifdef withstitching
-void MainWindow::treat_Panorama_Reset() {
-    this->myFrame->panorama_reset();
-    int num_imgs = this->myFrame->panorama_get_size();
-    this->dialog_panorama->set_QLabel_number_images(num_imgs);
-    std::string return_status = "Reset the stack";
-    this->dialog_panorama->set_QLabel_string(return_status);
-
-    Mat imageMat = this->myFrame->get_image_panorama();
-    this->myFourthImage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->fourthWindow->set_image_content(this->myFourthImage, imageMat.cols, imageMat.rows );
-}
-#endif
-
-#ifdef withstitching
-void MainWindow::treat_Panorama_Save() {
-    Mat imageMat = this->myFrame->get_image_panorama();
-
-    QString QfileNameLocal = QFileDialog::getSaveFileName(this,
-                                                         tr("File name to save the panorama"),
-                                                         QString::fromStdString(this->main_directory),
-                                                         tr("Images (*.png *.jpg)") );
-    if (QfileNameLocal.isEmpty()) // If one clicked the cancel button, the string is empty
-        return;
-
-    this->file_name_save = QfileNameLocal.toStdString();
-
-    vector<int> compression_params;
-    compression_params.push_back(IMWRITE_JPEG_QUALITY);
-    compression_params.push_back(100);
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(4);
-
-    Mat imageOutput;
-    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
-    imwrite(this->file_name_save , imageOutput , compression_params );
-}
-#endif
-
-void MainWindow::treat_Photo_Method(int method) {
-    this->myFrame->set_photo_method(method);
-}
-
-void MainWindow::update_histogram_window() {
-    // Called by repaint event every 10ms
-    // Update the display of the histogram in the secondary window
-    Mat imageMat = this->myFrame->get_image_histogram();
-    this->mySecondQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    this->secondWindow->set_image_content(this->mySecondQimage, imageMat.cols, imageMat.rows );
+void MainWindow::update_histogram_window(QImage *image) {
+    if (this->histogram_window_opened)
+        this->secondWindow->set_image_content(*image);
 }
 
 void MainWindow::update_objects_window(QImage *image) {
@@ -669,18 +507,6 @@ void MainWindow::updateMainStatusLabel(QString newstring){
 }
 
 void MainWindow::paintEvent(QPaintEvent* ) {
-
-    if (this->histogram_window_opened)
-        update_histogram_window();
-
-//    if (this->object_detection_window_opened)
-//        update_objects_window();
-
-//    if (this->motion_detection_window_opened)
-//        update_motion_window();
-    
-//    this->Window_image->setPixmap(QPixmap::fromImage(this->myQimage));
-    
     QPixmap piximage = QPixmap::fromImage(this->myQimage);
 
     imageScene->clear();

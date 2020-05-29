@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
 */
 
 #ifndef MAINWINDOW_H
@@ -8,9 +8,7 @@
 #include <QMainWindow>
 #include <QImage>
 #include <QPainter>
-#include <QTimer>
 #include <QAction>
-#include <QFileDialog>
 #ifdef withzbar
 #include <QDesktopServices> // to open URL links from QR codes
 #include <QUrl>             // to open URL links from QR codes
@@ -20,13 +18,10 @@
 #include <QMenuBar>
 #include <QGraphicsScene> // To show the content of the camera in the Qt window
 #include <QGraphicsView>  // To show the content of the camera in the Qt window
-#include <QGraphicsPixmapItem>
 #include <QStatusBar>
 
 #include <QMutex>
 #include <QThread>
-
-
 
 #include "dialog_blur.h"
 #include "dialog_edge.h"
@@ -41,16 +36,8 @@
 #include "dialog_photo.h"
 #include "secondarywindow.h"
 
-#include "myimage.h"
-
 #include "capturevideo.h"
-//#include "capturethread.h"
 
-#include "opencv2/core.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/highgui.hpp"
-
-using namespace cv;
 using namespace std;
 
 class MainWindow: public QMainWindow
@@ -65,16 +52,10 @@ private:
     // For capture thread
     captureVideo *worker;
     QThread thread;
-    
     QMutex *data_lock;
     
-    MyImage* myFrame;
-    QImage myQimage,mySecondQimage,myThirdImage,myFourthImage,myFifthImage;
-    VideoCapture capture;
-
-    QLabel *Window_image;
+    QImage myQimage;
     
-    QTimer my_Timer , thread_timer;
     QMenu *menu_File , *menu_Filters, *menu_Detection, *menu_Transformations, *menu_Operations;
     
     QGraphicsScene *imageScene;
@@ -84,23 +65,23 @@ private:
     QStatusBar *mainStatusBar;
     QLabel *mainStatusLabel;
     
-    Dialog_Blur* dialog_blur;
-    Dialog_Edge* dialog_edge;
-    Dialog_Threshold* dialog_threshold;
-    Dialog_Transformation* dialog_transformation;
-    Dialog_Histogram* dialog_histogram;
-    Dialog_Object_Detection* dialog_object_detection;
+    Dialog_Blur             *dialog_blur;
+    Dialog_Edge             *dialog_edge;
+    Dialog_Threshold        *dialog_threshold;
+    Dialog_Transformation   *dialog_transformation;
+    Dialog_Histogram        *dialog_histogram;
+    Dialog_Object_Detection *dialog_object_detection;
 #ifdef withstitching
-    Dialog_Panorama* dialog_panorama;
+    Dialog_Panorama         *dialog_panorama;
 #endif
-    Dialog_Motion_Detection* dialog_motion_detection;
-    Dialog_Photo* dialog_photo;
-    SecondaryWindow* secondWindow;
-    SecondaryWindow* thirdWindow;
-    SecondaryWindow* fourthWindow;
-    SecondaryWindow* fifthWindow;
+    Dialog_Motion_Detection *dialog_motion_detection;
+    Dialog_Photo            *dialog_photo;
+    
+    SecondaryWindow *secondWindow;
+    SecondaryWindow *thirdWindow;
+    SecondaryWindow *fourthWindow;
+    SecondaryWindow *fifthWindow;
 
-    String file_name_save, main_directory, file_background, file_cascade;
 #ifdef withzbar
     bool qrdecoder_activated;
 #endif
@@ -111,11 +92,6 @@ private:
     bool panorama_window_opened;
 #endif
     bool motion_detection_window_opened;
-    
-    VideoWriter video_out;
-    String video_out_name;
-    bool recording;
-    int record_time_blink;
 
     // List of QActions
     QAction *actionColour_BW;
@@ -140,7 +116,7 @@ private:
     QAction *actionQRcode;
 #endif
 
-    void update_histogram_window();
+    void update_histogram_window(QImage *image);
     void update_objects_window(QImage *image);
     void update_motion_window(QImage *image);
     void createActions();
@@ -165,34 +141,16 @@ private slots:
     void treat_Button_Object_Detection(bool);
 #ifdef withstitching
     void treat_Button_Panorama(bool);
+    void update_panorama_window(QImage *image);
 #endif
     void treat_Button_Motion_Detection(bool);
     void treat_Button_Photo(bool);
     void treat_Button_Record(bool);
-    void treat_Button_Save();
 #ifdef withzbar
     void treat_Button_QRcode(bool);
 #endif
-
-    void treat_Transformation_Method(int);
-    void treat_Slider_Transformation_Rotation_Value(int);
-
-    void treat_Histogram_method(int);
-    void treat_Histogram_tiles(int);
-    void treat_Histogram_clip_limit(int);
     void treat_Histogram_show_histogram(bool);
 
-#ifdef withstitching
-    void treat_Panorama_Pick_Up_Image();
-    void treat_Panorama_Pop_Up_Image();
-    void treat_Panorama_Update();
-    void treat_Panorama_Reset();
-    void treat_Panorama_Save();
-#endif
-    
-    void treat_Photo_Method(int);
-    void treat_Photo_SigmaS(int value);
-    void treat_Photo_SigmaR(double value);
 };
 
 #endif // MAINWINDOW_H

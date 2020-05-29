@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
 */
 
 #ifndef DIALOG_PANORAMA_H
@@ -11,6 +11,7 @@
 #include <QGridLayout>
 
 #include <iostream>
+using namespace std;
 
 class Dialog_Panorama: public QDialog
 {
@@ -18,8 +19,10 @@ class Dialog_Panorama: public QDialog
 
 public:
     explicit Dialog_Panorama(QWidget *parent = nullptr);
+    
+public slots:
     void set_QLabel_number_images(int);
-    void set_QLabel_string(std::string);
+    void set_QLabel_string(QString);
 
 private:
     QLabel* Panorama_value; // shows the number of pictures in the current panorama

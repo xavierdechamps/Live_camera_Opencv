@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
 */
 
 #ifndef DIALOG_OBJECT_DETECTION_H
@@ -15,6 +15,7 @@
 #include <QCheckBox>
 
 #include <iostream>
+using namespace std;
 
 class Dialog_Object_Detection: public QDialog
 {

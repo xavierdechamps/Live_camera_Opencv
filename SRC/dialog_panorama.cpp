@@ -62,9 +62,9 @@ void Dialog_Panorama::set_QLabel_number_images(int value) {
     this->Panorama_value->setText("Number of images in the panorama: "+QString::number(value));
 }
 
-void Dialog_Panorama::set_QLabel_string(std::string label) {
+void Dialog_Panorama::set_QLabel_string(QString label) {
     // Set the status of the stitching operation
-    this->Panorama_status->setText(QString::fromStdString(label));
+    this->Panorama_status->setText(label);
 }
 
 void Dialog_Panorama::onClick_Pick_Up_Image() {

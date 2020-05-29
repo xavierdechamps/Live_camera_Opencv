@@ -41,7 +41,7 @@ void SecondaryWindow::set_image_content(QImage &new_content) {
     imageScene->update();
     imageView->setSceneRect(piximage.rect());
     
-    this->resize(1.2*this->window_width, 1.2*this->window_height);
+    this->resize(1.15*this->window_width, 1.15*this->window_height);
     repaint();
 }
 
@@ -58,7 +58,7 @@ void SecondaryWindow::set_image_content(QImage &new_content, int width, int heig
     imageScene->update();
     imageView->setSceneRect(piximage.rect());
     
-    this->resize(1.2*this->window_width, 1.2*this->window_height);
+    this->resize(1.15*this->window_width, 1.15*this->window_height);
     repaint();
 }
 

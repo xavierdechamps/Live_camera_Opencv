@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
 */
 
 #ifndef DIALOG_MOTION_DETECTION_H
@@ -11,6 +11,7 @@
 #include <QRadioButton>
 
 #include <iostream>
+using namespace std;
 
 class Dialog_Motion_Detection : public QDialog
 {
