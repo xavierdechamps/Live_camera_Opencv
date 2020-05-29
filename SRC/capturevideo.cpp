@@ -4,7 +4,7 @@
  * PURPOSE
  *   Management of thread that takes care of capturing the camera, applying image
  *   processes on it and sending the treated image to the GUI MainWindow through signals
- * 
+ *
  *   Multithreaded implementation. The class captureVideo is solely dedicated to the treatment
  *   of the image and the saving of movies/images to local files.
 */
@@ -15,8 +15,8 @@
  * @brief captureVideo::captureVideo
  * @param parent: object of class QMainWindow to open QFileDialog windows
  * @param data_lock: object of class QMutex to lock-unlock access to common variables between threads
- * 
- * Constructor of the class captureVideo. 
+ *
+ * Constructor of the class captureVideo.
  */
 captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowParent(parent),
                                                                     data_lock(data_lock)
@@ -27,13 +27,14 @@ captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowPa
     this->qrdecoder_active = false; // Is QR decoder activated?
     this->histo_active     = false; // Is histogram activated?
     this->panorama_active  = false; // Is panorama stitching activated?
-    
+
     this->camID = -1;
-    
+
     // Initializations
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
     this->file_name_save = this->main_directory + "webcam.jpg";
-    
+    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
+
     // Concerns the recording of the video
     this->record_time_blink = 0;
     this->recording = false;
@@ -43,7 +44,7 @@ captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowPa
 /**
  * @brief captureVideo::setParent
  * @param parent
- * 
+ *
  * Set a link to an object of type QMainWindow in order to be able to open QFileDialog windows
  */
 void captureVideo::setParent(QMainWindow *parent) {
@@ -53,7 +54,7 @@ void captureVideo::setParent(QMainWindow *parent) {
 /**
  * @brief captureVideo::setCamera
  * @param camera
- * 
+ *
  * Set the ID number of the camera to open
  */
 void captureVideo::setCamera(int camera){
@@ -64,7 +65,7 @@ void captureVideo::setCamera(int camera){
  * @brief captureVideo::openCamera
  * @return true if the camera is open
  *         false if the camera ID is not set yet
- * 
+ *
  * Open the camera anad initialize a new object of class MyImage
  */
 bool captureVideo::openCamera(){
@@ -73,31 +74,31 @@ bool captureVideo::openCamera(){
         return false;
     }
     closeCamera();
-    
-    // Create a new OpenCV MyImage, don't initialize it in the constructor otherwise 
+
+    // Create a new OpenCV MyImage, don't initialize it in the constructor otherwise
     // myFrame is owned by mainWindow
     this->myFrame = new MyImage();
     setCascadeFile();
-    
+
     return this->capture.open(this->camID);
 }
 
 /**
  * @brief captureVideo::closeCamera
  * @return true if everything went well
- * 
+ *
  * Close the camera and delete the object of class MyImage. Close also the current movie if active.
  */
 bool captureVideo::closeCamera() {
     if (cameraIsOpen()){
         this->capture.release();
-        
+
         // Delete object of class MyImage
         if (this->myFrame != nullptr ) {
             delete this->myFrame ;
             this->myFrame = nullptr ;
         }
-        
+
         // Stop saving the movie
         file_save_movie(false);
     }
@@ -114,13 +115,12 @@ bool captureVideo::cameraIsOpen(){
 
 /**
  * @brief captureVideo::setCascadeFile
- * 
+ *
  * Set the cascade file required by OpenCV. Active only if face detection is required in the .pro file.
  */
 void captureVideo::setCascadeFile(){
 #ifdef withobjdetect
     if (this->mainWindowParent != nullptr) {
-        this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
         bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
         while (!testCascade){
             QString QfileNameLocal = QFileDialog::getOpenFileName(this->mainWindowParent,
@@ -131,7 +131,7 @@ void captureVideo::setCascadeFile(){
                 this->file_cascade = QfileNameLocal.toStdString() ;
                 testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
             }
-    
+
         }
     }
     else {
@@ -154,14 +154,14 @@ bool captureVideo::getQRcodedata(string &qrdata, string &qrtype){
 
 /**
  * @brief captureVideo::run
- * 
- * The core of the class captureVideo. It loops indefenitely to capture frames from the camera and 
+ *
+ * The core of the class captureVideo. It loops indefenitely to capture frames from the camera and
  * to apply image processings on them. The treated images are sent to the GUI through signals.
  */
 void captureVideo::run() {
     this->running = true;
     Mat imageMat;
-    
+
     while (this->running) {
         if(cameraIsOpen()) {
             this->capture >> imageMat;
@@ -169,13 +169,13 @@ void captureVideo::run() {
                 this->capture >> imageMat;
                 qDebug() << "captureVideo::run() : Empty image";
             }
-    
+
             // Send the frame to the class MyImage for post-processing
             this->myFrame->set_image_content(imageMat);
-    
+
             // Get the image after post-processing
             imageMat = myFrame->get_image_content();
-    
+
             // Record the video
             if (this->recording) {
                 this->video_out << imageMat; // save the image before the colour conversion
@@ -193,14 +193,14 @@ void captureVideo::run() {
             myFrame->set_image_content(imageMat);
             imageMat = myFrame->get_image_content();
         }
-        
+
         // Convert the opencv image to a QImage that will be displayed on the main window
         cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
-        
+
         data_lock->lock();
         this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
         data_lock->unlock();
-        
+
         if (this->motion_active) {
             Mat motionMat = this->myFrame->get_motion_detected();
             data_lock->lock();
@@ -208,7 +208,7 @@ void captureVideo::run() {
             data_lock->unlock();
             emit motionCaptured(&this->motionQimage);
         }
-        
+
         if (this->objects_active) {
             Mat objectsMat = this->myFrame->get_object_detected();
             data_lock->lock();
@@ -216,7 +216,7 @@ void captureVideo::run() {
             data_lock->unlock();
             emit objectsCaptured(&this->objectsQimage);
         }
-        
+
         if (this->histo_active) {
             Mat histoMat = this->myFrame->get_image_histogram();
             data_lock->lock();
@@ -224,7 +224,7 @@ void captureVideo::run() {
             data_lock->unlock();
             emit histogramCaptured(&this->histoQimage);
         }
-        
+
         emit frameCaptured(&this->myQimage);
     }
     closeCamera();
@@ -235,12 +235,12 @@ void captureVideo::setThreadStatus(bool state){
     this->running = state;
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++ FUNCTIONS THAT TOGGLE FEATURES 
+//+++++++++++++++++++++++++++++++++++++++++++++ FUNCTIONS THAT TOGGLE FEATURES
 
 /**
  * @brief captureVideo::toggleBW
  * @param state
- * 
+ *
  * Activate/desactivate the conversion to Black & White
  */
 void captureVideo::toggleBW(bool state){
@@ -254,7 +254,7 @@ void captureVideo::toggleBW(bool state){
 /**
  * @brief captureVideo::toggleInverse
  * @param state
- * 
+ *
  * Activate/desactivate the inversion of the colours
  */
 void captureVideo::toggleInverse(bool state){
@@ -268,7 +268,7 @@ void captureVideo::toggleInverse(bool state){
 /**
  * @brief captureVideo::toggleBlur
  * @param state
- * 
+ *
  * Activate/desactivate the blurring of the image
  */
 void captureVideo::toggleBlur(bool state) {
@@ -282,7 +282,7 @@ void captureVideo::toggleBlur(bool state) {
 /**
  * @brief captureVideo::toggleThreshold
  * @param state
- * 
+ *
  * Activate/desactivate the thresholding
  */
 void captureVideo::toggleThreshold(bool state) {
@@ -296,29 +296,29 @@ void captureVideo::toggleThreshold(bool state) {
 /**
  * @brief captureVideo::toggleEdge
  * @param state
- * 
+ *
  * Activate/desactivate the edge detection algorithm
  */
 void captureVideo::toggleEdge(bool state) {
     this->myFrame->toggleEdge();
     if (state)
         emit changeInfo("Edge detection activated");
-    else 
+    else
         emit changeInfo("Edge detection desactivated");
 }
 
 /**
  * @brief captureVideo::toggleMotionDetection
  * @param state
- * 
+ *
  * Activate/desactivate the motion detection algorithm
  */
 void captureVideo::toggleMotionDetection(bool state) {
     this->myFrame->toggleMotionDetection();
     this->motion_active = state;
-    if (state) 
+    if (state)
         emit changeInfo("Motion detection activated");
-    else 
+    else
         emit changeInfo("Motion detection desactivated");
 }
 
@@ -327,11 +327,11 @@ void captureVideo::toggleMotionDetection(bool state) {
 /**
  * @brief captureVideo::toggleFaceDetection
  * @param state
- * 
+ *
  * Activate/desactivate the face detection algorithm. A background image is fetch from a local directory
  */
 void captureVideo::toggleFaceDetection(bool state) {
-    
+
     if (!this->myFrame->getFace_Status()) {
         this->file_background = this->main_directory + "cartoon_background.jpg";
         bool test = this->myFrame->set_background_image(this->file_background);
@@ -346,7 +346,7 @@ void captureVideo::toggleFaceDetection(bool state) {
             }
         }
     }
-    
+
     this->myFrame->toggleFace_Recon();
     if (state)
         emit changeInfo("Face detection activated");
@@ -358,15 +358,15 @@ void captureVideo::toggleFaceDetection(bool state) {
 /**
  * @brief captureVideo::toggleObjectDetection
  * @param state
- * 
+ *
  * Activate/desactivate the object detection algorithm for lines, circles and points
  */
 void captureVideo::toggleObjectDetection(bool state) {
     this->myFrame->toggleObjectDetection();
     this->objects_active = state;
-    if (state) 
+    if (state)
         emit changeInfo("Point/line/circle detection activated");
-    else 
+    else
         emit changeInfo("Point/line/circle detection desactivated");
 }
 
@@ -374,7 +374,7 @@ void captureVideo::toggleObjectDetection(bool state) {
 /**
  * @brief captureVideo::toggleQRcode
  * @param state
- * 
+ *
  * Activate/desactivate the ZBar decoding of QR codes and barcodes
  */
 void captureVideo::toggleQRcode(bool state){
@@ -390,28 +390,28 @@ void captureVideo::toggleQRcode(bool state){
 /**
  * @brief captureVideo::toggleTransformation
  * @param state
- * 
+ *
  * Activate/desactivate the geometrical transformations (rotations, etc.)
  */
 void captureVideo::toggleTransformation(bool state){
     this->myFrame->toggleTransformation();
-    if (state) 
+    if (state)
         emit changeInfo("Transformations activated");
-    else 
+    else
         emit changeInfo("Transformations desactivated");
 }
 
 /**
  * @brief captureVideo::toggleHistogramEqualization
  * @param state
- * 
+ *
  * Activate/desactivate the histogram equalization + show histogram
  */
 void captureVideo::toggleHistogramEqualization(bool state){
     this->myFrame->toggleHistoEq();
-    if (state) 
+    if (state)
         emit changeInfo("Histogram equalization activated");
-    else 
+    else
         emit changeInfo("Histogram equalization desactivated");
 }
 
@@ -419,15 +419,15 @@ void captureVideo::toggleHistogramEqualization(bool state){
 /**
  * @brief captureVideo::togglePanorama
  * @param state
- * 
+ *
  * Activate/desactivate the image stitching operation
  */
 void captureVideo::togglePanorama(bool state){
     this->myFrame->togglePanorama();
     this->panorama_active = state;
-    if (state) 
+    if (state)
         emit changeInfo("Panorama creation activated");
-    else 
+    else
         emit changeInfo("Panorama creation desactivated");
 }
 #endif
@@ -435,18 +435,18 @@ void captureVideo::togglePanorama(bool state){
 /**
  * @brief captureVideo::togglePhoto
  * @param state
- * 
+ *
  * Activate/desactivate the photo module
  */
 void captureVideo::togglePhoto(bool state) {
     this->myFrame->togglePhoto();
-    if (state) 
+    if (state)
         emit changeInfo("Module Photo activated");
-    else 
+    else
         emit changeInfo("Module Photo desactivated");
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++ FUNCTIONS THAT CHANGE VALUES 
+//+++++++++++++++++++++++++++++++++++++++++++++ FUNCTIONS THAT CHANGE VALUES
 void captureVideo::change_blur_range(int value) {
     this->myFrame->set_size_blur(value);
 }
@@ -529,7 +529,7 @@ void captureVideo::change_histogram_show(bool state){
 #ifdef withstitching
 /**
  * @brief captureVideo::panorama_pick_up_image
- * 
+ *
  * Insert a new image in the panorama stitching and update the result
  */
 void captureVideo::panorama_pick_up_image(){
@@ -540,7 +540,7 @@ void captureVideo::panorama_pick_up_image(){
 
 /**
  * @brief captureVideo::panorama_pop_out_image
- * 
+ *
  * Delete the last inserted image from the panorama and update the result
  */
 void captureVideo::panorama_pop_out_image(){
@@ -551,7 +551,7 @@ void captureVideo::panorama_pop_out_image(){
 
 /**
  * @brief captureVideo::panorama_reset
- * 
+ *
  * Empty the panorama from all images
  */
 void captureVideo::panorama_reset(){
@@ -562,7 +562,7 @@ void captureVideo::panorama_reset(){
 
 /**
  * @brief captureVideo::panorama_update
- * 
+ *
  * Compute the result of the image stitching and send the result to the GUI
  */
 void captureVideo::panorama_update(){
@@ -571,17 +571,17 @@ void captureVideo::panorama_update(){
     int num_imgs = this->myFrame->panorama_get_size();
     emit panoramaNumberImages(num_imgs);
     emit panoramaInfo(QString::fromStdString(return_status));
-    
+
     data_lock->lock();
     this->panorama_Qimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
     data_lock->unlock();
-    
+
     emit panoramaCaptured(&this->panorama_Qimage);
 }
 
 /**
  * @brief captureVideo::panorama_save
- * 
+ *
  * Save the resulting panorama to a local file
  */
 void captureVideo::panorama_save(){
@@ -622,7 +622,7 @@ void captureVideo::change_photo_sigmar(double value){
 
 /**
  * @brief captureVideo::file_save_image
- * 
+ *
  * Save the current image on the camera to a local file
  */
 void captureVideo::file_save_image() {
@@ -645,7 +645,7 @@ void captureVideo::file_save_image() {
     Mat imageOutput;
     cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
     imwrite(this->file_name_save , imageOutput , compression_params );
-    
+
     emit changeInfo("Saved the image under "+QfileNameLocal);
 }
 
@@ -656,7 +656,7 @@ void captureVideo::file_save_image() {
  * @return true if everything went well
  *        false if the user clicked on 'Cancel' when setting the filename for the movie.
  *              This allows the GUI to desactivate the button 'Record'
- * 
+ *
  * Managment of the recording to a movie.
  */
 bool captureVideo::file_save_movie(bool state) {
@@ -672,7 +672,7 @@ bool captureVideo::file_save_movie(bool state) {
                 this->recording = false;
                 return false;
             }
-            
+
             this->video_out_name = QfileNameLocal.toStdString();
 
             this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
@@ -684,7 +684,7 @@ bool captureVideo::file_save_movie(bool state) {
         emit changeInfo("Saving the video under "+QString::fromStdString(this->video_out_name));
     }
     else {
-        if (this->video_out.isOpened() ) 
+        if (this->video_out.isOpened() )
             this->video_out.release();
 
         this->record_time_blink = 0;

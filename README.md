@@ -1,5 +1,5 @@
 # Live_camera_Opencv
-This C++ program uses the built-in camera or any connected camera to perform image treatments. The image manipulations are performed by [OpenCV](https://github.com/opencv/opencv) and the interface is managed by Qt.
+This C++ program uses the built-in camera or any connected camera to perform image treatments. The image manipulations are performed by [OpenCV](https://github.com/opencv/opencv) and the interface is managed by Qt. This multithreaded program launches a thread dedicated to image processing and another thread to pure Qt display.
 
 The implemented image manipulations are:
 - Black and white + colour inversion
@@ -46,7 +46,9 @@ The code can also be compiled against four optional libraries:
 * libopencv_xphoto (enables features from xphoto)
 * libzbar (enables decryption of barcodes and QR codes)
 
-If you don't have these libraries inside your OpenCV installation directory, just comment the top lines in the file [Video.pro](SRC/Video.pro). If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as opencv-4.3.0/data/haarcascades/haarcascade_frontalface_default.xml in the file [mainwindow.cpp](SRC/mainwindow.cpp). This path must be adapted according to your installation. The ZBar library must also be compiled in order to be able to decode the barcodes / QR codes. For this library to function, it is not mandatory to compile ZBar with gtk, python or qt4 options enabled (only the headers and the library are required, not the executable).
+If you don't have these libraries, just comment the top lines in the file [Video.pro](SRC/Video.pro). If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as "opencv-4.3.0/data/haarcascades/haarcascade_frontalface_default.xml" in the file [capturevideo.cpp](SRC/capturevideo.cpp). This path must be adapted according to your installation. The ZBar library must also be compiled in order to be able to decode the barcodes / QR codes. For this library to function, it is not mandatory to compile ZBar with gtk, python or qt4 options enabled (only the headers and the library are required, not the executable).
+
+You must have Qt5 in order to fully take advantage of multithreading. If you only have Qt4, please download version 1.0 of this program.
 
 Your C++ compiler must accept c++11 directives.
 
