@@ -10,9 +10,6 @@
 #include <QButtonGroup>
 #include <QRadioButton>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Motion_Detection : public QDialog
 {
     Q_OBJECT

@@ -15,9 +15,6 @@
 #include <QGroupBox>
 #include <QCheckBox>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Threshold : public QDialog
 {
     Q_OBJECT

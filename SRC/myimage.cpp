@@ -1,14 +1,19 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *  The OpenCV class that contains the opencv images and all the operations for image treatment.
  *  No Qt thing here -> it is completely independent from Qt and focusses on image treatment.
- *  Receives signals from the main window and perform corresponding image treatment.
+ *  Receives signals from the OpenCV thread and perform corresponding image treatment.
 */
 
 #include "myimage.h"
 
+/**
+ * @brief MyImage::MyImage
+ * 
+ * Constructor of the class MyImage. Initialization of all the parameters to default values.
+ */
 MyImage::MyImage()
 {
     // Initializations for the all image operations
@@ -67,67 +72,135 @@ MyImage::MyImage()
     this->photo_sigmas = 50;
 }
 
-// Set of functions called by external world to toggle given types of image treatments
+/**
+ * @brief MyImage::toggleBW
+ * 
+ * Toggles the black/white filter
+ */
 void MyImage::toggleBW() {
     this->coloured = ! (this->coloured);
 }
 
+/**
+ * @brief MyImage::toggleInverse
+ * 
+ * Toggles the Inverse colours filter
+ */
 void MyImage::toggleInverse() {
     this->inversed = ! (this->inversed);
 }
 
+/**
+ * @brief MyImage::toggleBlur
+ * 
+ * Toggles the blur filter
+ */
 void MyImage::toggleBlur() {
     this->blurred = ! (this->blurred);
 }
 
+/**
+ * @brief MyImage::toggleEdge
+ * 
+ * Toggles the edge detection algorithm
+ */
 void MyImage::toggleEdge() {
     this->edge_detect = ! (this->edge_detect);
 }
 
+/**
+ * @brief MyImage::toggleThreshold
+ * 
+ * Toggles the thresholding
+ */
 void MyImage::toggleThreshold() {
     this->thresholded = ! (this->thresholded);
 }
 
+/**
+ * @brief MyImage::toggleTransformation
+ * 
+ * Toggles the geometrical transformations
+ */
 void MyImage::toggleTransformation() {
     this->transformed = ! (this->transformed);
 }
 
 #ifdef withobjdetect
+/**
+ * @brief MyImage::toggleFace_Recon
+ * 
+ * Toggles the face detection algorithm
+ */
 void MyImage::toggleFace_Recon() {
     this->face_recon = ! (this->face_recon);
 }
 
+/**
+ * @brief MyImage::getFace_Status
+ * @return true if a face has been detected
+ *        false otherwise
+ */
 bool MyImage::getFace_Status(){
     return this->face_recon;
 }
-
 #endif
 
+/**
+ * @brief MyImage::toggleHistoEq
+ * 
+ * Toggles the histogram equalization algorithm
+ */
 void MyImage::toggleHistoEq() {
     this->histo_eq = ! (this->histo_eq);
 }
 
+/**
+ * @brief MyImage::toggleObjectDetection
+ * 
+ * Toggles the object detection algorithm
+ */
 void MyImage::toggleObjectDetection() {
     this->object_detected = ! (this->object_detected);
 }
 
 #ifdef withstitching
+/**
+ * @brief MyImage::togglePanorama
+ * 
+ * Toggles the image stitching algorithm
+ */
 void MyImage::togglePanorama() {
     this->panorama_activated = ! (this->panorama_activated);
 }
 #endif
 
+/**
+ * @brief MyImage::toggleMotionDetection
+ * 
+ * Toggles the motion detection algorithm
+ */
 void MyImage::toggleMotionDetection() {
     this->motion_detected = ! (this->motion_detected);
     if (this->motion_detected)
         this->motion_background_first_time = true;
 }
 
+/**
+ * @brief MyImage::togglePhoto
+ * 
+ * Toggles the module photo
+ */
 void MyImage::togglePhoto() {
     this->photoed = ! (this->photoed);
 }
 
 #ifdef withzbar
+/**
+ * @brief MyImage::toggleQRcode
+ * 
+ * Toggles the detection of QR codes / barcodes
+ */
 void MyImage::toggleQRcode(){
     this->qrcodeactivated = ! (this->qrcodeactivated);
     if (!this->qrcodeactivated) {
@@ -137,10 +210,13 @@ void MyImage::toggleQRcode(){
 }
 #endif
 
-// Set of functions called by external world to set parameters for the image treatments
+/**
+ * @brief MyImage::set_image_content
+ * @param content: Mat received from the camera
+ * 
+ * Receives a new image from the camera and applies algorithms on it, depending on the activated modules
+ */
 void MyImage::set_image_content(Mat &content) {
-    // Receives a new image from the outside world and applies the image treatments
-
     // Save the old image for motion detection
     if (this->motion_detected)
         this->previmage = this->image;
@@ -191,120 +267,211 @@ void MyImage::set_image_content(Mat &content) {
 #endif
 }
 
+/**
+ * @brief MyImage::set_size_blur
+ * @param value: integer the new value of the blur range
+ */
 void MyImage::set_size_blur(int value) {
     assert(value>0);
     this->blur_range = value;
 }
 
+/**
+ * @brief MyImage::set_blur_method
+ * @param method: integer the new method selected for blurring
+ */
 void MyImage::set_blur_method(int method) {
     assert (method>0);
     this->blur_method = method;
 }
 
+/**
+ * @brief MyImage::set_morpho_element
+ * @param element: integer the new morphological element type for blurring
+ */
 void MyImage::set_morpho_element(int element) {
     assert(element>0);
     this->morpho_element = element;
 }
 
+/**
+ * @brief MyImage::set_edge_method
+ * @param method: integer the new method for edge detection
+ */
 void MyImage::set_edge_method(int method) {
     assert (method>0);
     this->edge_method = method;
 }
 
+/**
+ * @brief MyImage::set_threshold_method
+ * @param method: integer the new method for thresholding
+ */
 void MyImage::set_threshold_method(int method) {
     assert (method>0);
     this->threshold_method = method;
 }
 
+/**
+ * @brief MyImage::set_threshold_type
+ * @param type: integer the type (normal/inverted) for adaptive threshold methods 
+ */
 void MyImage::set_threshold_type(int type) {
     assert (type==0 || type ==1);
     this->threshold_type = type;
 }
 
+/**
+ * @brief MyImage::set_threshold_value
+ * @param value: integer the new threshold value
+ */
 void MyImage::set_threshold_value(int value) {
     assert (value>=0);
     assert (value<=255);
     this->threshold_value = value;
 }
 
+/**
+ * @brief MyImage::set_threshold_blocksize
+ * @param value: integer the new value for blocksize for adaptive threshold methods
+ */
 void MyImage::set_threshold_blocksize(int value) {
     assert (value>0);
     this->threshold_blocksize = value;
 }
 
+/**
+ * @brief MyImage::set_transf_method
+ * @param method: integer the new method for geometrical transformations
+ */
 void MyImage::set_transf_method(int method) {
     assert (method>0);
     this->transformation_method = method;
 }
 
+/**
+ * @brief MyImage::set_transf_rotation_value
+ * @param value: integer the new value for the rotation of the image
+ */
 void MyImage::set_transf_rotation_value(int value) {
     this->transf_rotation_value = value;
 }
 
+/**
+ * @brief MyImage::set_canny_threshold
+ * @param value: integer the new value for the Canny low threshold (edge detector)
+ */
 void MyImage::set_canny_threshold(int value) {
     assert (value>=0);
     assert (value<=255);
     this->canny_threshold = value;
 }
 
+/**
+ * @brief MyImage::set_canny_ratio
+ * @param value: double the new value for the Canny ratio value (edge detector)
+ */
 void MyImage::set_canny_ratio(double value) {
     assert (value>0.);
     this->canny_ratio = value;
 }
 
+/**
+ * @brief MyImage::set_histo_eq_method
+ * @param method: integer the new method for histogram equalization
+ */
 void MyImage::set_histo_eq_method(int method) {
     assert (method>0);
     this->histo_eq_method = method;
 }
 
+/**
+ * @brief MyImage::set_histo_eq_tiles
+ * @param value: integer the new value for the number of tiles (CLAHE) 
+ */
 void MyImage::set_histo_eq_tiles(int value) {
     assert (value>0);
     this->histo_tiles = value;
 }
 
+/**
+ * @brief MyImage::set_histo_eq_clip_limit
+ * @param value: integer the new value for the clip limit (CLAHE)
+ */
 void MyImage::set_histo_eq_clip_limit(int value) {
     assert (value>0);
     this->histo_clip_limit = value;
 }
 
+/**
+ * @brief MyImage::set_object_detection_method
+ * @param method: integer the new method for object detection
+ */
 void MyImage::set_object_detection_method(int method) {
     assert (method>0);
     this->object_detection_method = method;
 }
 
+/**
+ * @brief MyImage::set_hough_line_threshold
+ * @param value: integer the new value for Hough line transform threshold
+ */
 void MyImage::set_hough_line_threshold(int value) {
     assert (value>=0);
     this->hough_line_threshold = value;
 }
 
+/**
+ * @brief MyImage::set_motion_detection_method
+ * @param method: integer the new method for motion detection
+ */
 void MyImage::set_motion_detection_method(int method) {
     assert (method>0);
     this->motion_detection_method = method;
     this->motion_background_first_time = true;
 }
 
+/**
+ * @brief MyImage::set_photo_method
+ * @param method: integer the new method for module photo
+ */
 void MyImage::set_photo_method(int method){
     assert(method>0);
     this->photo_method = method;
 }
 
+/**
+ * @brief MyImage::set_photo_sigmas
+ * @param value: integer the new value for Sigma S (module photo, NPR)
+ */
 void MyImage::set_photo_sigmas(int value){
     assert(value >= 0) ;
     assert(value <= 200) ;
     this->photo_sigmas = value;
 }
 
+/**
+ * @brief MyImage::set_photo_sigmar
+ * @param value: double the new value for Sigma R (module photo, NPR)
+ */
 void MyImage::set_photo_sigmar(double value){
     assert(value >= 0.) ;
     assert(value <= 1.) ;
     this->photo_sigmar = value;
 }
 
-// Set of functions called by the external world to get the content of images
+/**
+ * @brief MyImage::get_image_content
+ * @return The cv::Mat containing the processed image
+ */
 Mat& MyImage::get_image_content() {
     return this->image;
 }
 
+/**
+ * @brief MyImage::get_image_histogram
+ * @return The cv::Mat containing the histogram of the processed image
+ */
 Mat& MyImage::get_image_histogram() {
     vector<Mat> bgr_planes;
     split( this->image, bgr_planes );
@@ -344,11 +511,19 @@ Mat& MyImage::get_image_histogram() {
 }
 
 #ifdef withstitching
+/**
+ * @brief MyImage::get_image_panorama
+ * @return The cv::Mat containing the result of image stitching
+ */
 Mat& MyImage::get_image_panorama() {
     return this->panorama;
 }
 #endif
 
+/**
+ * @brief MyImage::get_object_detected
+ * @return The cv::Mat containing the detected objects (lines, circles, points)
+ */
 Mat& MyImage::get_object_detected() {
     this->objects = Mat::zeros( this->image.size(), CV_8UC3 );
     Mat objectsBW = Mat::zeros( this->image.size(), CV_8UC1 );
@@ -413,6 +588,10 @@ Mat& MyImage::get_object_detected() {
     return this->objects;
 }
 
+/**
+ * @brief MyImage::get_motion_detected
+ * @return The cv::Mat containing the detected motion
+ */
 Mat& MyImage::get_motion_detected() {
     this->motion = Mat::zeros( this->image.size(), CV_8UC3 );
 
@@ -439,6 +618,12 @@ Mat& MyImage::get_motion_detected() {
 }
 
 #ifdef withobjdetect
+/**
+ * @brief MyImage::set_Face_Cascade_Name
+ * @param new_name: String containing the filename for the cascade file (face detection)
+ * @return true is the file is correctly loaded
+ *        false otherwise
+ */
 bool MyImage::set_Face_Cascade_Name(String &new_name) {
     this->face_cascade_name = new_name;
 
@@ -449,6 +634,12 @@ bool MyImage::set_Face_Cascade_Name(String &new_name) {
     return true;
 }
 
+/**
+ * @brief MyImage::set_background_image
+ * @param filename: String containing the name of a background to be applied during face detection 
+ * @return true is the file is correctly loaded
+ *        false otherwise
+ */
 bool MyImage::set_background_image(String &filename){
     this->background = imread(filename);
     if (!this->background.data) {
@@ -460,24 +651,35 @@ bool MyImage::set_background_image(String &filename){
 
 #endif
 
+/**
+ * @brief MyImage::toBlackandWhite
+ * 
+ * Performs the Colour -> Black and White operation
+ */
 void MyImage::toBlackandWhite() {
     // Convert image to black and white with 3 channels
     cvtColor(this->image,this->image,COLOR_RGB2GRAY);
     cvtColor(this->image,this->image,COLOR_GRAY2BGR);
 }
 
+/**
+ * @brief MyImage::inverseImage
+ * 
+ * Performs the colours inversion
+ */
 void MyImage::inverseImage() {
     // Inverse the content of the image
-/*    Mat lookUpTable(1, 256, CV_8U);
-    uchar* p = lookUpTable.ptr();
-    for( int i = 0; i < 256; ++i)
-        p[i] = 255 - i ;
-    LUT(this->image, lookUpTable, this->image);
-*/
-    // Replaced by
     bitwise_not(this->image, this->image);
 }
 
+/**
+ * @brief MyImage::smoothImage
+ * @param imag: cv::Mat input image to blur
+ * @param blur_range: integer the range of blurring
+ * @param method: integer the method of blurring
+ * 
+ * Performs blurring on the input image
+ */
 void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
     switch (method) {
         case 1:
@@ -523,6 +725,11 @@ void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
     }
 }
 
+/**
+ * @brief MyImage::detectEdges
+ * 
+ * Performs the edge detection
+ */
 void MyImage::detectEdges() {
     switch (this->edge_method) {
         case 1: { // Sobel
@@ -566,6 +773,11 @@ void MyImage::detectEdges() {
 }
 
 #ifdef withobjdetect
+/**
+ * @brief MyImage::detect_faces
+ * 
+ * Performs the face detection
+ */
 void MyImage::detect_faces() {
     this->image.copyTo(this->mask);
     this->mask.setTo(Scalar(255,255,255));
@@ -590,6 +802,12 @@ void MyImage::detect_faces() {
 }
 #endif
 
+/**
+ * @brief MyImage::thresholdImage
+ * @return the value for the thresholding
+ * 
+ * Performs the thresholding (global/local)
+ */
 double MyImage::thresholdImage() {
     double value = this->threshold_value;
     switch (this->threshold_method) {
@@ -641,6 +859,11 @@ double MyImage::thresholdImage() {
     return value;
 }
 
+/**
+ * @brief MyImage::transformImage
+ * 
+ * Performs the geometrical transformation
+ */
 void MyImage::transformImage() {
     switch (this->transformation_method) {
     case 1: { // Rotation around center of image
@@ -658,6 +881,11 @@ void MyImage::transformImage() {
 
 }
 
+/**
+ * @brief MyImage::equalizeHistogram
+ * 
+ * Performs the histogram equalization
+ */
 void MyImage::equalizeHistogram() {
     vector<Mat> channels;
     cvtColor(this->image, this->image, COLOR_BGR2YCrCb); //change the color image from BGR to YCrCb format
@@ -684,6 +912,11 @@ void MyImage::equalizeHistogram() {
     cvtColor(this->image, this->image, COLOR_YCrCb2BGR);
 }
 
+/**
+ * @brief MyImage::modulephoto
+ * 
+ * Applies operations from the module Photo
+ */
 void MyImage::modulephoto(){
     switch (this->photo_method){
         case 1:{ // Contrast Preserving Decolorization
@@ -732,6 +965,11 @@ void MyImage::modulephoto(){
 }
 
 #ifdef withstitching
+/**
+ * @brief MyImage::panorama_insert_image
+ * 
+ * Insert the current frame to the stack of images for stitching
+ */
 void MyImage::panorama_insert_image() {
     if (!this->image.empty())
         this->Panorama_vector.push_back(this->image);
@@ -739,6 +977,11 @@ void MyImage::panorama_insert_image() {
 #endif
 
 #ifdef withstitching
+/**
+ * @brief MyImage::panorama_pop_up_image
+ * 
+ * Removes the lastly inserted image for the stitching
+ */
 void MyImage::panorama_pop_up_image() {
     if (!this->Panorama_vector.empty())
         this->Panorama_vector.pop_back();
@@ -746,6 +989,12 @@ void MyImage::panorama_pop_up_image() {
 #endif
 
 #ifdef withstitching
+/**
+ * @brief MyImage::panorama_compute_result
+ * @return a string that describes the result of the stitching operation
+ * 
+ * Performs the image stitching operation
+ */
 std::string MyImage::panorama_compute_result() {
     Stitcher::Mode mode = Stitcher::PANORAMA; // PANORAMA or SCANS
     std::string return_status;
@@ -789,6 +1038,11 @@ std::string MyImage::panorama_compute_result() {
 #endif
 
 #ifdef withstitching
+/**
+ * @brief MyImage::panorama_reset
+ * 
+ * Empties the stack of images for stitching
+ */
 void MyImage::panorama_reset() {
     if (!this->Panorama_vector.empty())
         this->Panorama_vector.clear();
@@ -797,12 +1051,21 @@ void MyImage::panorama_reset() {
 #endif
 
 #ifdef withstitching
+/**
+ * @brief MyImage::panorama_get_size
+ * @return integer the actual number of images in the stack for stitching
+ */
 int MyImage::panorama_get_size(){
-    return this->Panorama_vector.size();
+    return (int)this->Panorama_vector.size();
 }
 #endif
 
 #ifdef withzbar
+/**
+ * @brief MyImage::getQRcode
+ * 
+ * Performs the detection and decoding of QR codes + barcodes with the help of ZBar
+ */
 void MyImage::getQRcode(){
     // Create zbar scanner
     zbar::ImageScanner scanner;
@@ -875,6 +1138,12 @@ void MyImage::getQRcode(){
     
 }
 
+/**
+ * @brief MyImage::getQRcodedata
+ * @param data string the type of code decoded (QR, barcode, ISBN, etc.)
+ * @param type string the content of the decoded code
+ * @return true if a QR code or barcode has been decoded
+ */
 bool MyImage::getQRcodedata(string &data, string &type) {
     if ( ! this->qrcodedata.empty() ){
         data = this->qrcodedata ;

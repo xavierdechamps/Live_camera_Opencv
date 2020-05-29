@@ -10,10 +10,8 @@
 #include <QDebug>
 #include <QThread>
 #include <QMutex>
-
 #include <QImage>
 #include <QFileDialog>
-
 #include <QMainWindow>
 
 // MyImage

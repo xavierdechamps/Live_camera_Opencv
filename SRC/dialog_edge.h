@@ -13,9 +13,7 @@
 #include <QSlider>
 #include <QRadioButton>
 #include <QGroupBox>
-
-#include <iostream>
-using namespace std;
+#include <QDebug>
 
 class Dialog_Edge : public QDialog
 {

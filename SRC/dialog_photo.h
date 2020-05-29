@@ -14,9 +14,6 @@
 #include <QRadioButton>
 #include <QGroupBox>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Photo: public QDialog
 {
     Q_OBJECT

@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with image stitching to create a panorama
@@ -12,6 +12,13 @@
 
 #include "dialog_panorama.h"
 
+/**
+ * @brief Dialog_Panorama::Dialog_Panorama
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Panorama. Set the appearance of the widget and create connections 
+ * between the buttons and the functionnalities
+ */
 Dialog_Panorama::Dialog_Panorama(QWidget *parent):    QDialog(parent)
 {
     // QLabel to show the number of images stored in the panorama
@@ -57,42 +64,72 @@ Dialog_Panorama::Dialog_Panorama(QWidget *parent):    QDialog(parent)
     setWindowTitle(tr("Panorama control window"));
 }
 
+/**
+ * @brief Dialog_Panorama::set_QLabel_number_images
+ * @param value
+ * 
+ * Set the number of images stored in the panorama in the corresponding QLabel
+ */
 void Dialog_Panorama::set_QLabel_number_images(int value) {
-    // Set the number of images stored in the panorama
     this->Panorama_value->setText("Number of images in the panorama: "+QString::number(value));
 }
 
+/**
+ * @brief Dialog_Panorama::set_QLabel_string
+ * @param label
+ * 
+ * Set the status of the stitching operation in the corresponding QLabel
+ */
 void Dialog_Panorama::set_QLabel_string(QString label) {
-    // Set the status of the stitching operation
     this->Panorama_status->setText(label);
 }
 
+/**
+ * @brief Dialog_Panorama::onClick_Pick_Up_Image
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world so that a picture is picked up
+ */
 void Dialog_Panorama::onClick_Pick_Up_Image() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world so that a picture is picked up
     emit this->Signal_pick_up_image_panorama() ;
 }
 
+/**
+ * @brief Dialog_Panorama::onClick_Pop_Up_Image
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world so that the last picture is removed
+ */
 void Dialog_Panorama::onClick_Pop_Up_Image() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world so that the last picture is removed
     emit this->Signal_pop_up_image_panorama() ;
 }
 
+/**
+ * @brief Dialog_Panorama::onClick_Update_Panorama
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world so that the panorama is updated
+ */
 void Dialog_Panorama::onClick_Update_Panorama() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world so that the panorama is updated
     emit this->Signal_update_panorama() ;
 }
 
+/**
+ * @brief Dialog_Panorama::onClick_Reset_Panorama
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world so that the panorama is resetted
+ */
 void Dialog_Panorama::onClick_Reset_Panorama() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world so that the panorama is resetted
     emit this->Signal_reset_panorama() ;
 }
 
+/**
+ * @brief Dialog_Panorama::onClick_Save_Panorama
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world so that the panorama is saved to a file
+ */
 void Dialog_Panorama::onClick_Save_Panorama() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world so that the panorama is saved to a file
     emit this->Signal_save_panorama() ;
 }

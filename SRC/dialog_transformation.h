@@ -13,9 +13,6 @@
 #include <QSlider>
 #include <QRadioButton>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Transformation : public QDialog
 {
     Q_OBJECT

@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with threshold
@@ -21,6 +21,13 @@
 
 #include "dialog_threshold.h"
 
+/**
+ * @brief Dialog_Threshold::Dialog_Threshold
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Threshold. Set the appearance of the widget and create connections 
+ * between the buttons/sliders and the functionnalities
+ */
 Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
 {
     // Group boxes for all the global/adaptive threshold methods
@@ -136,36 +143,67 @@ Dialog_Threshold::Dialog_Threshold(QWidget *parent):    QDialog(parent)
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Threshold::onClick_Slider_Threshold_value
+ * @param value: integer value from the slider that manages the global threshold
+ * 
+ * Function called when the slider for the global threshold is modified.
+ * Emits a signal to the external world with the threshold
+ */
 void Dialog_Threshold::onClick_Slider_Threshold_value(int value) {
-    // Function called when the slider for the global threshold is modified.
-    // Emits a signal to the external world with the threshold
     this->value_threshold = value;
     emit this->Signal_threshold_value_changed(this->value_threshold);
 }
 
+/**
+ * @brief Dialog_Threshold::onClick_Slider_Adapt_Blocksize
+ * @param value: integer value from the slider that manages the block size for adaptive methods
+ * 
+ * Function called when the slider for the block size for adaptive methods is modified.
+ * Emits a signal to the external world with the block size
+ */
 void Dialog_Threshold::onClick_Slider_Adapt_Blocksize(int value) {
-    // Function called when the slider for the block size for adaptive methods is modified.
-    // Emits a signal to the external world with the block size
     this->value_blocksize = 2*value + 1;
     emit this->Signal_blocksize_changed(this->value_blocksize);
 }
 
+/**
+ * @brief Dialog_Threshold::onClick_Threshold_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for threshold
+ */
 void Dialog_Threshold::onClick_Threshold_Method() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for threshold
     emit this->Signal_threshold_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Threshold::onClick_Botton_Threshold_Type
+ * @param value: integer value from the checkbox that manages the type (normal/inverted) for adaptive threshold methods
+ * 
+ * Function called when the checkbox is clicked
+ * Emits a signal to the external world with the the type (normal/inverted) for adaptive threshold methods
+ */
 void Dialog_Threshold::onClick_Botton_Threshold_Type(int value) {
-    // Function called when the checkbox is clicked
-    // Emits a signal to the external world with the the type (normal/inverted) for adaptive threshold methods
     emit Signal_adaptive_threshold_type(value);
 }
 
+/**
+ * @brief Dialog_Threshold::show_Slider_value
+ * 
+ * Function called when the slider for the global threshold is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Threshold::show_Slider_value() {
     this->Slider_value->setText("Threshold: "+QString::number(this->value_threshold));
 }
 
+/**
+ * @brief Dialog_Threshold::show_Slider_Adapt_BlockSize
+ * 
+ * Function called when the slider for the block size for adaptive methods is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Threshold::show_Slider_Adapt_BlockSize() {
     this->BlockSize_value->setText("Block size: "+QString::number(this->value_blocksize));
 }

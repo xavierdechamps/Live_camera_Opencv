@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with smoothing filters and morphological transformations.
@@ -24,6 +24,13 @@
 
 #include "dialog_blur.h"
 
+/**
+ * @brief Dialog_Blur::Dialog_Blur
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Blur. Set the appearance of the widget and create connections between
+ * the buttons/sliders and the functionnalities
+ */
 Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
 {
     // QLabel to display the size of the filter
@@ -92,8 +99,6 @@ Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
     connect(radioButton12, SIGNAL(clicked()), this, SLOT(onClick_Radio_Blur_Method()) ) ;
 
     // Tool tips when hovering the buttons
-//    QFont serifFont("Times", 14, QFont::Normal);
-//    QToolTip::setFont(serifFont);
     radioButton1->setToolTip("Simple blur effect using a normalized box filter");
     radioButton2->setToolTip("Blur effect using a 2D Gaussian kernel");
     radioButton3->setToolTip("Each pixel is replaced with the median of its neighboring pixels");
@@ -155,26 +160,46 @@ Dialog_Blur::Dialog_Blur(QWidget *parent):    QDialog(parent)
 
 Dialog_Blur::~Dialog_Blur() {}
 
+/**
+ * @brief Dialog_Blur::onClick_Slider_Blur_Range
+ * @param value: integer value from the slider that manages the range of the blurring
+ * 
+ * Function called when the slider for filter range is modified.
+ * Emits a signal with the value of the range of blurring
+ */
 void Dialog_Blur::onClick_Slider_Blur_Range(int value) {
-    // Function called when the slider for filter range is modified.
-    // Emits a signal to the external world with the size of the filter
     this->value_Blur_Range = 2*value + 1;
     emit this->Signal_blur_range_changed(this->value_Blur_Range);
 }
 
+/**
+ * @brief Dialog_Blur::onClick_Slider_Element
+ * @param value: integer value from the slider that manages the kind of element of the blurring
+ * 
+ * Function called when the slider for type of element is modified.
+ * Emits a signal to the external world with the type of element (rectangle, cross, ellipse)
+ */
 void Dialog_Blur::onClick_Slider_Element(int value) {
-    // Function called when the slider for type of element is modified.
-    // Emits a signal to the external world with the type of element (rect., cross, ellipse)
     this->value_Element = value;
     emit this->Signal_blur_element_changed(this->value_Element);
 }
 
+/**
+ * @brief Dialog_Blur::onClick_Radio_Blur_Method
+ * 
+ * Function called when the buttons are clicked
+ * Send the signal to the external world
+ */
 void Dialog_Blur::onClick_Radio_Blur_Method() {
-    // Function called when the buttons are clicked
-    // Send the signal to the external world
     emit this->Signal_blur_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Blur::show_Slider_element
+ * 
+ * Function called when the slider for type of element is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Blur::show_Slider_element() {
     QString txt = "Element: ";
     switch (this->value_Element) {
@@ -188,12 +213,18 @@ void Dialog_Blur::show_Slider_element() {
             txt+="ellipse";
             break;
         default:
-            cout << "Dialog_Blur::show_Slider_value(): unknown type of element"<<endl;
+            qDebug() << "Dialog_Blur::show_Slider_value(): unknown type of element";
             break;
     }
     this->Slider_element->setText(txt);
 }
 
+/**
+ * @brief Dialog_Blur::show_Slider_value
+ * 
+ * Function called when the slider for filter range is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Blur::show_Slider_value() {
     this->Slider_value->setText("Range of filter: "+QString::number(this->value_Blur_Range));
 }

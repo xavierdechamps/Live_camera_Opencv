@@ -14,9 +14,6 @@
 #include <QRadioButton>
 #include <QCheckBox>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Object_Detection: public QDialog
 {
     Q_OBJECT

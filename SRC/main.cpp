@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Launch the Qt Window

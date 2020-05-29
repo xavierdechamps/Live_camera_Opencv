@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with the OpenCV module Photo
@@ -18,6 +18,13 @@
 
 #include "dialog_photo.h"
 
+/**
+ * @brief Dialog_Photo::Dialog_Photo
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Object_Detection. Set the appearance of the widget and create connections 
+ * between the buttons/sliders and the functionnalities
+ */
 Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
 {
     // Group boxes for the buttons
@@ -131,30 +138,56 @@ Dialog_Photo::Dialog_Photo(QWidget *parent):    QDialog(parent)
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Photo::onClick_photo_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for photo module
+ */
 void Dialog_Photo::onClick_photo_Method(){
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for photo module
     emit this->Signal_photo_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Photo::onClick_Slider_sigmaS_value
+ * @param value: integer value from the slider that manages the Sigma S
+ * 
+ * Function called when the slider for sigma s is modified.
+ * Emits a signal to the external world with the value of the sigma s.
+ */
 void Dialog_Photo::onClick_Slider_sigmaS_value(int value){
-    // Function called when the slider for sigma s is modified.
-    // Emits a signal to the external world with the value of the sigma s.
     this->value_sigmas = value;
     emit this->Signal_photo_sigmaS_changed(this->value_sigmas);
 }
 
+/**
+ * @brief Dialog_Photo::onClick_Slider_sigmaR_value
+ * @param value: integer value from the slider that manages the Sigma R
+ * 
+ * Function called when the slider for sigma r is modified.
+ * Emits a signal to the external world with the value of the sigma r.
+ */
 void Dialog_Photo::onClick_Slider_sigmaR_value(int value){
-    // Function called when the slider for sigma r is modified.
-    // Emits a signal to the external world with the value of the sigma r
     this->value_sigmar = this->sigmar_min + this->sigmar_step * value;
     emit this->Signal_photo_sigmaR_changed(this->value_sigmar);
 }
 
+/**
+ * @brief Dialog_Photo::show_Slider_sigmaS_value
+ * 
+ * Function called when the slider for the Sigma S is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Photo::show_Slider_sigmaS_value(){
     this->Slider_sigmas_qlabel->setText("NPR Sigma s: "+QString::number(this->value_sigmas));
 }
 
+/**
+ * @brief Dialog_Photo::show_Slider_sigmaR_value
+ * 
+ * Function called when the slider for the Sigma R is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Photo::show_Slider_sigmaR_value(){
     this->Slider_sigmar_qlabel->setText("NPR Sigma r: "+QString::number(this->value_sigmar));
 }

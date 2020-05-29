@@ -1,16 +1,23 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with motion detection
  *   Implemented methods are:
- *      1) Farneback dense optical flow
+ *      1) Farneback dense optical flow (desactived because does not work)
  *      2) Foreground extraction
  *
 */
 
 #include "dialog_motion_detection.h"
 
+/**
+ * @brief Dialog_Motion_Detection::Dialog_Motion_Detection
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Motion_Detection. Set the appearance of the widget and create connections between
+ * the buttons and the functionnalities
+ */
 Dialog_Motion_Detection::Dialog_Motion_Detection(QWidget *parent): QDialog(parent)
 {
     // Build the buttons
@@ -39,6 +46,12 @@ Dialog_Motion_Detection::Dialog_Motion_Detection(QWidget *parent): QDialog(paren
     //resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Motion_Detection::onClick_Radio_Motion_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for motion detection
+ */
 void Dialog_Motion_Detection::onClick_Radio_Motion_Method() {
     emit this->Signal_motion_detection_method_changed(this->RadioButtons->checkedId());
 }

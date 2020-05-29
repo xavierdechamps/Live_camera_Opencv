@@ -15,9 +15,6 @@
 #include <QCheckBox>
 #include <QGroupBox>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Histogram : public QDialog
 {
     Q_OBJECT

@@ -10,9 +10,6 @@
 #include <QPushButton>
 #include <QGridLayout>
 
-#include <iostream>
-using namespace std;
-
 class Dialog_Panorama: public QDialog
 {
     Q_OBJECT

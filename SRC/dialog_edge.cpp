@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with edge detection
@@ -12,6 +12,13 @@
 
 #include "dialog_edge.h"
 
+/**
+ * @brief Dialog_Edge::Dialog_Edge
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Edge. Set the appearance of the widget and create connections between
+ * the buttons/sliders and the functionnalities
+ */
 Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
 {
     this->value_canny_lowthreshold = 50;
@@ -97,30 +104,56 @@ Dialog_Edge::Dialog_Edge(QWidget *parent):    QDialog(parent)
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Edge::onClick_Edge_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for edge detection
+ */
 void Dialog_Edge::onClick_Edge_Method() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for edge detection
     emit this->Signal_edge_method_changed( RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Edge::onClick_Slider_canny_lowthreshold_value
+ * @param value: integer value from the slider that manages the Canny low threshold
+ * 
+ * Function called when the slider for Canny low threshold is modified.
+ * Emits a signal to the external world with the value of the threshold
+ */
 void Dialog_Edge::onClick_Slider_canny_lowthreshold_value(int value) {
-    // Function called when the slider for Canny low threshold is modified.
-    // Emits a signal to the external world with the value of the threshold
     this->value_canny_lowthreshold = value;
     emit this->Signal_canny_lowthreshold_changed(this->value_canny_lowthreshold);
 }
 
+/**
+ * @brief Dialog_Edge::onClick_Slider_canny_ratio_value
+ * @param value: integer value from the slider that manages the Canny ratio
+ * 
+ * Function called when the slider for Canny ratio is modified.
+ * Emits a signal to the external world with the value of the Canny ratio
+ */
 void Dialog_Edge::onClick_Slider_canny_ratio_value(int value) {
-    // Function called when the slider for Canny ratio is modified.
-    // Emits a signal to the external world with the value of the Canny ratio
     this->value_canny_ratio = this->canny_ratio_min + this->canny_single_step * value;
     emit this->Signal_canny_ratio_changed(this->value_canny_ratio);
 }
 
+/**
+ * @brief Dialog_Edge::show_Slider_canny_threshold_value
+ * 
+ * Function called when the slider for Canny low threshold is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Edge::show_Slider_canny_threshold_value() {
     this->Slider_canny_lowthreshold_value->setText("Low threshold: "+QString::number(this->value_canny_lowthreshold));
 }
 
+/**
+ * @brief Dialog_Edge::show_Slider_canny_ratio_value
+ * 
+ * Function called when the slider for Canny ratio is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Edge::show_Slider_canny_ratio_value() {
     this->Slider_canny_ratio_value->setText("Ratio: "+QString::number(this->value_canny_ratio));
 }

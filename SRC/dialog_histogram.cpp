@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with histogram equalization
@@ -12,6 +12,13 @@
 
 #include "dialog_histogram.h"
 
+/**
+ * @brief Dialog_Histogram::Dialog_Histogram
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Histogram. Set the appearance of the widget and create connections between
+ * the buttons/sliders and the functionnalities
+ */
 Dialog_Histogram::Dialog_Histogram(QWidget *parent):    QDialog(parent)
 {
 
@@ -94,36 +101,67 @@ Dialog_Histogram::Dialog_Histogram(QWidget *parent):    QDialog(parent)
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Histogram::onClick_Radio_Histogram_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for histogram equalization
+ */
 void Dialog_Histogram::onClick_Radio_Histogram_Method() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for histogram equalization
     emit this->Signal_histogram_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Histogram::onClick_Slider_Clip_limit
+ * @param value: integer value from the slider that manages the clip limit (CLAHE)
+ * 
+ * Function called when the slider for clip limit (CLAHE) is modified
+ * Emits a signal to the external world with the clip limit
+ */
 void Dialog_Histogram::onClick_Slider_Clip_limit(int value) {
-    // Function called when the slider for clip limit (CLAHE) is modified
-    // Emits a signal to the external world with the clip limit
     this->value_clip_limit = value;
     emit this->Signal_histogram_clip_limit_changed(this->value_clip_limit);
 }
 
+/**
+ * @brief Dialog_Histogram::onClick_Slider_Tiles
+ * @param value: integer value from the slider that manages the number of tiles (CLAHE)
+ * 
+ * Function called when the slider for number of tiles (CLAHE) is modified
+ * Emits a signal to the external world with the number of tiles
+ */
 void Dialog_Histogram::onClick_Slider_Tiles(int value) {
-    // Function called when the slider for number of tiles (CLAHE) is modified
-    // Emits a signal to the external world with the number of tiles
     this->value_tiles = value;
     emit this->Signal_histogram_tiles_changed(this->value_tiles);
 }
 
+/**
+ * @brief Dialog_Histogram::onClick_Check_Show_Histogram
+ * @param state: integer value from the checkbox that manages the display of the histogram
+ * 
+ * Function called when the checkbox for histogram is modified
+ * Emits a signal to the external world with the new state of the checkbox
+ */
 void Dialog_Histogram::onClick_Check_Show_Histogram(int state) {
-    // Function called when the check box for histogram is modified
-    // Emits a signal to the external world with the new state of the check box
     emit this->Signal_histogram_show_histogram( state == Qt::Checked );
 }
 
+/**
+ * @brief Dialog_Histogram::show_Slider_Clip_Limit_value
+ * 
+ * Function called when the slider for the clip limit (CLAHE) is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Histogram::show_Slider_Clip_Limit_value() {
     this->Slider_clip_limit_value->setText("Clip limit: "+QString::number(this->value_clip_limit));
 }
 
+/**
+ * @brief Dialog_Histogram::show_Slider_Tiles_value
+ * 
+ * Function called when the slider for the number of tiles (CLAHE) is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Histogram::show_Slider_Tiles_value() {
     this->Slider_tiles_value->setText("Number of tiles: "+QString::number(this->value_tiles));
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with geometric transformations
@@ -10,6 +10,13 @@
 
 #include "dialog_transformation.h"
 
+/**
+ * @brief Dialog_Transformation::Dialog_Transformation
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Transformation. Set the appearance of the widget and create connections 
+ * between the buttons/sliders and the functionnalities
+ */
 Dialog_Transformation::Dialog_Transformation(QWidget *parent):    QDialog(parent)
 {
     // QLabel to show the value of the rotation angle
@@ -53,19 +60,34 @@ Dialog_Transformation::Dialog_Transformation(QWidget *parent):    QDialog(parent
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Transformation::onClick_Slider_rotation_value
+ * @param value: integer value from the slider that manages the rotation angle
+ * 
+ * Function called when the slider for the rotation angle is modified.
+ * Emits a signal to the external world with the rotation angle
+ */
 void Dialog_Transformation::onClick_Slider_rotation_value(int value){
-    // Function called when the slider for the rotation angle is modified.
-    // Emits a signal to the external world with the rotation angle
     this->value_rotation = value;
     emit this->Signal_transformation_rotation_changed(this->value_rotation);
 }
 
+/**
+ * @brief Dialog_Transformation::onClick_Transformation_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for geometric transformation
+ */
 void Dialog_Transformation::onClick_Transformation_Method() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for geometric transformation
     emit this->Signal_transformation_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Transformation::show_Slider_rotation_value
+ * 
+ * Function called when the slider for the rotation angle is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Transformation::show_Slider_rotation_value(){
     this->Slider_rotation_qlabel->setText("Rotation: "+QString::number(this->value_rotation));
 }

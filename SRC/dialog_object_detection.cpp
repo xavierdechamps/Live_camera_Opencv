@@ -1,5 +1,5 @@
 /*
- * Copyright: Xavier Dechamps
+ * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
  *   Management of the Qt window that deals with object detections
@@ -12,6 +12,13 @@
 
 #include "dialog_object_detection.h"
 
+/**
+ * @brief Dialog_Object_Detection::Dialog_Object_Detection
+ * @param parent
+ * 
+ * Constructor of the class Dialog_Object_Detection. Set the appearance of the widget and create connections 
+ * between the buttons/sliders and the functionnalities
+ */
 Dialog_Object_Detection::Dialog_Object_Detection(QWidget *parent): QDialog(parent)
 {
     // Build the buttons
@@ -64,19 +71,34 @@ Dialog_Object_Detection::Dialog_Object_Detection(QWidget *parent): QDialog(paren
     resize(400, 400);
 }
 
+/**
+ * @brief Dialog_Object_Detection::onClick_Object_Detection_Method
+ * 
+ * Function called when the buttons are clicked
+ * Emits a signal to the external world with the method selected for object detection
+ */
 void Dialog_Object_Detection::onClick_Object_Detection_Method() {
-    // Function called when the buttons are clicked
-    // Emits a signal to the external world with the method selected for object detection
     emit this->Signal_object_detection_method_changed( this->RadioButtons->checkedId() ) ;
 }
 
+/**
+ * @brief Dialog_Object_Detection::onClick_Slider_hough_line_treshold_value
+ * @param value: integer value from the slider that manages the Hough line transform threshold
+ * 
+ * Function called when the slider for Hough line transform threshold is modified
+ * Emits a signal to the external world with the threshold
+ */
 void Dialog_Object_Detection::onClick_Slider_hough_line_treshold_value(int value) {
-    // Function called when the slider for Hough line transform threshold is modified
-    // Emits a signal to the external world with the threshold
     this->value_hough_line_threshold = value;
     emit this->Signal_hough_line_threshold_changed(this->value_hough_line_threshold);
 }
 
+/**
+ * @brief Dialog_Object_Detection::show_Slider_hough_line_treshold_value
+ * 
+ * Function called when the slider for the Hough line transform threshold is modified.
+ * Set the text accordingly next to the slider
+ */
 void Dialog_Object_Detection::show_Slider_hough_line_treshold_value() {
     this->Slider_hough_line_threshold_value->setText("Threshold: "+QString::number(this->value_hough_line_threshold));
 }
