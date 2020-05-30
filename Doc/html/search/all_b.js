@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['thresholdimage_98',['thresholdImage',['../class_my_image.html#ad09e181c7bbde7c97cd241c487337376',1,'MyImage']]],
+  ['toblackandwhite_99',['toBlackandWhite',['../class_my_image.html#acd39cf02efc6b72f28bb0101a9b76b78',1,'MyImage']]],
+  ['toggleblur_100',['toggleBlur',['../classcapture_video.html#a8295fd12d2e0d94d8accb8cecdcd0e3a',1,'captureVideo::toggleBlur()'],['../class_my_image.html#ac8a3430c4dd0e1ec812a09b4b2f43ef6',1,'MyImage::toggleBlur()']]],
+  ['togglebw_101',['toggleBW',['../classcapture_video.html#ad8e077efa2e21a17dcbe5179d90b1fdc',1,'captureVideo::toggleBW()'],['../class_my_image.html#aebb147cee5ee17a913f8e2e0b2841330',1,'MyImage::toggleBW()']]],
+  ['toggleedge_102',['toggleEdge',['../classcapture_video.html#a3f3e6916aaeebbf3a7357da67702d2ff',1,'captureVideo::toggleEdge()'],['../class_my_image.html#a601f6c0408e5a72d0328754b8a0954f6',1,'MyImage::toggleEdge()']]],
+  ['togglehistoeq_103',['toggleHistoEq',['../class_my_image.html#aa2f8fe86eec48eac292a9fd4d131f294',1,'MyImage']]],
+  ['togglehistogramequalization_104',['toggleHistogramEqualization',['../classcapture_video.html#abde5579cc1664517431af1987dbdfbec',1,'captureVideo']]],
+  ['toggleinverse_105',['toggleInverse',['../classcapture_video.html#ab7c97d3cca73236099474be8897bf736',1,'captureVideo::toggleInverse()'],['../class_my_image.html#a30f1b4ae15e66ac625bc932f3a631aea',1,'MyImage::toggleInverse()']]],
+  ['togglemotiondetection_106',['toggleMotionDetection',['../classcapture_video.html#af041a2c54d460a67fe6a16bad663d19d',1,'captureVideo::toggleMotionDetection()'],['../class_my_image.html#a334d0cdfc871196ef06ad8ce9cb7673e',1,'MyImage::toggleMotionDetection()']]],
+  ['toggleobjectdetection_107',['toggleObjectDetection',['../classcapture_video.html#a493b215bda35ee500c38bf824bd6667d',1,'captureVideo::toggleObjectDetection()'],['../class_my_image.html#a931233fed8f01474257b9cfbb69203ef',1,'MyImage::toggleObjectDetection()']]],
+  ['togglephoto_108',['togglePhoto',['../classcapture_video.html#a1e30b25fe1a13d1533a544e2cdaf6fdd',1,'captureVideo::togglePhoto()'],['../class_my_image.html#a6ef5fc8e1418b99b6c2518b93051a6b0',1,'MyImage::togglePhoto()']]],
+  ['togglethreshold_109',['toggleThreshold',['../classcapture_video.html#a5b169c7091a23199d1dcc6392106a2e5',1,'captureVideo::toggleThreshold()'],['../class_my_image.html#ad8f212addfdaae6a94bf2f6a2cfbcde0',1,'MyImage::toggleThreshold()']]],
+  ['toggletransformation_110',['toggleTransformation',['../classcapture_video.html#ab28fcc9f9262397f7b6d3fc1b070124e',1,'captureVideo::toggleTransformation()'],['../class_my_image.html#afc89b0593b29bc36342661ccb7d9894e',1,'MyImage::toggleTransformation()']]],
+  ['transformimage_111',['transformImage',['../class_my_image.html#a1248bc418ed400f7df88e56e61b913a3',1,'MyImage']]],
+  ['treat_5fbutton_5fblur_112',['treat_Button_Blur',['../class_main_window.html#a1f169d359fd36bad991593c8a3738941',1,'MainWindow']]],
+  ['treat_5fbutton_5fedge_113',['treat_Button_Edge',['../class_main_window.html#a9cc77dda964f8f915160fafd1522764b',1,'MainWindow']]],
+  ['treat_5fbutton_5fhistogram_114',['treat_Button_Histogram',['../class_main_window.html#aea44f90e939b0b8f21760d7accf0a689',1,'MainWindow']]],
+  ['treat_5fbutton_5fmotion_5fdetection_115',['treat_Button_Motion_Detection',['../class_main_window.html#a06204834b509d894101992b8106b2af0',1,'MainWindow']]],
+  ['treat_5fbutton_5fobject_5fdetection_116',['treat_Button_Object_Detection',['../class_main_window.html#a65553ba6e15f1944931fb5b639510388',1,'MainWindow']]],
+  ['treat_5fbutton_5fphoto_117',['treat_Button_Photo',['../class_main_window.html#a078364abfecc897c84ec0ce6cc3a45e2',1,'MainWindow']]],
+  ['treat_5fbutton_5frecord_118',['treat_Button_Record',['../class_main_window.html#afe227c3cce6b02443b385dbdafd1f847',1,'MainWindow']]],
+  ['treat_5fbutton_5fthreshold_119',['treat_Button_Threshold',['../class_main_window.html#adf309ef9f34ca75871b1394aa5a3ef73',1,'MainWindow']]],
+  ['treat_5fbutton_5ftransformation_120',['treat_Button_Transformation',['../class_main_window.html#a5bd82914f363d448db2bc93fcdf7c893',1,'MainWindow']]],
+  ['treat_5fhistogram_5fshow_5fhistogram_121',['treat_Histogram_show_histogram',['../class_main_window.html#a34014963f7f3429264eee9fec4dce9ea',1,'MainWindow']]]
+];

@@ -16,7 +16,7 @@
  * @param parent: object of class QMainWindow to open QFileDialog windows
  * @param data_lock: object of class QMutex to lock-unlock access to common variables between threads
  *
- * Constructor of the class captureVideo.
+ * Constructor of the class captureVideo. Initialization of intern variables.
  */
 captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowParent(parent),
                                                                     data_lock(data_lock)
@@ -53,7 +53,7 @@ void captureVideo::setParent(QMainWindow *parent) {
 
 /**
  * @brief captureVideo::setCamera
- * @param camera
+ * @param camera: integer the ID number of the camera to open
  *
  * Set the ID number of the camera to open
  */
@@ -63,8 +63,7 @@ void captureVideo::setCamera(int camera){
 
 /**
  * @brief captureVideo::openCamera
- * @return true if the camera is open
- *         false if the camera ID is not set yet
+ * @return true if the camera is open. False if the camera ID is not set yet
  *
  * Open the camera anad initialize a new object of class MyImage
  */
@@ -85,7 +84,7 @@ bool captureVideo::openCamera(){
 
 /**
  * @brief captureVideo::closeCamera
- * @return true if everything went well
+ * @return true if everything went well. False otherwise.
  *
  * Close the camera and delete the object of class MyImage. Close also the current movie if active.
  */
@@ -145,8 +144,7 @@ void captureVideo::setCascadeFile(){
  * @brief captureVideo::getQRcodedata
  * @param qrdata: string that describes the type of object decoded (QR code, codebar, ISBN, etc.)
  * @param qrtype: string that contains the decoded content of the object
- * @return true if a QR code/codebar has been decoded by ZBar/OpenCV.
- *         false otherwise
+ * @return true if a QR code/codebar has been decoded by ZBar/OpenCV. False otherwise
  */
 bool captureVideo::getQRcodedata(string &qrdata, string &qrtype){
     return this->myFrame->getQRcodedata(qrdata,qrtype) ;
@@ -197,38 +195,43 @@ void captureVideo::run() {
         // Convert the opencv image to a QImage that will be displayed on the main window
         cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
 
-        data_lock->lock();
+        this->data_lock->lock();
         this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-        data_lock->unlock();
-
+        this->data_lock->unlock();
+        
+        // Launch the motion detection algorithm and send the result to the Qt manager
         if (this->motion_active) {
             Mat motionMat = this->myFrame->get_motion_detected();
-            data_lock->lock();
+            this->data_lock->lock();
             this->motionQimage = QImage(motionMat.data, motionMat.cols, motionMat.rows, motionMat.cols*3, QImage::Format_RGB888);
-            data_lock->unlock();
+            this->data_lock->unlock();
             emit motionCaptured(&this->motionQimage);
         }
 
+        // Launch the object detection algorithm and send the result to the Qt manager
         if (this->objects_active) {
             Mat objectsMat = this->myFrame->get_object_detected();
-            data_lock->lock();
+            this->data_lock->lock();
             this->objectsQimage = QImage(objectsMat.data, objectsMat.cols, objectsMat.rows, objectsMat.cols*3, QImage::Format_RGB888);
-            data_lock->unlock();
+            this->data_lock->unlock();
             emit objectsCaptured(&this->objectsQimage);
         }
-
+        
+        // Launch the histogram equalization algorithm and send the result to the Qt manager
         if (this->histo_active) {
             Mat histoMat = this->myFrame->get_image_histogram();
-            data_lock->lock();
+            this->data_lock->lock();
             this->histoQimage = QImage(histoMat.data, histoMat.cols, histoMat.rows, histoMat.cols*3, QImage::Format_RGB888);
-            data_lock->unlock();
+            this->data_lock->unlock();
             emit histogramCaptured(&this->histoQimage);
         }
-
+        
+        // Send the main image to the Qt manager
         emit frameCaptured(&this->myQimage);
-    }
+        
+    } // end of big while on running
     closeCamera();
-    running = false;
+    this->running = false;
 }
 
 void captureVideo::setThreadStatus(bool state){
@@ -239,7 +242,7 @@ void captureVideo::setThreadStatus(bool state){
 
 /**
  * @brief captureVideo::toggleBW
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the conversion to Black & White
  */
@@ -253,7 +256,7 @@ void captureVideo::toggleBW(bool state){
 
 /**
  * @brief captureVideo::toggleInverse
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the inversion of the colours
  */
@@ -267,7 +270,7 @@ void captureVideo::toggleInverse(bool state){
 
 /**
  * @brief captureVideo::toggleBlur
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the blurring of the image
  */
@@ -281,7 +284,7 @@ void captureVideo::toggleBlur(bool state) {
 
 /**
  * @brief captureVideo::toggleThreshold
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the thresholding
  */
@@ -295,7 +298,7 @@ void captureVideo::toggleThreshold(bool state) {
 
 /**
  * @brief captureVideo::toggleEdge
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the edge detection algorithm
  */
@@ -309,7 +312,7 @@ void captureVideo::toggleEdge(bool state) {
 
 /**
  * @brief captureVideo::toggleMotionDetection
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the motion detection algorithm
  */
@@ -326,7 +329,7 @@ void captureVideo::toggleMotionDetection(bool state) {
 #ifdef withobjdetect
 /**
  * @brief captureVideo::toggleFaceDetection
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the face detection algorithm. A background image is fetch from a local directory
  */
@@ -357,7 +360,7 @@ void captureVideo::toggleFaceDetection(bool state) {
 
 /**
  * @brief captureVideo::toggleObjectDetection
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the object detection algorithm for lines, circles and points
  */
@@ -373,7 +376,7 @@ void captureVideo::toggleObjectDetection(bool state) {
 #ifdef withzbar
 /**
  * @brief captureVideo::toggleQRcode
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the ZBar decoding of QR codes and barcodes
  */
@@ -389,7 +392,7 @@ void captureVideo::toggleQRcode(bool state){
 
 /**
  * @brief captureVideo::toggleTransformation
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the geometrical transformations (rotations, etc.)
  */
@@ -403,7 +406,7 @@ void captureVideo::toggleTransformation(bool state){
 
 /**
  * @brief captureVideo::toggleHistogramEqualization
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the histogram equalization + show histogram
  */
@@ -418,7 +421,7 @@ void captureVideo::toggleHistogramEqualization(bool state){
 #ifdef withstitching
 /**
  * @brief captureVideo::togglePanorama
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the image stitching operation
  */
@@ -434,7 +437,7 @@ void captureVideo::togglePanorama(bool state){
 
 /**
  * @brief captureVideo::togglePhoto
- * @param state
+ * @param state: boolean ON/OFF
  *
  * Activate/desactivate the photo module
  */
@@ -447,6 +450,7 @@ void captureVideo::togglePhoto(bool state) {
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++ FUNCTIONS THAT CHANGE VALUES
+// Their purposes are pretty explicit
 void captureVideo::change_blur_range(int value) {
     this->myFrame->set_size_blur(value);
 }
@@ -572,9 +576,9 @@ void captureVideo::panorama_update(){
     emit panoramaNumberImages(num_imgs);
     emit panoramaInfo(QString::fromStdString(return_status));
 
-    data_lock->lock();
+    this->data_lock->lock();
     this->panorama_Qimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
-    data_lock->unlock();
+    this->data_lock->unlock();
 
     emit panoramaCaptured(&this->panorama_Qimage);
 }
@@ -670,7 +674,7 @@ bool captureVideo::file_save_movie(bool state) {
                                                                  tr("Images (*.avi)") );
             if (QfileNameLocal.isEmpty()) {// If one clicked the cancel button, the string is empty
                 this->recording = false;
-                return false;
+                return false; // return false so that the button "Record" is desactivated in the mainwindow
             }
 
             this->video_out_name = QfileNameLocal.toStdString();
