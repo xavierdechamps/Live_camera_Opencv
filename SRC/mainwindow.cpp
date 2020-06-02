@@ -587,7 +587,7 @@ void MainWindow::update_motion_window(QImage *image) {
  */
 void MainWindow::look_for_qrURL(){
     if (this->qrdecoder_activated){
-        string qrdata,qrtype;
+        std::string qrdata,qrtype;
         if ( this->worker->getQRcodedata(qrdata,qrtype) ) {
             
             if( (qrdata.find("http://" ) == 0) 

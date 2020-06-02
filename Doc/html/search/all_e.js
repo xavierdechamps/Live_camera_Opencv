@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7emainwindow_128',['~MainWindow',['../class_main_window.html#ae98d00a93bc118200eeef9f9bba1dba7',1,'MainWindow']]]
+  ['welcome_20to_20live_5fcamera_5fopencv_155',['Welcome to Live_camera_OpenCV',['../index.html',1,'']]]
 ];

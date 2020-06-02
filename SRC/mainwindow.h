@@ -12,8 +12,8 @@
 #ifdef withzbar
 #include <QDesktopServices> // to open URL links from QR codes
 #include <QUrl>             // to open URL links from QR codes
-#include <QMessageBox>
 #endif
+#include <QMessageBox>
 #include <QCameraInfo> // From Qt5
 #include <QMenuBar>
 #include <QGraphicsScene> // To show the content of the camera in the Qt window
@@ -38,17 +38,18 @@
 
 #include "capturevideo.h"
 
-using namespace std;
-
+/**
+ * @brief The MainWindow class
+ */
 class MainWindow: public QMainWindow
 {
+    Q_OBJECT
+    
 public:
     explicit MainWindow(QWidget * parent = nullptr);
     ~MainWindow() ;
     
 private:
-    Q_OBJECT
-    
     // For capture thread
     captureVideo *worker;
     QThread thread;

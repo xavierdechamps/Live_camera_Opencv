@@ -92,147 +92,229 @@ $(function() {
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;opencv2/video/tracking.hpp&quot;</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;opencv2/video.hpp&quot;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#include &quot;zbar.h&quot;</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">using namespace </span>cv;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#ifdef withface</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;opencv2/face/facemark.hpp&quot;</span> </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &quot;zbar.h&quot;</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="class_my_image.html">   33</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_my_image.html">MyImage</a></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;{</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <a class="code" href="class_my_image.html">MyImage</a>();</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keywordtype">void</span> set_image_content(Mat &amp;content);</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">bool</span> set_Face_Cascade_Name(String &amp;new_name);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">bool</span> set_background_image(String &amp;filename);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">void</span> set_size_blur(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> set_blur_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> set_morpho_element(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">void</span> set_threshold_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">void</span> set_threshold_type(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">void</span> set_threshold_value(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">void</span> set_threshold_blocksize(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">void</span> set_transf_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">void</span> set_transf_rotation_value(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment">//using namespace cv;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">//using namespace std;</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="class_my_image.html">   36</a></span>&#160;<span class="keyword">class </span><a class="code" href="class_my_image.html">MyImage</a></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;{</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <a class="code" href="class_my_image.html#af70f7aa11d987232eb5fe00347745255">MyImage</a>();</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a11b684752451a5e71d1a0f87890ddd50">set_image_content</a>(cv::Mat &amp;content);</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_my_image.html#ae54dca58067b2760d9bbbfe76ac0e310">set_Face_Cascade_Name</a>(cv::String &amp;new_name);</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c">set_background_image</a>(cv::String &amp;filename);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a01f9c7eeee368a1e787f375cab3f29d9">set_size_blur</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#aad216ebc50efe2808c29601cc64162ab">set_blur_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a8239e3cf62c4fb5c8d60793ebff9fe49">set_morpho_element</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a488223905ad088febc296c046088eec0">set_threshold_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a93a65389aee3b5878e5f656e158c7714">set_threshold_type</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a47aa75ec0c15b6c9f2cb8283190db718">set_threshold_value</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#abb1207d862a57d976dfdb378259b5192">set_threshold_blocksize</a>(<span class="keywordtype">int</span>);</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">void</span> set_edge_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">void</span> set_canny_threshold(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">void</span> set_canny_ratio(<span class="keywordtype">double</span>);</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">void</span> set_histo_eq_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">void</span> set_histo_eq_tiles(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">void</span> set_histo_eq_clip_limit(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">void</span> set_object_detection_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">void</span> set_hough_line_threshold(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#aa02bb29c441fd1ce12d42331f284a6f9">set_transf_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a18fbaa3608ca9d0c1797c2de0ba22689">set_transf_rotation_value</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#ae7933f1ab3d3583e8704aac75ae433bd">set_edge_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#add065240b004e17544a20e63651f11f1">set_canny_threshold</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#abd0053bc5c2adbef83191717147eadf6">set_canny_ratio</a>(<span class="keywordtype">double</span>);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a24eff54947310fd88a4cae92458d7ce5">set_histo_eq_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a2abe2349d444f2ed3ddaa30dad422590">set_histo_eq_tiles</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#abf8be080b72ea7efc3e2cb5f1918270d">set_histo_eq_clip_limit</a>(<span class="keywordtype">int</span>);</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">void</span> set_motion_detection_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">void</span> set_photo_method(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">void</span> set_photo_sigmas(<span class="keywordtype">int</span>);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">void</span> set_photo_sigmar(<span class="keywordtype">double</span>);</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> panorama_insert_image();</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordtype">void</span> panorama_pop_up_image();</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    std::string panorama_compute_result();</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">void</span> panorama_reset();</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">int</span> panorama_get_size();</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    Mat&amp; get_image_content();</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    Mat&amp; get_image_histogram();</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    Mat&amp; get_image_panorama();</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    Mat&amp; get_object_detected();</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    Mat&amp; get_motion_detected();</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">void</span> toggleBW();</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> toggleInverse();</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">void</span> toggleBlur();</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> toggleThreshold();</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordtype">void</span> toggleTransformation();</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> toggleEdge();</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> toggleFace_Recon();</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">bool</span> getFace_Status();</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">void</span> toggleHistoEq();</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">void</span> toggleObjectDetection();</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> togglePanorama();</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a586c9736e4e6ff525a35135978584b63">set_object_detection_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a3af27eb5165e59fe20b7e9116c5df2cb">set_hough_line_threshold</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a4e79ea87ccfb46b88efc25c1154bbf11">set_motion_detection_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a01b306b29112f523e3f4e587a0533631">set_photo_method</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#acbbf3d7f58031426097df50e48a5effc">set_photo_sigmas</a>(<span class="keywordtype">int</span>);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a326f28096acea6cc9fdc1379d6ca0cd9">set_photo_sigmar</a>(<span class="keywordtype">double</span>);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#ae5006b3344a6cc59412b42b051dbc339">panorama_insert_image</a>();</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a79afa7989c76a0dfb6585b19b82e7c62">panorama_pop_up_image</a>();</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    std::string <a class="code" href="class_my_image.html#aae14b0e589fa4b30341931381685b0a7">panorama_compute_result</a>();</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#aa19e25b82308a562cc97f9c067820503">panorama_reset</a>();</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keywordtype">int</span> <a class="code" href="class_my_image.html#ad3092991ede17a04de109b88baa28b6d">panorama_get_size</a>();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    cv::Mat&amp; <a class="code" href="class_my_image.html#a2e13898836def024525f98e2fe34574d">get_image_content</a>();</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    cv::Mat&amp; <a class="code" href="class_my_image.html#a1c3fdd33ed6f726901f6d7bb35cf5069">get_image_histogram</a>();</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    cv::Mat&amp; <a class="code" href="class_my_image.html#a3965f3e966d5b9eeed46cbccaf0e3438">get_image_panorama</a>();</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    cv::Mat&amp; <a class="code" href="class_my_image.html#a7c902aa6ec4d465e18321e23bad0eccf">get_object_detected</a>();</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    cv::Mat&amp; <a class="code" href="class_my_image.html#a8c84c632810b42eab9779254d75efdba">get_motion_detected</a>();</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a17b83b40e7acb39f656d844d3b3bf74e">toggleBW</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a59d3d609ab7497d1301ec14c508d0460">toggleInverse</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a030c6c95ec5bd879fd21bd84946215a4">toggleBlur</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a1f1da4cf5b9216c89e6ee7745081558e">toggleThreshold</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#ab93ef8647b1088e2c9b6a140f553891f">toggleTransformation</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a9afcf822d8362aabb4c36b7427f30581">toggleEdge</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a7b17229ac0205bf2ca8dbf7cab24dedf">toggleFace_Recon</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_my_image.html#ab1699e9b17b6f0195a1bb80cdeb98ebb">getFace_Status</a>();</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="preprocessor">#ifdef withface</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a875831452a54aac2e0a00d7bb21f9d60">loadOrnaments</a>(std::vector&lt;cv::Mat&gt; Mat2receive);</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    <span class="keywordtype">void</span> toggleMotionDetection();</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">void</span> togglePhoto();</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keywordtype">void</span> toggleQRcode();</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">bool</span> getQRcodedata(<span class="keywordtype">string</span> &amp;, <span class="keywordtype">string</span> &amp;);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#ac0b050652dfc8b0c20540532a3171d19">toggleHistoEq</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a663b9c634fbf7e83fbbc30b5cb2236ae">toggleObjectDetection</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a6d119184137bfbc12da2dc745724ba45">togglePanorama</a>(<span class="keywordtype">bool</span>);</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion, background ;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">int</span> blur_range,blur_method,morpho_element;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordtype">int</span> edge_method;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    <span class="keywordtype">int</span> canny_threshold;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordtype">int</span> object_detection_method;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordtype">int</span> hough_line_threshold;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordtype">int</span> threshold_method,threshold_value,threshold_blocksize,threshold_type;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <span class="keywordtype">int</span> transformation_method,transf_rotation_value;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keywordtype">int</span> histo_eq_method,histo_tiles,histo_clip_limit;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keywordtype">int</span> motion_detection_method,photo_method,photo_sigmas;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keywordtype">double</span> canny_ratio,photo_sigmar;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keywordtype">bool</span> coloured,inversed,blurred,edge_detect,face_recon,thresholded,object_detected;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordtype">bool</span> transformed,photoed;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keywordtype">bool</span> motion_detected,motion_background_first_time;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordtype">bool</span> histo_eq;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    String face_cascade_name ;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    CascadeClassifier face_cascade;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <span class="keywordtype">bool</span> panorama_activated;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    vector&lt;Mat&gt; Panorama_vector;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    Ptr&lt;Stitcher&gt; Panorama_stitcher;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    <span class="keywordtype">bool</span> qrcodeactivated;</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    String qrcodedata,qrcodetype;</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    Ptr&lt;BackgroundSubtractor&gt; pMOG2;</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160; </div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="comment">// Methods</span></div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;    <span class="keywordtype">void</span> toBlackandWhite();</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keywordtype">void</span> inverseImage();</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    <span class="keywordtype">void</span> smoothImage(Mat &amp;imag, <span class="keywordtype">int</span> blur_range, <span class="keywordtype">int</span> method);</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keywordtype">void</span> detectEdges();</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    <span class="keywordtype">void</span> detect_faces();</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    <span class="keywordtype">double</span> thresholdImage();</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    <span class="keywordtype">void</span> transformImage();</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keywordtype">void</span> equalizeHistogram();</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    <span class="keywordtype">void</span> modulephoto();</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="keywordtype">void</span> getQRcode();</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;};</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="preprocessor">#endif // MYIMAGE_H</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a1e17d58a194efcc0ae6760ba319810a7">toggleMotionDetection</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a0bc5dcec65ffe5d717a6cafdde04b2d5">togglePhoto</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#aa760c4f7f5e5a8428783183c649d2461">toggleQRcode</a>(<span class="keywordtype">bool</span>);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_my_image.html#a9fcbc290c6845d417f6ea6e98afae998">getQRcodedata</a>(std::string &amp;, std::string &amp;);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    cv::Mat image, previmage, image2export , mask , smoothed, histogram, objects, panorama, motion, background ;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <span class="keywordtype">int</span> blur_range,blur_method,morpho_element;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keywordtype">int</span> edge_method;</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    <span class="keywordtype">int</span> canny_threshold;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keywordtype">int</span> object_detection_method;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keywordtype">int</span> hough_line_threshold;</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keywordtype">int</span> threshold_method,threshold_value,threshold_blocksize,threshold_type;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="keywordtype">int</span> transformation_method,transf_rotation_value;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keywordtype">int</span> histo_eq_method,histo_tiles,histo_clip_limit;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <span class="keywordtype">int</span> motion_detection_method,photo_method,photo_sigmas;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    <span class="keywordtype">double</span> canny_ratio,photo_sigmar;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    <span class="keywordtype">bool</span> coloured,inversed,blurred,edge_detect,face_recon,thresholded,object_detected;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="keywordtype">bool</span> transformed,photoed;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    <span class="keywordtype">bool</span> motion_detected,motion_background_first_time;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="keywordtype">bool</span> histo_eq;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    cv::String face_cascade_name ;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    cv::CascadeClassifier face_cascade;</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#ifdef withface</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    cv::Ptr&lt;cv::face::Facemark&gt; mark_detector;</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="comment">// Mask ornaments to put over face detected</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;    cv::Mat ornament_glasses, ornament_mustache, ornament_mouse_nose;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    </div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="preprocessor">#ifdef withstitching</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    <span class="keywordtype">bool</span> panorama_activated;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    std::vector&lt;cv::Mat&gt; Panorama_vector;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    cv::Ptr&lt;cv::Stitcher&gt; Panorama_stitcher;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    <span class="keywordtype">bool</span> qrcodeactivated;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    cv::String qrcodedata,qrcodetype;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    cv::Ptr&lt;cv::BackgroundSubtractor&gt; pMOG2;</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="comment">// Methods</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#acd39cf02efc6b72f28bb0101a9b76b78">toBlackandWhite</a>();</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a562d56f5eecdf6bed4993bec57a64dd0">inverseImage</a>();</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#adae57629ca4e33d486fb13e7ecca1b2b">smoothImage</a>(cv::Mat &amp;imag, <span class="keywordtype">int</span> blur_range, <span class="keywordtype">int</span> method);</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a91c4ad120d7e149e607dfe63999c77c9">detectEdges</a>();</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="preprocessor">#ifdef withobjdetect</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#ae53dd4ee9036f6cd39f1e7092c885192">detect_faces</a>();</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="preprocessor">#ifdef withface</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a3210c00565d95bf754b648cbf6b30854">draw_glasses</a>(cv::Mat &amp;frame, std::vector&lt;cv::Point2f&gt; &amp;marks);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a4aea830fd2de76c9dfed6a077a366ab6">draw_mustache</a>(cv::Mat &amp;frame, std::vector&lt;cv::Point2f&gt; &amp;marks);</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a2028ce9acb953ec1bdb1e0dcbf221489">draw_mouse_nose</a>(cv::Mat &amp;frame, std::vector&lt;cv::Point2f&gt; &amp;marks);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="preprocessor">#endif // endif withface</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="preprocessor">#endif // endif withobjdetect</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    <span class="keywordtype">double</span> <a class="code" href="class_my_image.html#ad09e181c7bbde7c97cd241c487337376">thresholdImage</a>();</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a1248bc418ed400f7df88e56e61b913a3">transformImage</a>();</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a7d684bc15733c1b0ddfa6c312c9081be">equalizeHistogram</a>();</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a7f83ff69398b4d0ffd10458f5e98831a">modulephoto</a>();</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="preprocessor">#ifdef withzbar</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_my_image.html#a528555ffdefe99e1632687eed93f314f">getQRcode</a>();</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;};</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="preprocessor">#endif // MYIMAGE_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclass_my_image_html"><div class="ttname"><a href="class_my_image.html">MyImage</a></div><div class="ttdef"><b>Definition:</b> myimage.h:34</div></div>
+<div class="ttc" id="aclass_my_image_html_ab1699e9b17b6f0195a1bb80cdeb98ebb"><div class="ttname"><a href="class_my_image.html#ab1699e9b17b6f0195a1bb80cdeb98ebb">MyImage::getFace_Status</a></div><div class="ttdeci">bool getFace_Status()</div><div class="ttdoc">MyImage::getFace_Status.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:150</div></div>
+<div class="ttc" id="aclass_my_image_html_a2e13898836def024525f98e2fe34574d"><div class="ttname"><a href="class_my_image.html#a2e13898836def024525f98e2fe34574d">MyImage::get_image_content</a></div><div class="ttdeci">cv::Mat &amp; get_image_content()</div><div class="ttdoc">MyImage::get_image_content.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:496</div></div>
+<div class="ttc" id="aclass_my_image_html_a1c3fdd33ed6f726901f6d7bb35cf5069"><div class="ttname"><a href="class_my_image.html#a1c3fdd33ed6f726901f6d7bb35cf5069">MyImage::get_image_histogram</a></div><div class="ttdeci">cv::Mat &amp; get_image_histogram()</div><div class="ttdoc">MyImage::get_image_histogram.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:504</div></div>
+<div class="ttc" id="aclass_my_image_html_a528555ffdefe99e1632687eed93f314f"><div class="ttname"><a href="class_my_image.html#a528555ffdefe99e1632687eed93f314f">MyImage::getQRcode</a></div><div class="ttdeci">void getQRcode()</div><div class="ttdoc">MyImage::getQRcode.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1277</div></div>
+<div class="ttc" id="aclass_my_image_html_aa02bb29c441fd1ce12d42331f284a6f9"><div class="ttname"><a href="class_my_image.html#aa02bb29c441fd1ce12d42331f284a6f9">MyImage::set_transf_method</a></div><div class="ttdeci">void set_transf_method(int)</div><div class="ttdoc">MyImage::set_transf_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:376</div></div>
+<div class="ttc" id="aclass_my_image_html_ad09e181c7bbde7c97cd241c487337376"><div class="ttname"><a href="class_my_image.html#ad09e181c7bbde7c97cd241c487337376">MyImage::thresholdImage</a></div><div class="ttdeci">double thresholdImage()</div><div class="ttdoc">MyImage::thresholdImage.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1019</div></div>
+<div class="ttc" id="aclass_my_image_html_ad3092991ede17a04de109b88baa28b6d"><div class="ttname"><a href="class_my_image.html#ad3092991ede17a04de109b88baa28b6d">MyImage::panorama_get_size</a></div><div class="ttdeci">int panorama_get_size()</div><div class="ttdoc">MyImage::panorama_get_size.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1266</div></div>
+<div class="ttc" id="aclass_my_image_html_ae5006b3344a6cc59412b42b051dbc339"><div class="ttname"><a href="class_my_image.html#ae5006b3344a6cc59412b42b051dbc339">MyImage::panorama_insert_image</a></div><div class="ttdeci">void panorama_insert_image()</div><div class="ttdoc">MyImage::panorama_insert_image.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1181</div></div>
+<div class="ttc" id="aclass_my_image_html_a7d684bc15733c1b0ddfa6c312c9081be"><div class="ttname"><a href="class_my_image.html#a7d684bc15733c1b0ddfa6c312c9081be">MyImage::equalizeHistogram</a></div><div class="ttdeci">void equalizeHistogram()</div><div class="ttdoc">MyImage::equalizeHistogram.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1097</div></div>
+<div class="ttc" id="aclass_my_image_html_a17b83b40e7acb39f656d844d3b3bf74e"><div class="ttname"><a href="class_my_image.html#a17b83b40e7acb39f656d844d3b3bf74e">MyImage::toggleBW</a></div><div class="ttdeci">void toggleBW(bool)</div><div class="ttdoc">MyImage::toggleBW.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:81</div></div>
+<div class="ttc" id="aclass_my_image_html_a59d3d609ab7497d1301ec14c508d0460"><div class="ttname"><a href="class_my_image.html#a59d3d609ab7497d1301ec14c508d0460">MyImage::toggleInverse</a></div><div class="ttdeci">void toggleInverse(bool)</div><div class="ttdoc">MyImage::toggleInverse.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:91</div></div>
+<div class="ttc" id="aclass_my_image_html_a8c84c632810b42eab9779254d75efdba"><div class="ttname"><a href="class_my_image.html#a8c84c632810b42eab9779254d75efdba">MyImage::get_motion_detected</a></div><div class="ttdeci">cv::Mat &amp; get_motion_detected()</div><div class="ttdoc">MyImage::get_motion_detected.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:624</div></div>
+<div class="ttc" id="aclass_my_image_html_a030c6c95ec5bd879fd21bd84946215a4"><div class="ttname"><a href="class_my_image.html#a030c6c95ec5bd879fd21bd84946215a4">MyImage::toggleBlur</a></div><div class="ttdeci">void toggleBlur(bool)</div><div class="ttdoc">MyImage::toggleBlur.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:101</div></div>
+<div class="ttc" id="aclass_my_image_html_a7b17229ac0205bf2ca8dbf7cab24dedf"><div class="ttname"><a href="class_my_image.html#a7b17229ac0205bf2ca8dbf7cab24dedf">MyImage::toggleFace_Recon</a></div><div class="ttdeci">void toggleFace_Recon(bool)</div><div class="ttdoc">MyImage::toggleFace_Recon.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:142</div></div>
+<div class="ttc" id="aclass_my_image_html"><div class="ttname"><a href="class_my_image.html">MyImage</a></div><div class="ttdef"><b>Definition:</b> myimage.h:37</div></div>
+<div class="ttc" id="aclass_my_image_html_aa19e25b82308a562cc97f9c067820503"><div class="ttname"><a href="class_my_image.html#aa19e25b82308a562cc97f9c067820503">MyImage::panorama_reset</a></div><div class="ttdeci">void panorama_reset()</div><div class="ttdoc">MyImage::panorama_reset.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1254</div></div>
+<div class="ttc" id="aclass_my_image_html_a9fcbc290c6845d417f6ea6e98afae998"><div class="ttname"><a href="class_my_image.html#a9fcbc290c6845d417f6ea6e98afae998">MyImage::getQRcodedata</a></div><div class="ttdeci">bool getQRcodedata(std::string &amp;, std::string &amp;)</div><div class="ttdoc">MyImage::getQRcodedata.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1355</div></div>
+<div class="ttc" id="aclass_my_image_html_a562d56f5eecdf6bed4993bec57a64dd0"><div class="ttname"><a href="class_my_image.html#a562d56f5eecdf6bed4993bec57a64dd0">MyImage::inverseImage</a></div><div class="ttdeci">void inverseImage()</div><div class="ttdoc">MyImage::inverseImage.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:732</div></div>
+<div class="ttc" id="aclass_my_image_html_abd0053bc5c2adbef83191717147eadf6"><div class="ttname"><a href="class_my_image.html#abd0053bc5c2adbef83191717147eadf6">MyImage::set_canny_ratio</a></div><div class="ttdeci">void set_canny_ratio(double)</div><div class="ttdoc">MyImage::set_canny_ratio.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:403</div></div>
+<div class="ttc" id="aclass_my_image_html_a1248bc418ed400f7df88e56e61b913a3"><div class="ttname"><a href="class_my_image.html#a1248bc418ed400f7df88e56e61b913a3">MyImage::transformImage</a></div><div class="ttdeci">void transformImage()</div><div class="ttdoc">MyImage::transformImage.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1075</div></div>
+<div class="ttc" id="aclass_my_image_html_aa760c4f7f5e5a8428783183c649d2461"><div class="ttname"><a href="class_my_image.html#aa760c4f7f5e5a8428783183c649d2461">MyImage::toggleQRcode</a></div><div class="ttdeci">void toggleQRcode(bool)</div><div class="ttdoc">MyImage::toggleQRcode.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:231</div></div>
+<div class="ttc" id="aclass_my_image_html_a01f9c7eeee368a1e787f375cab3f29d9"><div class="ttname"><a href="class_my_image.html#a01f9c7eeee368a1e787f375cab3f29d9">MyImage::set_size_blur</a></div><div class="ttdeci">void set_size_blur(int)</div><div class="ttdoc">MyImage::set_size_blur.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:303</div></div>
+<div class="ttc" id="aclass_my_image_html_a2abe2349d444f2ed3ddaa30dad422590"><div class="ttname"><a href="class_my_image.html#a2abe2349d444f2ed3ddaa30dad422590">MyImage::set_histo_eq_tiles</a></div><div class="ttdeci">void set_histo_eq_tiles(int)</div><div class="ttdoc">MyImage::set_histo_eq_tiles.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:421</div></div>
+<div class="ttc" id="aclass_my_image_html_af70f7aa11d987232eb5fe00347745255"><div class="ttname"><a href="class_my_image.html#af70f7aa11d987232eb5fe00347745255">MyImage::MyImage</a></div><div class="ttdeci">MyImage()</div><div class="ttdoc">MyImage::MyImage.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:17</div></div>
+<div class="ttc" id="aclass_my_image_html_acd39cf02efc6b72f28bb0101a9b76b78"><div class="ttname"><a href="class_my_image.html#acd39cf02efc6b72f28bb0101a9b76b78">MyImage::toBlackandWhite</a></div><div class="ttdeci">void toBlackandWhite()</div><div class="ttdoc">MyImage::toBlackandWhite.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:721</div></div>
+<div class="ttc" id="aclass_my_image_html_a4e79ea87ccfb46b88efc25c1154bbf11"><div class="ttname"><a href="class_my_image.html#a4e79ea87ccfb46b88efc25c1154bbf11">MyImage::set_motion_detection_method</a></div><div class="ttdeci">void set_motion_detection_method(int)</div><div class="ttdoc">MyImage::set_motion_detection_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:457</div></div>
+<div class="ttc" id="aclass_my_image_html_a91c4ad120d7e149e607dfe63999c77c9"><div class="ttname"><a href="class_my_image.html#a91c4ad120d7e149e607dfe63999c77c9">MyImage::detectEdges</a></div><div class="ttdeci">void detectEdges()</div><div class="ttdoc">MyImage::detectEdges.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:795</div></div>
+<div class="ttc" id="aclass_my_image_html_aae14b0e589fa4b30341931381685b0a7"><div class="ttname"><a href="class_my_image.html#aae14b0e589fa4b30341931381685b0a7">MyImage::panorama_compute_result</a></div><div class="ttdeci">std::string panorama_compute_result()</div><div class="ttdoc">MyImage::panorama_compute_result.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1206</div></div>
+<div class="ttc" id="aclass_my_image_html_a488223905ad088febc296c046088eec0"><div class="ttname"><a href="class_my_image.html#a488223905ad088febc296c046088eec0">MyImage::set_threshold_method</a></div><div class="ttdeci">void set_threshold_method(int)</div><div class="ttdoc">MyImage::set_threshold_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:339</div></div>
+<div class="ttc" id="aclass_my_image_html_a3af27eb5165e59fe20b7e9116c5df2cb"><div class="ttname"><a href="class_my_image.html#a3af27eb5165e59fe20b7e9116c5df2cb">MyImage::set_hough_line_threshold</a></div><div class="ttdeci">void set_hough_line_threshold(int)</div><div class="ttdoc">MyImage::set_hough_line_threshold.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:448</div></div>
+<div class="ttc" id="aclass_my_image_html_add065240b004e17544a20e63651f11f1"><div class="ttname"><a href="class_my_image.html#add065240b004e17544a20e63651f11f1">MyImage::set_canny_threshold</a></div><div class="ttdeci">void set_canny_threshold(int)</div><div class="ttdoc">MyImage::set_canny_threshold.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:393</div></div>
+<div class="ttc" id="aclass_my_image_html_ae53dd4ee9036f6cd39f1e7092c885192"><div class="ttname"><a href="class_my_image.html#ae53dd4ee9036f6cd39f1e7092c885192">MyImage::detect_faces</a></div><div class="ttdeci">void detect_faces()</div><div class="ttdoc">MyImage::detect_faces.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:843</div></div>
+<div class="ttc" id="aclass_my_image_html_a663b9c634fbf7e83fbbc30b5cb2236ae"><div class="ttname"><a href="class_my_image.html#a663b9c634fbf7e83fbbc30b5cb2236ae">MyImage::toggleObjectDetection</a></div><div class="ttdeci">void toggleObjectDetection(bool)</div><div class="ttdoc">MyImage::toggleObjectDetection.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:186</div></div>
+<div class="ttc" id="aclass_my_image_html_a3210c00565d95bf754b648cbf6b30854"><div class="ttname"><a href="class_my_image.html#a3210c00565d95bf754b648cbf6b30854">MyImage::draw_glasses</a></div><div class="ttdeci">void draw_glasses(cv::Mat &amp;frame, std::vector&lt; cv::Point2f &gt; &amp;marks)</div><div class="ttdoc">MyImage::draw_glasses.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:902</div></div>
+<div class="ttc" id="aclass_my_image_html_a8239e3cf62c4fb5c8d60793ebff9fe49"><div class="ttname"><a href="class_my_image.html#a8239e3cf62c4fb5c8d60793ebff9fe49">MyImage::set_morpho_element</a></div><div class="ttdeci">void set_morpho_element(int)</div><div class="ttdoc">MyImage::set_morpho_element.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:321</div></div>
+<div class="ttc" id="aclass_my_image_html_ac0b050652dfc8b0c20540532a3171d19"><div class="ttname"><a href="class_my_image.html#ac0b050652dfc8b0c20540532a3171d19">MyImage::toggleHistoEq</a></div><div class="ttdeci">void toggleHistoEq(bool)</div><div class="ttdoc">MyImage::toggleHistoEq.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:176</div></div>
+<div class="ttc" id="aclass_my_image_html_a875831452a54aac2e0a00d7bb21f9d60"><div class="ttname"><a href="class_my_image.html#a875831452a54aac2e0a00d7bb21f9d60">MyImage::loadOrnaments</a></div><div class="ttdeci">void loadOrnaments(std::vector&lt; cv::Mat &gt; Mat2receive)</div><div class="ttdoc">MyImage::loadOrnaments.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:161</div></div>
+<div class="ttc" id="aclass_my_image_html_a9afcf822d8362aabb4c36b7427f30581"><div class="ttname"><a href="class_my_image.html#a9afcf822d8362aabb4c36b7427f30581">MyImage::toggleEdge</a></div><div class="ttdeci">void toggleEdge(bool)</div><div class="ttdoc">MyImage::toggleEdge.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:111</div></div>
+<div class="ttc" id="aclass_my_image_html_abf8be080b72ea7efc3e2cb5f1918270d"><div class="ttname"><a href="class_my_image.html#abf8be080b72ea7efc3e2cb5f1918270d">MyImage::set_histo_eq_clip_limit</a></div><div class="ttdeci">void set_histo_eq_clip_limit(int)</div><div class="ttdoc">MyImage::set_histo_eq_clip_limit.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:430</div></div>
+<div class="ttc" id="aclass_my_image_html_a24eff54947310fd88a4cae92458d7ce5"><div class="ttname"><a href="class_my_image.html#a24eff54947310fd88a4cae92458d7ce5">MyImage::set_histo_eq_method</a></div><div class="ttdeci">void set_histo_eq_method(int)</div><div class="ttdoc">MyImage::set_histo_eq_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:412</div></div>
+<div class="ttc" id="aclass_my_image_html_aad216ebc50efe2808c29601cc64162ab"><div class="ttname"><a href="class_my_image.html#aad216ebc50efe2808c29601cc64162ab">MyImage::set_blur_method</a></div><div class="ttdeci">void set_blur_method(int)</div><div class="ttdoc">MyImage::set_blur_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:312</div></div>
+<div class="ttc" id="aclass_my_image_html_adae57629ca4e33d486fb13e7ecca1b2b"><div class="ttname"><a href="class_my_image.html#adae57629ca4e33d486fb13e7ecca1b2b">MyImage::smoothImage</a></div><div class="ttdeci">void smoothImage(cv::Mat &amp;imag, int blur_range, int method)</div><div class="ttdoc">MyImage::smoothImage.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:745</div></div>
+<div class="ttc" id="aclass_my_image_html_a6d119184137bfbc12da2dc745724ba45"><div class="ttname"><a href="class_my_image.html#a6d119184137bfbc12da2dc745724ba45">MyImage::togglePanorama</a></div><div class="ttdeci">void togglePanorama(bool)</div><div class="ttdoc">MyImage::togglePanorama.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:197</div></div>
+<div class="ttc" id="aclass_my_image_html_ab93ef8647b1088e2c9b6a140f553891f"><div class="ttname"><a href="class_my_image.html#ab93ef8647b1088e2c9b6a140f553891f">MyImage::toggleTransformation</a></div><div class="ttdeci">void toggleTransformation(bool)</div><div class="ttdoc">MyImage::toggleTransformation.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:131</div></div>
+<div class="ttc" id="aclass_my_image_html_a7f83ff69398b4d0ffd10458f5e98831a"><div class="ttname"><a href="class_my_image.html#a7f83ff69398b4d0ffd10458f5e98831a">MyImage::modulephoto</a></div><div class="ttdeci">void modulephoto()</div><div class="ttdoc">MyImage::modulephoto.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1128</div></div>
+<div class="ttc" id="aclass_my_image_html_a2028ce9acb953ec1bdb1e0dcbf221489"><div class="ttname"><a href="class_my_image.html#a2028ce9acb953ec1bdb1e0dcbf221489">MyImage::draw_mouse_nose</a></div><div class="ttdeci">void draw_mouse_nose(cv::Mat &amp;frame, std::vector&lt; cv::Point2f &gt; &amp;marks)</div><div class="ttdoc">MyImage::draw_mouse_nose.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:979</div></div>
+<div class="ttc" id="aclass_my_image_html_a18fbaa3608ca9d0c1797c2de0ba22689"><div class="ttname"><a href="class_my_image.html#a18fbaa3608ca9d0c1797c2de0ba22689">MyImage::set_transf_rotation_value</a></div><div class="ttdeci">void set_transf_rotation_value(int)</div><div class="ttdoc">MyImage::set_transf_rotation_value.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:385</div></div>
+<div class="ttc" id="aclass_my_image_html_a79afa7989c76a0dfb6585b19b82e7c62"><div class="ttname"><a href="class_my_image.html#a79afa7989c76a0dfb6585b19b82e7c62">MyImage::panorama_pop_up_image</a></div><div class="ttdeci">void panorama_pop_up_image()</div><div class="ttdoc">MyImage::panorama_pop_up_image.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:1193</div></div>
+<div class="ttc" id="aclass_my_image_html_acbbf3d7f58031426097df50e48a5effc"><div class="ttname"><a href="class_my_image.html#acbbf3d7f58031426097df50e48a5effc">MyImage::set_photo_sigmas</a></div><div class="ttdeci">void set_photo_sigmas(int)</div><div class="ttdoc">MyImage::set_photo_sigmas.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:476</div></div>
+<div class="ttc" id="aclass_my_image_html_a7c902aa6ec4d465e18321e23bad0eccf"><div class="ttname"><a href="class_my_image.html#a7c902aa6ec4d465e18321e23bad0eccf">MyImage::get_object_detected</a></div><div class="ttdeci">cv::Mat &amp; get_object_detected()</div><div class="ttdoc">MyImage::get_object_detected.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:556</div></div>
+<div class="ttc" id="aclass_my_image_html_a11b684752451a5e71d1a0f87890ddd50"><div class="ttname"><a href="class_my_image.html#a11b684752451a5e71d1a0f87890ddd50">MyImage::set_image_content</a></div><div class="ttdeci">void set_image_content(cv::Mat &amp;content)</div><div class="ttdoc">MyImage::set_image_content.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:246</div></div>
+<div class="ttc" id="aclass_my_image_html_a326f28096acea6cc9fdc1379d6ca0cd9"><div class="ttname"><a href="class_my_image.html#a326f28096acea6cc9fdc1379d6ca0cd9">MyImage::set_photo_sigmar</a></div><div class="ttdeci">void set_photo_sigmar(double)</div><div class="ttdoc">MyImage::set_photo_sigmar.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:486</div></div>
+<div class="ttc" id="aclass_my_image_html_a1f1da4cf5b9216c89e6ee7745081558e"><div class="ttname"><a href="class_my_image.html#a1f1da4cf5b9216c89e6ee7745081558e">MyImage::toggleThreshold</a></div><div class="ttdeci">void toggleThreshold(bool)</div><div class="ttdoc">MyImage::toggleThreshold.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:121</div></div>
+<div class="ttc" id="aclass_my_image_html_a1e17d58a194efcc0ae6760ba319810a7"><div class="ttname"><a href="class_my_image.html#a1e17d58a194efcc0ae6760ba319810a7">MyImage::toggleMotionDetection</a></div><div class="ttdeci">void toggleMotionDetection(bool)</div><div class="ttdoc">MyImage::toggleMotionDetection.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:208</div></div>
+<div class="ttc" id="aclass_my_image_html_ae7933f1ab3d3583e8704aac75ae433bd"><div class="ttname"><a href="class_my_image.html#ae7933f1ab3d3583e8704aac75ae433bd">MyImage::set_edge_method</a></div><div class="ttdeci">void set_edge_method(int)</div><div class="ttdoc">MyImage::set_edge_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:330</div></div>
+<div class="ttc" id="aclass_my_image_html_a586c9736e4e6ff525a35135978584b63"><div class="ttname"><a href="class_my_image.html#a586c9736e4e6ff525a35135978584b63">MyImage::set_object_detection_method</a></div><div class="ttdeci">void set_object_detection_method(int)</div><div class="ttdoc">MyImage::set_object_detection_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:439</div></div>
+<div class="ttc" id="aclass_my_image_html_abb1207d862a57d976dfdb378259b5192"><div class="ttname"><a href="class_my_image.html#abb1207d862a57d976dfdb378259b5192">MyImage::set_threshold_blocksize</a></div><div class="ttdeci">void set_threshold_blocksize(int)</div><div class="ttdoc">MyImage::set_threshold_blocksize.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:367</div></div>
+<div class="ttc" id="aclass_my_image_html_a3965f3e966d5b9eeed46cbccaf0e3438"><div class="ttname"><a href="class_my_image.html#a3965f3e966d5b9eeed46cbccaf0e3438">MyImage::get_image_panorama</a></div><div class="ttdeci">cv::Mat &amp; get_image_panorama()</div><div class="ttdoc">MyImage::get_image_panorama.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:547</div></div>
+<div class="ttc" id="aclass_my_image_html_a4aea830fd2de76c9dfed6a077a366ab6"><div class="ttname"><a href="class_my_image.html#a4aea830fd2de76c9dfed6a077a366ab6">MyImage::draw_mustache</a></div><div class="ttdeci">void draw_mustache(cv::Mat &amp;frame, std::vector&lt; cv::Point2f &gt; &amp;marks)</div><div class="ttdoc">MyImage::draw_mustache.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:941</div></div>
+<div class="ttc" id="aclass_my_image_html_a93a65389aee3b5878e5f656e158c7714"><div class="ttname"><a href="class_my_image.html#a93a65389aee3b5878e5f656e158c7714">MyImage::set_threshold_type</a></div><div class="ttdeci">void set_threshold_type(int)</div><div class="ttdoc">MyImage::set_threshold_type.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:348</div></div>
+<div class="ttc" id="aclass_my_image_html_a47aa75ec0c15b6c9f2cb8283190db718"><div class="ttname"><a href="class_my_image.html#a47aa75ec0c15b6c9f2cb8283190db718">MyImage::set_threshold_value</a></div><div class="ttdeci">void set_threshold_value(int)</div><div class="ttdoc">MyImage::set_threshold_value.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:357</div></div>
+<div class="ttc" id="aclass_my_image_html_a01b306b29112f523e3f4e587a0533631"><div class="ttname"><a href="class_my_image.html#a01b306b29112f523e3f4e587a0533631">MyImage::set_photo_method</a></div><div class="ttdeci">void set_photo_method(int)</div><div class="ttdoc">MyImage::set_photo_method.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:467</div></div>
+<div class="ttc" id="aclass_my_image_html_ae54dca58067b2760d9bbbfe76ac0e310"><div class="ttname"><a href="class_my_image.html#ae54dca58067b2760d9bbbfe76ac0e310">MyImage::set_Face_Cascade_Name</a></div><div class="ttdeci">bool set_Face_Cascade_Name(cv::String &amp;new_name)</div><div class="ttdoc">MyImage::set_Face_Cascade_Name.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:682</div></div>
+<div class="ttc" id="aclass_my_image_html_a0e4d9c62c0a00ea5b95de2f7f289929c"><div class="ttname"><a href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c">MyImage::set_background_image</a></div><div class="ttdeci">bool set_background_image(cv::String &amp;filename)</div><div class="ttdoc">MyImage::set_background_image.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:705</div></div>
+<div class="ttc" id="aclass_my_image_html_a0bc5dcec65ffe5d717a6cafdde04b2d5"><div class="ttname"><a href="class_my_image.html#a0bc5dcec65ffe5d717a6cafdde04b2d5">MyImage::togglePhoto</a></div><div class="ttdeci">void togglePhoto(bool)</div><div class="ttdoc">MyImage::togglePhoto.</div><div class="ttdef"><b>Definition:</b> myimage.cpp:220</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

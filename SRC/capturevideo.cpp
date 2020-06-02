@@ -33,8 +33,11 @@ captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowPa
     // Initializations
     this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
     this->file_name_save = this->main_directory + "webcam.jpg";
-    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
-
+#ifdef withobjdetect
+    this->file_cascade = OPENCV_DATA_DIR"haarcascade_frontalface_default.xml" ;
+//    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
+#endif
+    
     // Concerns the recording of the video
     this->record_time_blink = 0;
     this->recording = false;
@@ -77,8 +80,15 @@ bool captureVideo::openCamera(){
     // Create a new OpenCV MyImage, don't initialize it in the constructor otherwise
     // myFrame is owned by mainWindow
     this->myFrame = new MyImage();
-    setCascadeFile();
-
+    
+    // Set the cascade file for face detection
+    this->setCascadeFile();
+    
+#ifdef withface
+    // Load the ornaments for face and send them to myFrame
+    this->loadOrnaments();
+#endif
+    
     return this->capture.open(this->camID);
 }
 
@@ -140,15 +150,17 @@ void captureVideo::setCascadeFile(){
 #endif
 }
 
+#ifdef withzbar
 /**
  * @brief captureVideo::getQRcodedata
  * @param qrdata: string that describes the type of object decoded (QR code, codebar, ISBN, etc.)
  * @param qrtype: string that contains the decoded content of the object
  * @return true if a QR code/codebar has been decoded by ZBar/OpenCV. False otherwise
  */
-bool captureVideo::getQRcodedata(string &qrdata, string &qrtype){
+bool captureVideo::getQRcodedata(std::string &qrdata, std::string &qrtype){
     return this->myFrame->getQRcodedata(qrdata,qrtype) ;
 }
+#endif
 
 /**
  * @brief captureVideo::run
@@ -158,7 +170,7 @@ bool captureVideo::getQRcodedata(string &qrdata, string &qrtype){
  */
 void captureVideo::run() {
     this->running = true;
-    Mat imageMat;
+    cv::Mat imageMat;
 
     while (this->running) {
         if(cameraIsOpen()) {
@@ -173,12 +185,13 @@ void captureVideo::run() {
 
             // Get the image after post-processing
             imageMat = myFrame->get_image_content();
-
+            imageMat.copyTo(this->currentMat);
+            
             // Record the video
             if (this->recording) {
                 this->video_out << imageMat; // save the image before the colour conversion
                 if (this->record_time_blink <= 20) // Display a blinking red circle
-                    cv::circle(imageMat,cv::Point(20,20),15, Scalar(0,0,255), -1, 8);
+                    cv::circle(imageMat,cv::Point(20,20),15, cv::Scalar(0,0,255), -1, 8);
                 this->record_time_blink ++;
                 if (this->record_time_blink >= 40)
                     this->record_time_blink = 0;
@@ -187,13 +200,13 @@ void captureVideo::run() {
         else
         {
             qDebug() << "captureVideo::run() : Camera is not open";
-            imageMat = Mat::zeros(480, 640, CV_8UC1);
+            imageMat = cv::Mat::zeros(480, 640, CV_8UC1);
             myFrame->set_image_content(imageMat);
             imageMat = myFrame->get_image_content();
         }
 
         // Convert the opencv image to a QImage that will be displayed on the main window
-        cvtColor(imageMat, imageMat, COLOR_BGR2RGB);
+        cvtColor(imageMat, imageMat, cv::COLOR_BGR2RGB);
 
         this->data_lock->lock();
         this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
@@ -201,7 +214,7 @@ void captureVideo::run() {
         
         // Launch the motion detection algorithm and send the result to the Qt manager
         if (this->motion_active) {
-            Mat motionMat = this->myFrame->get_motion_detected();
+            cv::Mat motionMat = this->myFrame->get_motion_detected();
             this->data_lock->lock();
             this->motionQimage = QImage(motionMat.data, motionMat.cols, motionMat.rows, motionMat.cols*3, QImage::Format_RGB888);
             this->data_lock->unlock();
@@ -210,7 +223,7 @@ void captureVideo::run() {
 
         // Launch the object detection algorithm and send the result to the Qt manager
         if (this->objects_active) {
-            Mat objectsMat = this->myFrame->get_object_detected();
+            cv::Mat objectsMat = this->myFrame->get_object_detected();
             this->data_lock->lock();
             this->objectsQimage = QImage(objectsMat.data, objectsMat.cols, objectsMat.rows, objectsMat.cols*3, QImage::Format_RGB888);
             this->data_lock->unlock();
@@ -219,7 +232,7 @@ void captureVideo::run() {
         
         // Launch the histogram equalization algorithm and send the result to the Qt manager
         if (this->histo_active) {
-            Mat histoMat = this->myFrame->get_image_histogram();
+            cv::Mat histoMat = this->myFrame->get_image_histogram();
             this->data_lock->lock();
             this->histoQimage = QImage(histoMat.data, histoMat.cols, histoMat.rows, histoMat.cols*3, QImage::Format_RGB888);
             this->data_lock->unlock();
@@ -247,7 +260,7 @@ void captureVideo::setThreadStatus(bool state){
  * Activate/desactivate the conversion to Black & White
  */
 void captureVideo::toggleBW(bool state){
-    this->myFrame->toggleBW() ;
+    this->myFrame->toggleBW(state) ;
     if (state)
         emit changeInfo("Black and White activated");
     else
@@ -261,7 +274,7 @@ void captureVideo::toggleBW(bool state){
  * Activate/desactivate the inversion of the colours
  */
 void captureVideo::toggleInverse(bool state){
-    this->myFrame->toggleInverse() ;
+    this->myFrame->toggleInverse(state) ;
     if (state)
         emit changeInfo("Inversed colours activated");
     else
@@ -275,7 +288,7 @@ void captureVideo::toggleInverse(bool state){
  * Activate/desactivate the blurring of the image
  */
 void captureVideo::toggleBlur(bool state) {
-    this->myFrame->toggleBlur();
+    this->myFrame->toggleBlur(state);
     if (state)
         emit changeInfo("Blur filter activated");
     else
@@ -289,7 +302,7 @@ void captureVideo::toggleBlur(bool state) {
  * Activate/desactivate the thresholding
  */
 void captureVideo::toggleThreshold(bool state) {
-    this->myFrame->toggleThreshold();
+    this->myFrame->toggleThreshold(state);
     if (state)
         emit changeInfo("Threshold activated");
     else
@@ -303,7 +316,7 @@ void captureVideo::toggleThreshold(bool state) {
  * Activate/desactivate the edge detection algorithm
  */
 void captureVideo::toggleEdge(bool state) {
-    this->myFrame->toggleEdge();
+    this->myFrame->toggleEdge(state);
     if (state)
         emit changeInfo("Edge detection activated");
     else
@@ -317,7 +330,7 @@ void captureVideo::toggleEdge(bool state) {
  * Activate/desactivate the motion detection algorithm
  */
 void captureVideo::toggleMotionDetection(bool state) {
-    this->myFrame->toggleMotionDetection();
+    this->myFrame->toggleMotionDetection(state);
     this->motion_active = state;
     if (state)
         emit changeInfo("Motion detection activated");
@@ -350,7 +363,7 @@ void captureVideo::toggleFaceDetection(bool state) {
         }
     }
 
-    this->myFrame->toggleFace_Recon();
+    this->myFrame->toggleFace_Recon(state);
     if (state)
         emit changeInfo("Face detection activated");
     else
@@ -365,7 +378,7 @@ void captureVideo::toggleFaceDetection(bool state) {
  * Activate/desactivate the object detection algorithm for lines, circles and points
  */
 void captureVideo::toggleObjectDetection(bool state) {
-    this->myFrame->toggleObjectDetection();
+    this->myFrame->toggleObjectDetection(state);
     this->objects_active = state;
     if (state)
         emit changeInfo("Point/line/circle detection activated");
@@ -381,7 +394,7 @@ void captureVideo::toggleObjectDetection(bool state) {
  * Activate/desactivate the ZBar decoding of QR codes and barcodes
  */
 void captureVideo::toggleQRcode(bool state){
-    this->myFrame->toggleQRcode();
+    this->myFrame->toggleQRcode(state);
     this->qrdecoder_active = state;
     if (state)
         emit changeInfo("QR code detection activated");
@@ -397,7 +410,7 @@ void captureVideo::toggleQRcode(bool state){
  * Activate/desactivate the geometrical transformations (rotations, etc.)
  */
 void captureVideo::toggleTransformation(bool state){
-    this->myFrame->toggleTransformation();
+    this->myFrame->toggleTransformation(state);
     if (state)
         emit changeInfo("Transformations activated");
     else
@@ -411,7 +424,7 @@ void captureVideo::toggleTransformation(bool state){
  * Activate/desactivate the histogram equalization + show histogram
  */
 void captureVideo::toggleHistogramEqualization(bool state){
-    this->myFrame->toggleHistoEq();
+    this->myFrame->toggleHistoEq(state);
     if (state)
         emit changeInfo("Histogram equalization activated");
     else
@@ -426,7 +439,7 @@ void captureVideo::toggleHistogramEqualization(bool state){
  * Activate/desactivate the image stitching operation
  */
 void captureVideo::togglePanorama(bool state){
-    this->myFrame->togglePanorama();
+    this->myFrame->togglePanorama(state);
     this->panorama_active = state;
     if (state)
         emit changeInfo("Panorama creation activated");
@@ -442,7 +455,7 @@ void captureVideo::togglePanorama(bool state){
  * Activate/desactivate the photo module
  */
 void captureVideo::togglePhoto(bool state) {
-    this->myFrame->togglePhoto();
+    this->myFrame->togglePhoto(state);
     if (state)
         emit changeInfo("Module Photo activated");
     else
@@ -571,7 +584,7 @@ void captureVideo::panorama_reset(){
  */
 void captureVideo::panorama_update(){
     std::string return_status = this->myFrame->panorama_compute_result();
-    Mat imageMat = this->myFrame->get_image_panorama();
+    cv::Mat imageMat = this->myFrame->get_image_panorama();
     int num_imgs = this->myFrame->panorama_get_size();
     emit panoramaNumberImages(num_imgs);
     emit panoramaInfo(QString::fromStdString(return_status));
@@ -589,7 +602,7 @@ void captureVideo::panorama_update(){
  * Save the resulting panorama to a local file
  */
 void captureVideo::panorama_save(){
-    Mat imageMat = this->myFrame->get_image_panorama();
+    cv::Mat imageMat = this->myFrame->get_image_panorama();
 
     QString QfileNameLocal = QFileDialog::getSaveFileName(this->mainWindowParent,
                                                          tr("File name to save the panorama"),
@@ -600,15 +613,15 @@ void captureVideo::panorama_save(){
 
     this->file_name_save = QfileNameLocal.toStdString();
 
-    vector<int> compression_params;
-    compression_params.push_back(IMWRITE_JPEG_QUALITY);
+    std::vector<int> compression_params;
+    compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
     compression_params.push_back(100);
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(4);
 
-    Mat imageOutput;
-    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
-    imwrite(this->file_name_save , imageOutput , compression_params );
+    cv::Mat imageOutput;
+    cv::cvtColor(imageMat, imageOutput, cv::COLOR_BGR2RGB);
+    cv::imwrite(this->file_name_save , imageOutput , compression_params );
 }
 #endif
 
@@ -639,16 +652,16 @@ void captureVideo::file_save_image() {
 
     this->file_name_save = QfileNameLocal.toStdString();
 
-    vector<int> compression_params;
-    compression_params.push_back(IMWRITE_JPEG_QUALITY);
+    std::vector<int> compression_params;
+    compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
     compression_params.push_back(100);
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(4);
 
-    Mat imageMat = myFrame->get_image_content();
-    Mat imageOutput;
-    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
-    imwrite(this->file_name_save , imageOutput , compression_params );
+//    Mat imageMat = myFrame->get_image_content();
+//    Mat imageOutput;
+//    cvtColor(imageMat, imageOutput, COLOR_BGR2RGB);
+    cv::imwrite(this->file_name_save , this->currentMat , compression_params );
 
     emit changeInfo("Saved the image under "+QfileNameLocal);
 }
@@ -679,7 +692,7 @@ bool captureVideo::file_save_movie(bool state) {
 
             this->video_out_name = QfileNameLocal.toStdString();
 
-            this->video_out.open(this->video_out_name,VideoWriter::fourcc('X','V','I','D'),
+            this->video_out.open(this->video_out_name,cv::VideoWriter::fourcc('X','V','I','D'),
                                  10.,
                                  cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
                                           this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
@@ -696,3 +709,36 @@ bool captureVideo::file_save_movie(bool state) {
     }
     return true;
 }
+
+#ifdef withface
+/**
+ * @brief captureVideo::loadOrnaments
+ * 
+ * Load the ornaments from the Resources / images.qrc and send them to myFrame
+ */
+void captureVideo::loadOrnaments(){
+    QImage image;
+    image.load(":/images/glasses.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    cv::Mat glasses = cv::Mat(image.height(), image.width(), CV_8UC3,
+                              image.bits(), image.bytesPerLine()).clone();
+    
+    image.load(":/images/mustache.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    cv::Mat mustache = cv::Mat(image.height(), image.width(), CV_8UC3,
+                               image.bits(), image.bytesPerLine()).clone();
+    
+    image.load(":/images/mouse-nose.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    cv::Mat mouse_nose = cv::Mat(image.height(), image.width(), CV_8UC3,
+                                 image.bits(), image.bytesPerLine()).clone(); 
+    
+    std::vector<cv::Mat> Mat2send;
+    if (!glasses.empty() && !mustache.empty() && !mouse_nose.empty()){
+        Mat2send.push_back(glasses);
+        Mat2send.push_back(mustache);
+        Mat2send.push_back(mouse_nose);
+        this->myFrame->loadOrnaments(Mat2send);
+    }
+}
+#endif

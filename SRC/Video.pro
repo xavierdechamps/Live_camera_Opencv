@@ -1,11 +1,20 @@
 # Path to global OpenCV installation directory
 MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install
+#
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
-# If you don't have the OpenCV object detect library, comment the following line
+#
+# If you don't have the OpenCV object detect library, comment the following 2 lines
 CONFIG += objdetect
-# If you don't have the OpenCV xphoto library, comment the following line
+# (Macro) Path to the directory containing the cascade classifier files for face detection
+DEFINES += OPENCV_DATA_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/\\\"
+#
+# If you don't have the OpenCV extra module Xphoto, comment the following line
 CONFIG += xphoto
+#
+# If you don't have the OpenCV extra module Face, comment the following line
+CONFIG += face
+#
 # If you don't have the ZBar library, comment the following line
 CONFIG += zbar
 MY_ZBAR_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/zbar-0.10/install
@@ -16,6 +25,7 @@ stitching: DEFINES+=withstitching
 objdetect: DEFINES+=withobjdetect
 xphoto: DEFINES+=withxphoto
 zbar: DEFINES+=withzbar
+face: DEFINES+=withface
 
 QT       = core gui multimedia concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -24,6 +34,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Video
 TEMPLATE = app
+
+# Resource collection
+face: RESOURCES = images.qrc
 
 SOURCES = main.cpp \
         myimage.cpp \
@@ -79,4 +92,5 @@ LIBS += -lopencv_imgcodecs \
 stitching: LIBS += -lopencv_stitching
 objdetect: LIBS += -lopencv_objdetect
 xphoto: LIBS += -lopencv_xphoto
+face: LIBS += -lopencv_face
 zbar: LIBS += -L$${MY_ZBAR_DIR}/lib -lzbar

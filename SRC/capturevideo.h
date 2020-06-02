@@ -35,7 +35,7 @@ public:
     void setParent(QMainWindow *parent);
     void setCascadeFile();
 #ifdef withzbar
-    bool getQRcodedata(string &, string &);
+    bool getQRcodedata(std::string &, std::string &);
 #endif
     bool file_save_movie(bool);
     
@@ -117,16 +117,21 @@ protected:
 private:
     // Private variables
     MyImage* myFrame;
+    cv::Mat currentMat;
     int camID,record_time_blink;
-    VideoCapture capture;
-    VideoWriter video_out;
-    String file_name_save, main_directory, file_background, file_cascade,video_out_name;
+    cv::VideoCapture capture;
+    cv::VideoWriter video_out;
+    cv::String file_name_save, main_directory, file_background, file_cascade,video_out_name;
     bool recording,running,motion_active,objects_active,qrdecoder_active;
     bool histo_active,panorama_active;
     QImage myQimage,motionQimage,objectsQimage,histoQimage,panorama_Qimage;
     QMainWindow *mainWindowParent;
     QMutex *data_lock;
+    
     // Private functions
+#ifdef withface
+    void loadOrnaments();
+#endif
 };
 
 #endif // CAPTUREVIDEO_H

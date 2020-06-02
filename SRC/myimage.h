@@ -20,6 +20,9 @@
 #endif
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/video.hpp"
+#ifdef withface
+#include "opencv2/face/facemark.hpp" 
+#endif
 
 #ifdef withzbar
 #include "zbar.h"
@@ -27,18 +30,18 @@
 
 #include <iostream>
 
-using namespace cv;
-using namespace std;
+//using namespace cv;
+//using namespace std;
 
 class MyImage
 {
 public:
     MyImage();
 
-    void set_image_content(Mat &content);
+    void set_image_content(cv::Mat &content);
 #ifdef withobjdetect
-    bool set_Face_Cascade_Name(String &new_name);
-    bool set_background_image(String &filename);
+    bool set_Face_Cascade_Name(cv::String &new_name);
+    bool set_background_image(cv::String &filename);
 #endif
 
     void set_size_blur(int);
@@ -78,38 +81,41 @@ public:
     int panorama_get_size();
 #endif
 
-    Mat& get_image_content();
-    Mat& get_image_histogram();
+    cv::Mat& get_image_content();
+    cv::Mat& get_image_histogram();
 #ifdef withstitching
-    Mat& get_image_panorama();
+    cv::Mat& get_image_panorama();
 #endif
-    Mat& get_object_detected();
-    Mat& get_motion_detected();
+    cv::Mat& get_object_detected();
+    cv::Mat& get_motion_detected();
 
-    void toggleBW();
-    void toggleInverse();
-    void toggleBlur();
-    void toggleThreshold();
-    void toggleTransformation();
-    void toggleEdge();
+    void toggleBW(bool);
+    void toggleInverse(bool);
+    void toggleBlur(bool);
+    void toggleThreshold(bool);
+    void toggleTransformation(bool);
+    void toggleEdge(bool);
 #ifdef withobjdetect
-    void toggleFace_Recon();
+    void toggleFace_Recon(bool);
     bool getFace_Status();
+#ifdef withface
+    void loadOrnaments(std::vector<cv::Mat> Mat2receive);
 #endif
-    void toggleHistoEq();
-    void toggleObjectDetection();
+#endif
+    void toggleHistoEq(bool);
+    void toggleObjectDetection(bool);
 #ifdef withstitching
-    void togglePanorama();
+    void togglePanorama(bool);
 #endif
-    void toggleMotionDetection();
-    void togglePhoto();
+    void toggleMotionDetection(bool);
+    void togglePhoto(bool);
 #ifdef withzbar
-    void toggleQRcode();
-    bool getQRcodedata(string &, string &);
+    void toggleQRcode(bool);
+    bool getQRcodedata(std::string &, std::string &);
 #endif
 
 private:
-    Mat image, previmage , mask , smoothed, histogram, objects, panorama, motion, background ;
+    cv::Mat image, previmage, image2export , mask , smoothed, histogram, objects, panorama, motion, background ;
     int blur_range,blur_method,morpho_element;
     int edge_method;
     int canny_threshold;
@@ -125,30 +131,42 @@ private:
     bool motion_detected,motion_background_first_time;
     bool histo_eq;
 #ifdef withobjdetect
-    String face_cascade_name ;
-    CascadeClassifier face_cascade;
+    cv::String face_cascade_name ;
+    cv::CascadeClassifier face_cascade;
+    
+#ifdef withface
+    cv::Ptr<cv::face::Facemark> mark_detector;
+    // Mask ornaments to put over face detected
+    cv::Mat ornament_glasses, ornament_mustache, ornament_mouse_nose;
+#endif
+    
 #endif
 
 #ifdef withstitching
     bool panorama_activated;
-    vector<Mat> Panorama_vector;
-    Ptr<Stitcher> Panorama_stitcher;
+    std::vector<cv::Mat> Panorama_vector;
+    cv::Ptr<cv::Stitcher> Panorama_stitcher;
 #endif
 #ifdef withzbar
     bool qrcodeactivated;
-    String qrcodedata,qrcodetype;
+    cv::String qrcodedata,qrcodetype;
 #endif
 
-    Ptr<BackgroundSubtractor> pMOG2;
+    cv::Ptr<cv::BackgroundSubtractor> pMOG2;
 
     // Methods
     void toBlackandWhite();
     void inverseImage();
-    void smoothImage(Mat &imag, int blur_range, int method);
+    void smoothImage(cv::Mat &imag, int blur_range, int method);
     void detectEdges();
 #ifdef withobjdetect
     void detect_faces();
-#endif
+#ifdef withface
+    void draw_glasses(cv::Mat &frame, std::vector<cv::Point2f> &marks);
+    void draw_mustache(cv::Mat &frame, std::vector<cv::Point2f> &marks);
+    void draw_mouse_nose(cv::Mat &frame, std::vector<cv::Point2f> &marks);
+#endif // endif withface
+#endif // endif withobjdetect
     double thresholdImage();
     void transformImage();
     void equalizeHistogram();

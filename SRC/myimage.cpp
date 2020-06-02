@@ -74,135 +74,162 @@ MyImage::MyImage()
 
 /**
  * @brief MyImage::toggleBW
+ * @param state boolean the new state of the filter
  * 
  * Toggles the black/white filter
  */
-void MyImage::toggleBW() {
-    this->coloured = ! (this->coloured);
+void MyImage::toggleBW(bool state) {
+    this->coloured = !state;
 }
 
 /**
  * @brief MyImage::toggleInverse
+ * @param state boolean the new state of the filter
  * 
  * Toggles the Inverse colours filter
  */
-void MyImage::toggleInverse() {
-    this->inversed = ! (this->inversed);
+void MyImage::toggleInverse(bool state) {
+    this->inversed = state;
 }
 
 /**
  * @brief MyImage::toggleBlur
+ * @param state boolean the new state of the filter
  * 
  * Toggles the blur filter
  */
-void MyImage::toggleBlur() {
-    this->blurred = ! (this->blurred);
+void MyImage::toggleBlur(bool state) {
+    this->blurred = state;
 }
 
 /**
  * @brief MyImage::toggleEdge
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the edge detection algorithm
  */
-void MyImage::toggleEdge() {
-    this->edge_detect = ! (this->edge_detect);
+void MyImage::toggleEdge(bool state) {
+    this->edge_detect = state;
 }
 
 /**
  * @brief MyImage::toggleThreshold
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the thresholding
  */
-void MyImage::toggleThreshold() {
-    this->thresholded = ! (this->thresholded);
+void MyImage::toggleThreshold(bool state) {
+    this->thresholded = state;
 }
 
 /**
  * @brief MyImage::toggleTransformation
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the geometrical transformations
  */
-void MyImage::toggleTransformation() {
-    this->transformed = ! (this->transformed);
+void MyImage::toggleTransformation(bool state) {
+    this->transformed = state;
 }
 
 #ifdef withobjdetect
 /**
  * @brief MyImage::toggleFace_Recon
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the face detection algorithm
  */
-void MyImage::toggleFace_Recon() {
-    this->face_recon = ! (this->face_recon);
+void MyImage::toggleFace_Recon(bool state) {
+    this->face_recon = state;
 }
 
 /**
  * @brief MyImage::getFace_Status
- * @return true if a face has been detected
- *        false otherwise
+ * @return true if a face has been detected. False otherwise
  */
 bool MyImage::getFace_Status(){
     return this->face_recon;
 }
-#endif
+
+#ifdef withface
+/**
+ * @brief MyImage::loadOrnaments
+ * @param Mat2receive vector<cv::Mat> vector of OpenCV matrices containing the ornamental pictures
+ * 
+ * Receives the ornamental pictures from the database images.qrc, they have been loaded by the OpenCV thread
+ */
+void MyImage::loadOrnaments(std::vector<cv::Mat> Mat2receive){
+    assert ( Mat2receive.size() >2 );
+    this->ornament_glasses    = Mat2receive.at(0) ;
+    this->ornament_mustache   = Mat2receive.at(1);
+    this->ornament_mouse_nose = Mat2receive.at(2) ;
+}
+#endif // endif withface
+#endif // endif withobjdetect
 
 /**
  * @brief MyImage::toggleHistoEq
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the histogram equalization algorithm
  */
-void MyImage::toggleHistoEq() {
-    this->histo_eq = ! (this->histo_eq);
+void MyImage::toggleHistoEq(bool state) {
+    this->histo_eq = state;
 }
 
 /**
  * @brief MyImage::toggleObjectDetection
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the object detection algorithm
  */
-void MyImage::toggleObjectDetection() {
-    this->object_detected = ! (this->object_detected);
+void MyImage::toggleObjectDetection(bool state) {
+    this->object_detected = state;
 }
 
 #ifdef withstitching
 /**
  * @brief MyImage::togglePanorama
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the image stitching algorithm
  */
-void MyImage::togglePanorama() {
-    this->panorama_activated = ! (this->panorama_activated);
+void MyImage::togglePanorama(bool state) {
+    this->panorama_activated = state;
 }
 #endif
 
 /**
  * @brief MyImage::toggleMotionDetection
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the motion detection algorithm
  */
-void MyImage::toggleMotionDetection() {
-    this->motion_detected = ! (this->motion_detected);
+void MyImage::toggleMotionDetection(bool state) {
+    this->motion_detected = state;
     if (this->motion_detected)
         this->motion_background_first_time = true;
 }
 
 /**
  * @brief MyImage::togglePhoto
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the module photo
  */
-void MyImage::togglePhoto() {
-    this->photoed = ! (this->photoed);
+void MyImage::togglePhoto(bool state) {
+    this->photoed = state;
 }
 
 #ifdef withzbar
 /**
  * @brief MyImage::toggleQRcode
+ * @param state boolean the new state of the algorithm
  * 
  * Toggles the detection of QR codes / barcodes
  */
-void MyImage::toggleQRcode(){
-    this->qrcodeactivated = ! (this->qrcodeactivated);
+void MyImage::toggleQRcode(bool state){
+    this->qrcodeactivated = state;
     if (!this->qrcodeactivated) {
         this->qrcodedata.clear();
         this->qrcodetype.clear();
@@ -216,7 +243,7 @@ void MyImage::toggleQRcode(){
  * 
  * Receives a new image from the camera and applies algorithms on it, depending on the activated modules
  */
-void MyImage::set_image_content(Mat &content) {
+void MyImage::set_image_content(cv::Mat &content) {
     // Save the old image for motion detection
     if (this->motion_detected)
         this->previmage = this->image;
@@ -265,6 +292,8 @@ void MyImage::set_image_content(Mat &content) {
     if (this->qrcodeactivated)
         getQRcode();
 #endif
+    
+    this->image2export = this->image;
 }
 
 /**
@@ -464,48 +493,48 @@ void MyImage::set_photo_sigmar(double value){
  * @brief MyImage::get_image_content
  * @return The cv::Mat containing the processed image
  */
-Mat& MyImage::get_image_content() {
-    return this->image;
+cv::Mat& MyImage::get_image_content() {
+    return this->image2export ;
 }
 
 /**
  * @brief MyImage::get_image_histogram
  * @return The cv::Mat containing the histogram of the processed image
  */
-Mat& MyImage::get_image_histogram() {
-    vector<Mat> bgr_planes;
-    split( this->image, bgr_planes );
+cv::Mat& MyImage::get_image_histogram() {
+    std::vector<cv::Mat> bgr_planes;
+    cv::split( this->image, bgr_planes );
 
     int histSize = 256;
     float range[] = { 0, 256 } ;
     const float* histRange = { range };
     bool uniform = true; bool accumulate = false;
 
-    Mat b_hist, g_hist, r_hist;
-    calcHist( &bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate );
-    calcHist( &bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate );
-    calcHist( &bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate );
+    cv::Mat b_hist, g_hist, r_hist;
+    cv::calcHist( &bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate );
+    cv::calcHist( &bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate );
+    cv::calcHist( &bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate );
 
     // Draw the histograms for B, G and R
     int hist_w = 512; int hist_h = 400;
     int bin_w = cvRound( (double) hist_w/histSize );
 
-    this->histogram = Mat( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    this->histogram = cv::Mat( hist_h, hist_w, CV_8UC3, cv::Scalar( 0,0,0) );
 
-    normalize(b_hist, b_hist, 0, this->histogram.rows, NORM_MINMAX, -1, Mat() );
-    normalize(g_hist, g_hist, 0, this->histogram.rows, NORM_MINMAX, -1, Mat() );
-    normalize(r_hist, r_hist, 0, this->histogram.rows, NORM_MINMAX, -1, Mat() );
+    cv::normalize(b_hist, b_hist, 0, this->histogram.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+    cv::normalize(g_hist, g_hist, 0, this->histogram.rows, cv::NORM_MINMAX, -1, cv::Mat() );
+    cv::normalize(r_hist, r_hist, 0, this->histogram.rows, cv::NORM_MINMAX, -1, cv::Mat() );
     for( int i = 1; i < histSize; i++ )
     {
-        line( this->histogram, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ) ,
-                               Point( bin_w*(i), hist_h - cvRound(b_hist.at<float>(i)) ),
-                               Scalar( 255, 0, 0), 2, 8, 0  );
-        line( this->histogram, Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ) ,
-                               Point( bin_w*(i), hist_h - cvRound(g_hist.at<float>(i)) ),
-                               Scalar( 0, 255, 0), 2, 8, 0  );
-        line( this->histogram, Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ) ,
-                               Point( bin_w*(i), hist_h - cvRound(r_hist.at<float>(i)) ),
-                               Scalar( 0, 0, 255), 2, 8, 0  );
+        cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ) ,
+                                   cv::Point( bin_w*(i),   hist_h - cvRound(b_hist.at<float>(i)) ),
+                                   cv::Scalar( 255, 0, 0), 2, 8, 0  );
+        cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ) ,
+                                   cv::Point( bin_w*(i),   hist_h - cvRound(g_hist.at<float>(i)) ),
+                                   cv::Scalar( 0, 255, 0), 2, 8, 0  );
+        cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ) ,
+                                   cv::Point( bin_w*(i),   hist_h - cvRound(r_hist.at<float>(i)) ),
+                                   cv::Scalar( 0, 0, 255), 2, 8, 0  );
     }
     return this->histogram;
 }
@@ -515,7 +544,7 @@ Mat& MyImage::get_image_histogram() {
  * @brief MyImage::get_image_panorama
  * @return The cv::Mat containing the result of image stitching
  */
-Mat& MyImage::get_image_panorama() {
+cv::Mat& MyImage::get_image_panorama() {
     return this->panorama;
 }
 #endif
@@ -524,43 +553,43 @@ Mat& MyImage::get_image_panorama() {
  * @brief MyImage::get_object_detected
  * @return The cv::Mat containing the detected objects (lines, circles, points)
  */
-Mat& MyImage::get_object_detected() {
-    this->objects = Mat::zeros( this->image.size(), CV_8UC3 );
-    Mat objectsBW = Mat::zeros( this->image.size(), CV_8UC1 );
+cv::Mat& MyImage::get_object_detected() {
+    this->objects = cv::Mat::zeros( this->image.size(), CV_8UC3 );
+    cv::Mat objectsBW = cv::Mat::zeros( this->image.size(), CV_8UC1 );
 
     switch (this->object_detection_method) {
         case 1: { // Hough line transform
-            Canny(this->image, objectsBW, 50, 200, 3);
-            cvtColor(objectsBW, this->objects, COLOR_GRAY2BGR);
-            vector<Vec2f> lines;
-            HoughLines(objectsBW, lines, 1, CV_PI/180, this->hough_line_threshold, 0, 0 );
+            cv::Canny(this->image, objectsBW, 50, 200, 3);
+            cv::cvtColor(objectsBW, this->objects, cv::COLOR_GRAY2BGR);
+            std::vector<cv::Vec2f> lines;
+            cv::HoughLines(objectsBW, lines, 1, CV_PI/180, this->hough_line_threshold, 0, 0 );
             for( size_t i = 0; i < lines.size(); i++ )
             {
                 float rho = lines[i][0], theta = lines[i][1];
-                Point pt1, pt2;
+                cv::Point pt1, pt2;
                 double a = cos(theta), b = sin(theta);
                 double x0 = a*rho, y0 = b*rho;
                 pt1.x = cvRound(x0 + 1000*(-b));
                 pt1.y = cvRound(y0 + 1000*(a));
                 pt2.x = cvRound(x0 - 1000*(-b));
                 pt2.y = cvRound(y0 - 1000*(a));
-                line( this->objects, pt1, pt2, Scalar(255,0,0), 3, LINE_AA);
+                cv::line( this->objects, pt1, pt2, cv::Scalar(255,0,0), 3, cv::LINE_AA);
             }
             break;
         }
         case 2: { // Hough circle transform
-            cvtColor(this->image, objectsBW, COLOR_RGB2GRAY);
-            cvtColor(objectsBW, this->objects, COLOR_GRAY2BGR);
-            GaussianBlur(objectsBW, objectsBW, Size(9, 9), 2, 2 );
-            vector<Vec3f> circles;
-            HoughCircles(objectsBW, circles, HOUGH_GRADIENT, 1, 10, 100, this->hough_line_threshold, 5);
+            cv::cvtColor(this->image, objectsBW, cv::COLOR_RGB2GRAY);
+            cv::cvtColor(objectsBW, this->objects, cv::COLOR_GRAY2BGR);
+            cv::GaussianBlur(objectsBW, objectsBW, cv::Size(9, 9), 2, 2 );
+            std::vector<cv::Vec3f> circles;
+            cv::HoughCircles(objectsBW, circles, cv::HOUGH_GRADIENT, 1, 10, 100, this->hough_line_threshold, 5);
             for(size_t i = 0; i < circles.size(); i++) {
-                Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+                cv::Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
                 int radius = cvRound(circles[i][2]);
                 // draw the circle center
-                circle(this->objects, center, 3, Scalar(0, 255, 0), -1);
+                cv::circle(this->objects, center, 3, cv::Scalar(0, 255, 0), -1);
                 // draw the circle outline
-                circle(this->objects, center, radius, Scalar(255, 0, 0), 3, 8, 0);
+                cv::circle(this->objects, center, radius, cv::Scalar(255, 0, 0), 3, 8, 0);
             }
             break;
         }
@@ -568,21 +597,21 @@ Mat& MyImage::get_object_detected() {
             int blockSize = 2;
             int apertureSize = 3;
             double k = 0.04;
-            Mat dst = Mat::zeros( this->image.size(), CV_32FC1 );
+            cv::Mat dst = cv::Mat::zeros( this->image.size(), CV_32FC1 );
 
-            cvtColor(this->image, objectsBW, COLOR_RGB2GRAY);
-            cvtColor(objectsBW, this->objects, COLOR_GRAY2BGR);
-            cornerHarris( objectsBW, dst, blockSize, apertureSize, k, BORDER_DEFAULT );
-            normalize( dst, dst, 0, 255, NORM_MINMAX, CV_32FC1, Mat() );
+            cv::cvtColor(this->image, objectsBW, cv::COLOR_RGB2GRAY);
+            cv::cvtColor(objectsBW, this->objects, cv::COLOR_GRAY2BGR);
+            cv::cornerHarris( objectsBW, dst, blockSize, apertureSize, k, cv::BORDER_DEFAULT );
+            cv::normalize( dst, dst, 0, 255, cv::NORM_MINMAX, CV_32FC1, cv::Mat() );
 
             for( int j = 0; j < dst.rows ; j++ )
                 for( int i = 0; i < dst.cols; i++ )
                     if( (int) dst.at<float>(j,i) > this->hough_line_threshold )
-                        circle( this->objects, Point( i, j ), 5,  Scalar(255, 0, 0), 2, 8, 0 );
+                        cv::circle( this->objects, cv::Point( i, j ), 5,  cv::Scalar(255, 0, 0), 2, 8, 0 );
             break;
         }
         default :
-            cerr << "MyImage::get_object_detected(): Unknown kind of object detection "<<this->object_detection_method<<endl ;
+            std::cerr << "MyImage::get_object_detected(): Unknown kind of object detection "<<this->object_detection_method<<std::endl ;
             break;
     }
     return this->objects;
@@ -592,24 +621,50 @@ Mat& MyImage::get_object_detected() {
  * @brief MyImage::get_motion_detected
  * @return The cv::Mat containing the detected motion
  */
-Mat& MyImage::get_motion_detected() {
-    this->motion = Mat::zeros( this->image.size(), CV_8UC3 );
+cv::Mat& MyImage::get_motion_detected() {
+    this->motion = cv::Mat::zeros( this->image.size(), CV_8UC3 );
 
     switch (this->motion_detection_method) {
         case 1: { // Background extraction
-            Mat Mask;
+            cv::Mat Mask;
             if (this->motion_background_first_time) {
                 this->motion_background_first_time = false;
-                this->pMOG2 = createBackgroundSubtractorMOG2();
+                int history = 50;
+                double threshold = 16.;
+                bool detectShadows = false;
+                this->pMOG2 = cv::createBackgroundSubtractorMOG2(history,threshold,detectShadows);
            }
             pMOG2->apply(this->image, Mask); // this->motion contains the foreground mask
-
+            if (Mask.empty()) {
+                return this->motion;
+            }
+            
+            // Remove noise and emphasize the detected motion
+            cv::threshold(Mask, Mask, 25, 255, cv::THRESH_BINARY);
+            int noise_size = 3;
+            cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(noise_size, noise_size));
+            cv::erode(Mask, Mask, kernel);
+            kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(noise_size, noise_size));
+            cv::dilate(Mask, Mask, kernel, cv::Point(-1,-1), 3);
+            
+            // Export the detected motion to the cv::Mat motion
             this->image.copyTo(this->motion, Mask);
-            //cvtColor(Mask, this->motion, COLOR_GRAY2BGR);
+            
+            // Find contours 
+            std::vector<std::vector<cv::Point> > contours;
+            cv::findContours(Mask, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+            
+            // Create bounding boxes for each contours and plot on main image 
+            cv::Scalar color = cv::Scalar(0, 0, 255); // red
+            for(size_t i = 0; i < contours.size(); i++) {
+                cv::Rect rect = cv::boundingRect(contours[i]);
+                cv::rectangle(this->image, rect, color, 1);
+            } 
+            
             break;
         }
         default: {
-            cerr << "MyImage::get_motion_detected(): Unknown kind of motion detection "<<this->motion_detection_method<<endl ;
+            std::cerr << "MyImage::get_motion_detected(): Unknown kind of motion detection "<<this->motion_detection_method<<std::endl ;
             break;
         }
     }
@@ -624,13 +679,20 @@ Mat& MyImage::get_motion_detected() {
  * @return true is the file is correctly loaded
  *        false otherwise
  */
-bool MyImage::set_Face_Cascade_Name(String &new_name) {
+bool MyImage::set_Face_Cascade_Name(cv::String &new_name) {
     this->face_cascade_name = new_name;
 
     if ( ! this->face_cascade.load( this->face_cascade_name ) ){
-        cerr << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<endl;
+        std::cerr << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<std::endl;
         return false;
     }
+
+#ifdef withface    
+    mark_detector = cv::face::createFacemarkLBF();
+    cv::String model_data = "/Users/dechamps/Documents/Codes/Cpp/Images/Video-OpenCV-QMake/data/lbfmodel.yaml"; 
+    mark_detector->loadModel(model_data);
+#endif
+    
     return true;
 }
 
@@ -640,12 +702,12 @@ bool MyImage::set_Face_Cascade_Name(String &new_name) {
  * @return true is the file is correctly loaded
  *        false otherwise
  */
-bool MyImage::set_background_image(String &filename){
-    this->background = imread(filename);
+bool MyImage::set_background_image(cv::String &filename){
+    this->background = cv::imread(filename);
     if (!this->background.data) {
         return false;
     }
-    resize(this->background, this->background, this->image.size(), 0, 0, cv::INTER_CUBIC);
+    cv::resize(this->background, this->background, this->image.size(), 0, 0, cv::INTER_CUBIC);
     return true;
 }
 
@@ -658,8 +720,8 @@ bool MyImage::set_background_image(String &filename){
  */
 void MyImage::toBlackandWhite() {
     // Convert image to black and white with 3 channels
-    cvtColor(this->image,this->image,COLOR_RGB2GRAY);
-    cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+    cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
+    cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
 }
 
 /**
@@ -669,7 +731,7 @@ void MyImage::toBlackandWhite() {
  */
 void MyImage::inverseImage() {
     // Inverse the content of the image
-    bitwise_not(this->image, this->image);
+    cv::bitwise_not(this->image, this->image);
 }
 
 /**
@@ -680,20 +742,20 @@ void MyImage::inverseImage() {
  * 
  * Performs blurring on the input image
  */
-void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
+void MyImage::smoothImage(cv::Mat &imag, int blur_range, int method) {
     switch (method) {
         case 1:
-            blur( imag, imag, Size(blur_range,blur_range) );
+            cv::blur( imag, imag, cv::Size(blur_range,blur_range) );
             break;
         case 2:
-            GaussianBlur( imag, imag, Size(blur_range,blur_range) , 0 , 0 );
+            cv::GaussianBlur( imag, imag, cv::Size(blur_range,blur_range) , 0 , 0 );
             break;
         case 3:
-            medianBlur( imag, imag, blur_range );
+            cv::medianBlur( imag, imag, blur_range );
             break;
         case 4:
             imag.copyTo( this->mask );
-            bilateralFilter( this->mask, imag, blur_range, blur_range*2.0 , blur_range*0.5 );
+            cv::bilateralFilter( this->mask, imag, blur_range, blur_range*2.0 , blur_range*0.5 );
             break;
         case 5:  // cv::MorphTypes MORPH_ERODE    = 0
         case 6:  // cv::MorphTypes MORPH_DILATE   = 1
@@ -705,22 +767,22 @@ void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
         {
             int op = method - 5;
             int shape = morpho_element - 1;
-            morphologyEx(imag, imag, op, getStructuringElement(shape, Size(blur_range,blur_range)) );
+            cv::morphologyEx(imag, imag, op, getStructuringElement(shape, cv::Size(blur_range,blur_range)) );
             break;
         }
         case 12: // cv::MorphTypes MORPH_HITMISS  = 7
         {
-            cvtColor(imag,imag,COLOR_RGB2GRAY); // Image must be in BW
+            cv::cvtColor(imag,imag,cv::COLOR_RGB2GRAY); // Image must be in BW
             int op = method - 5;
-            Mat kernel = (Mat_<int>(3, 3) <<
+            cv::Mat kernel = (cv::Mat_<int>(3, 3) <<
                 0, 1, 0,
                 1, -1, 1,
                 0, 1, 0);
-            morphologyEx(imag, imag, op, kernel );
+            cv::morphologyEx(imag, imag, op, kernel );
             break;
         }
         default :
-            cerr << "MyImage::smoothImage(): Unknown kind of blur "<<method<<endl ;
+            std::cerr << "MyImage::smoothImage(): Unknown kind of blur "<<method<<std::endl ;
             break;
     }
 }
@@ -733,41 +795,41 @@ void MyImage::smoothImage(Mat &imag, int blur_range, int method) {
 void MyImage::detectEdges() {
     switch (this->edge_method) {
         case 1: { // Sobel
-            Mat gray,grad,grad_x,abs_grad_x,grad_y,abs_grad_y;
+            cv::Mat gray,grad,grad_x,abs_grad_x,grad_y,abs_grad_y;
             smoothImage(this->image, 3, 2); // Gaussian filter
-            cvtColor( this->image, gray, COLOR_BGR2GRAY );
+            cv::cvtColor( this->image, gray, cv::COLOR_BGR2GRAY );
             // Gradient X
-            Sobel( gray, grad_x, CV_16S, 1, 0, 3 );
-            convertScaleAbs( grad_x, abs_grad_x );
+            cv::Sobel( gray, grad_x, CV_16S, 1, 0, 3 );
+            cv::convertScaleAbs( grad_x, abs_grad_x );
             // Gradient Y
-            Sobel( gray, grad_y, CV_16S, 0, 1, 3 );
-            convertScaleAbs( grad_y, abs_grad_y );
+            cv::Sobel( gray, grad_y, CV_16S, 0, 1, 3 );
+            cv::convertScaleAbs( grad_y, abs_grad_y );
             // Total Gradient (approximate)
-            addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
-            cvtColor(grad,this->image,COLOR_GRAY2BGR);
+            cv::addWeighted( abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad );
+            cv::cvtColor(grad,this->image,cv::COLOR_GRAY2BGR);
             break;
             }
         case 2: { // Laplacian
-            Mat gray,abs_laplacian,laplacian;
+            cv::Mat gray,abs_laplacian,laplacian;
             smoothImage(this->image, 3, 2); // Gaussian filter
-            cvtColor( this->image, gray, COLOR_BGR2GRAY );
-            Laplacian( gray, laplacian, CV_16S, 3 );
-            convertScaleAbs( laplacian, abs_laplacian );
-            cvtColor(abs_laplacian,this->image,COLOR_GRAY2BGR);
+            cv::cvtColor( this->image, gray, cv::COLOR_BGR2GRAY );
+            cv::Laplacian( gray, laplacian, CV_16S, 3 );
+            cv::convertScaleAbs( laplacian, abs_laplacian );
+            cv::cvtColor(abs_laplacian,this->image,cv::COLOR_GRAY2BGR);
             break;
             }
         case 3: { // Canny edge detector
-            Mat dst,gray,detected_edges;
+            cv::Mat dst,gray,detected_edges;
             smoothImage(this->image, 3, 2); // Gaussian filter
-            cvtColor( this->image, gray, COLOR_BGR2GRAY );
-            Canny( gray, detected_edges, this->canny_threshold, this->canny_threshold*this->canny_ratio, 3 );
-            dst = Scalar::all(0);
+            cv::cvtColor( this->image, gray, cv::COLOR_BGR2GRAY );
+            cv::Canny( gray, detected_edges, this->canny_threshold, this->canny_threshold*this->canny_ratio, 3 );
+            dst = cv::Scalar::all(0);
             this->image.copyTo(dst,detected_edges);
             dst.copyTo(this->image);
             break;
             }
         default :
-            cerr << "MyImage::detectEdges(): Unknown kind of edge detection "<<this->edge_method<<endl ;
+            std::cerr << "MyImage::detectEdges(): Unknown kind of edge detection "<<this->edge_method<<std::endl ;
             break;
         }
 }
@@ -780,27 +842,173 @@ void MyImage::detectEdges() {
  */
 void MyImage::detect_faces() {
     this->image.copyTo(this->mask);
-    this->mask.setTo(Scalar(255,255,255));
+    this->mask.setTo(cv::Scalar(255,255,255));
 
-    std::vector<Rect> faces;
-    std::vector<Point> ROI_Poly;
+    std::vector<cv::Rect> faces;
+    std::vector<cv::Point> ROI_Poly;
 
-    //-- Detect faces
-    face_cascade.detectMultiScale( this->image, faces, 1.1, 2, 0|CASCADE_SCALE_IMAGE, Size(30, 30) );
+    // Detect faces
+    face_cascade.detectMultiScale( this->image, faces, 1.1, 2, 0|cv::CASCADE_SCALE_IMAGE, cv::Size(30, 30) );
 
     // Draw ellipses around faces and get regions of interest
     for( size_t i = 0; i < faces.size(); i++ )
     {
-        Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
+        cv::Point center( faces[i].x + faces[i].width*0.5, faces[i].y + faces[i].height*0.5 );
         //ellipse( image, center, Size( faces[i].width*0.6, faces[i].height*0.8), 0, 0, 360, Scalar( 255, 0, 255 ), 4, 8, 0 );
 
-        // approximate ellipse by a polygon
-        ellipse2Poly(center, Size( faces[i].width*0.6, faces[i].height*0.8), 0, 0, 360, 10, ROI_Poly) ;
+        // Approximate ellipse by a polygon
+        cv::ellipse2Poly(center, cv::Size( faces[i].width*0.6, faces[i].height*0.8), 0, 0, 360, 10, ROI_Poly) ;
         // fill the polygon by zeros in the mask
-        fillConvexPoly(this->mask, &ROI_Poly[0], ROI_Poly.size(), Scalar( 0, 0, 0 ), 4, 0);
+        cv::fillConvexPoly(this->mask, &ROI_Poly[0], ROI_Poly.size(), cv::Scalar( 0, 0, 0 ), 4, 0);
+
+#ifdef withface
+        // Detect the facial land marks
+        std::vector< std::vector<cv::Point2f> > shapes;
+        cv::Scalar color = cv::Scalar(0, 0, 255); // red
+        
+        if (mark_detector->fit(this->image, faces, shapes)) {
+            // draw facial land marks
+            for (unsigned long i=0; i<faces.size(); i++) {
+                if ( shapes.at(i).size() == 68 ) {
+                    
+/*                for(unsigned long k=0; k<shapes[i].size(); k++) {
+                        cv::circle(this->image, shapes[i][k], 2, color, cv::FILLED);
+                        
+    //                    String index = std::to_string(k);
+    //                    cv::putText(this->image, index, shapes[i][k], cv::FONT_HERSHEY_SIMPLEX, 0.4, color, 2); 
+    
+                    }
+*/
+                    this->draw_glasses (this->image, shapes[i]);
+                    this->draw_mustache(this->image, shapes[i]);
+                    this->draw_mouse_nose(this->image, shapes[i]);
+                }
+            }
+        }
+#endif
+    
     }
 }
-#endif
+
+#ifdef withface
+/**
+ * @brief MyImage::draw_glasses
+ * @param frame the cv::Mat on which the glasses will be displayed
+ * @param marks facial marks detected by OpenCV mark_detector->fit()
+ * 
+ * Draw glasses on the detected face. Activated only if the optional library libopencv_face is available
+ * Glasses correspond to marks 36 (left most eye point) to 45 (right most eye point)
+ */
+void MyImage::draw_glasses(cv::Mat &frame, std::vector<cv::Point2f> &marks){
+    // resize the glasses to match the face
+    cv::Mat ornament;
+    double distance = cv::norm(marks[45] - marks[36]) * 1.5;
+    cv::resize(this->ornament_glasses, ornament, cv::Size(0, 0), distance / this->ornament_glasses.cols, 
+               distance / this->ornament_glasses.cols, cv::INTER_NEAREST);
+    
+    // rotate the glasses to match the angle of the face
+    double angle = -atan((marks[45].y - marks[36].y) / (marks[45].x - marks[36].x));
+    cv::Point2f center = cv::Point(ornament.cols/2, ornament.rows/2); 
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+    cv::Mat rotated;
+    cv::warpAffine(ornament, rotated, rotateMatrix, ornament.size(),
+                   cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+    
+    // paint the glasses on the face
+    center = cv::Point((marks[45].x + marks[36].x) / 2, (marks[45].y + marks[36].y) / 2);
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+    
+    // Test if the ROI can be placed on the frame
+    bool test1 = 0 <= rec.x; 
+    bool test2 = 0 <= rec.width;
+    bool test3 = (rec.x + rec.width) <= frame.cols ;
+    bool test4 = 0 <= rec.y ;
+    bool test5 = 0 <= rec.height ;
+    bool test6 = (rec.y + rec.height) <= frame.rows ;
+    if (test1 && test2 && test3 && test4 && test4 && test5 && test6)
+        frame(rec) &= rotated; 
+}
+
+/**
+ * @brief MyImage::draw_mustache
+ * @param frame the cv::Mat on which the mustache will be displayed
+ * @param marks facial marks detected by OpenCV mark_detector->fit()
+ * 
+ * Draw a mustache on the detected face. Activated only if the optional library libopencv_face is available 
+ * The mouth corresponds to marks 48 (left most mouth point) to 54 (right most mouth point)
+ * The mustache must be positioned between the nose tip (mark 33) and the center of the mouth (mark 51)
+ */
+void MyImage::draw_mustache(cv::Mat &frame, std::vector<cv::Point2f> &marks){
+    // resize the glasses to match the face
+    cv::Mat ornament;
+    double distance = cv::norm(marks[54] - marks[48]) * 1.5;
+    cv::resize(this->ornament_mustache, ornament, cv::Size(0, 0), distance / this->ornament_mustache.cols, 
+               distance / this->ornament_mustache.cols, cv::INTER_NEAREST);
+    
+    // rotate the mustache to match the angle of the face
+    double angle = -atan((marks[54].y - marks[48].y) / (marks[54].x - marks[48].x));
+    cv::Point2f center = cv::Point(ornament.cols/2, ornament.rows/2); 
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+    cv::Mat rotated;
+    cv::warpAffine(ornament, rotated, rotateMatrix, ornament.size(),
+                   cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+    
+    // paint the mustache on the face, to be placed between nose and mouth
+    center = cv::Point((marks[33].x + marks[51].x) / 2, (marks[33].y + marks[51].y) / 2);
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+    
+    // Test if the ROI can be placed on the frame
+    bool test1 = 0 <= rec.x; 
+    bool test2 = 0 <= rec.width;
+    bool test3 = (rec.x + rec.width) <= frame.cols ;
+    bool test4 = 0 <= rec.y ;
+    bool test5 = 0 <= rec.height ;
+    bool test6 = (rec.y + rec.height) <= frame.rows ;
+    if (test1 && test2 && test3 && test4 && test4 && test5 && test6)
+        frame(rec) &= rotated; 
+}
+
+/**
+ * @brief MyImage::draw_mouse_nose
+ * @param frame the cv::Mat on which the mouse nose will be displayed
+ * @param marks facial marks detected by OpenCV mark_detector->fit()
+ * 
+ * Draw a mouse nose on the detected face. Activated only if the optional library libopencv_face is available
+ * The nose corresponds to mark 30 and marks 3-13 + 0-16 allows the computation of the size + rotation angle
+ */
+void MyImage::draw_mouse_nose(cv::Mat &frame, std::vector<cv::Point2f> &marks) {
+    // resize the glasses to match the face
+    cv::Mat ornament;
+    double distance = cv::norm(marks[13] - marks[3]) * 1.5;
+    cv::resize(this->ornament_mouse_nose, ornament, cv::Size(0, 0), distance / this->ornament_mouse_nose.cols, 
+               distance / this->ornament_mouse_nose.cols, cv::INTER_NEAREST);
+    
+    // rotate the mustache to match the angle of the face
+    double angle = -atan((marks[16].y - marks[0].y) / (marks[16].x - marks[0].x));
+    cv::Point2f center = cv::Point(ornament.cols/2, ornament.rows/2); 
+    cv::Mat rotateMatrix = cv::getRotationMatrix2D(center, angle * 180 / 3.14, 1.0);
+    cv::Mat rotated;
+    cv::warpAffine(ornament, rotated, rotateMatrix, ornament.size(),
+                   cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255, 255, 255));
+    
+    // paint the mustache on the face, to be placed between nose and mouth
+    center = cv::Point(marks[30].x , marks[30].y );
+    cv::Rect rec(center.x - rotated.cols / 2, center.y - rotated.rows / 2, rotated.cols, rotated.rows);
+    
+    // Test if the ROI can be placed on the frame
+    bool test1 = 0 <= rec.x; 
+    bool test2 = 0 <= rec.width;
+    bool test3 = (rec.x + rec.width) <= frame.cols ;
+    bool test4 = 0 <= rec.y ;
+    bool test5 = 0 <= rec.height ;
+    bool test6 = (rec.y + rec.height) <= frame.rows ;
+    if (test1 && test2 && test3 && test4 && test4 && test5 && test6)
+        frame(rec) &= rotated; 
+}
+
+#endif // endif withface
+
+#endif // endif withobjdetect
 
 /**
  * @brief MyImage::thresholdImage
@@ -816,44 +1024,44 @@ double MyImage::thresholdImage() {
     case 3: // cv::ThresholdTypes THRESH_TRUNC        = 2
     case 4: // cv::ThresholdTypes THRESH_TOZERO       = 3
     case 5: { // cv::ThresholdTypes THRESH_TOZERO_INV = 4
-        cvtColor(this->image,this->image,COLOR_RGB2GRAY);
+        cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
         int type = this->threshold_method - 1 ;
-        threshold( this->image, this->image, this->threshold_value, 255, type );
-        cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+        cv::threshold( this->image, this->image, this->threshold_value, 255, type );
+        cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
         break;
     }
     case 6: { // cv::ThresholdTypes THRESH_OTSU = 8
-        cvtColor(this->image,this->image,COLOR_RGB2GRAY);
-        value = threshold( this->image, this->image, 0, 255, THRESH_BINARY | THRESH_OTSU );
-        cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+        cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
+        value = cv::threshold( this->image, this->image, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU );
+        cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
         break;
     }
     case 7: { // cv::ThresholdTypes THRESH_TRIANGLE = 16
-        cvtColor(this->image,this->image,COLOR_RGB2GRAY);
-        value = threshold( this->image, this->image, 0, 255, THRESH_BINARY | THRESH_TRIANGLE  );
-        cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+        cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
+        value = cv::threshold( this->image, this->image, 0, 255, cv::THRESH_BINARY | cv::THRESH_TRIANGLE  );
+        cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
         break;
     }
     case 8: { // adaptive threshold simple mean
-        cvtColor(this->image,this->image,COLOR_RGB2GRAY);
+        cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
         if (this->threshold_type == 1)
-            adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY ,this->threshold_blocksize, 0. );
+            cv::adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY ,this->threshold_blocksize, 0. );
         else
-            adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV ,this->threshold_blocksize, 0. );
-        cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+            cv::adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV ,this->threshold_blocksize, 0. );
+        cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
         break;
     }
     case 9: { // adaptive threshold Gaussian
-        cvtColor(this->image,this->image,COLOR_RGB2GRAY);
+        cv::cvtColor(this->image,this->image,cv::COLOR_RGB2GRAY);
         if (this->threshold_type == 1)
-            adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY ,this->threshold_blocksize, 0. );
+            cv::adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY ,this->threshold_blocksize, 0. );
         else
-            adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV ,this->threshold_blocksize, 0. );
-        cvtColor(this->image,this->image,COLOR_GRAY2BGR);
+            cv::adaptiveThreshold( this->image, this->image, 255,cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY_INV ,this->threshold_blocksize, 0. );
+        cv::cvtColor(this->image,this->image,cv::COLOR_GRAY2BGR);
         break;
     }
     default:
-        cerr << "MyImage::thresholdImage(): Unknown kind of threshold "<<this->threshold_method<<endl ;
+        std::cerr << "MyImage::thresholdImage(): Unknown kind of threshold "<<this->threshold_method<<std::endl ;
         break;
     }
     return value;
@@ -870,12 +1078,12 @@ void MyImage::transformImage() {
         int centerX = this->image.rows / 2;
         int centerY = this->image.cols / 2;
 
-        Mat matRotation = getRotationMatrix2D( Point(centerY, centerX), (transf_rotation_value), 1 );
-        warpAffine( this->image, this->image, matRotation, this->image.size() );
+        cv::Mat matRotation = cv::getRotationMatrix2D( cv::Point(centerY, centerX), (transf_rotation_value), 1 );
+        cv::warpAffine( this->image, this->image, matRotation, this->image.size() );
         break;
     }
     default:
-        cerr << "MyImage::transformImage(): Unknown kind of transformation "<<this->transformation_method<<endl ;
+        std::cerr << "MyImage::transformImage(): Unknown kind of transformation "<<this->transformation_method<<std::endl ;
         break;
     }
 
@@ -887,29 +1095,29 @@ void MyImage::transformImage() {
  * Performs the histogram equalization
  */
 void MyImage::equalizeHistogram() {
-    vector<Mat> channels;
-    cvtColor(this->image, this->image, COLOR_BGR2YCrCb); //change the color image from BGR to YCrCb format
-    split(this->image,channels); //split the image into channels
+    std::vector<cv::Mat> channels;
+    cv::cvtColor(this->image, this->image, cv::COLOR_BGR2YCrCb); //change the color image from BGR to YCrCb format
+    cv::split(this->image,channels); //split the image into channels
 
     switch (this->histo_eq_method) {
         case 1: {
-            equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
+            cv::equalizeHist(channels[0], channels[0]); //equalize histogram on the 1st channel (Y)
             break;
         }
         case 2:{
-            Ptr<CLAHE> clahe = createCLAHE();
+            cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
             clahe->setClipLimit(this->histo_clip_limit);
-            clahe->setTilesGridSize(Size(this->histo_tiles,this->histo_tiles));
+            clahe->setTilesGridSize(cv::Size(this->histo_tiles,this->histo_tiles));
             clahe->apply(channels[0],channels[0]);
             break;
         }
         default:{
-            cerr << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
+            std::cerr << "MyImage::equalizeHistogram(): Unknown type of histogram operation\n";
             break;
         }
     }
-    merge(channels,this->image); //merge 3 channels including the modified 1st channel into one image
-    cvtColor(this->image, this->image, COLOR_YCrCb2BGR);
+    cv::merge(channels,this->image); //merge 3 channels including the modified 1st channel into one image
+    cv::cvtColor(this->image, this->image, cv::COLOR_YCrCb2BGR);
 }
 
 /**
@@ -920,44 +1128,44 @@ void MyImage::equalizeHistogram() {
 void MyImage::modulephoto(){
     switch (this->photo_method){
         case 1:{ // Contrast Preserving Decolorization
-            Mat gray, color_boost;
-            decolor( this->image, gray, color_boost );
+            cv::Mat gray, color_boost;
+            cv::decolor( this->image, gray, color_boost );
             this->image = color_boost;
             break;
         }
         case 2:{ // Denoising
-            fastNlMeansDenoisingColored(this->image,this->image,3.,3.,7,21);
+            cv::fastNlMeansDenoisingColored(this->image,this->image,3.,3.,7,21);
             break;
         }
         case 3:{ // Non-Photorealistic Rendering: edge preserving filter
-            edgePreservingFilter(this->image,this->image, cv::RECURS_FILTER, this->photo_sigmas, this->photo_sigmar);
+            cv::edgePreservingFilter(this->image,this->image, cv::RECURS_FILTER, this->photo_sigmas, this->photo_sigmar);
             // cv::NORMCONV_FILTER
             // cv::RECURS_FILTER
             break;
         }
         case 4:{ // Non-Photorealistic Rendering: detail enhance
-            detailEnhance(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
+            cv::detailEnhance(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
             break;
         }
         case 5:{ // Non-Photorealistic Rendering: pencil sketch
-            Mat img1;
+            cv::Mat img1;
             pencilSketch(this->image,img1, this->image, this->photo_sigmas, this->photo_sigmar, 0.03f);
             break;
         }
         case 6:{ // Non-Photorealistic Rendering: stylization
-            stylization(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
+            cv::stylization(this->image,this->image,this->photo_sigmas, this->photo_sigmar);
             break;
         }
 #ifdef withxphoto
         case 7: { // xphoto white balance
-            Ptr<xphoto::WhiteBalancer> wb = xphoto::createSimpleWB(); // significant modification
+            cv::Ptr<cv::xphoto::WhiteBalancer> wb = cv::xphoto::createSimpleWB(); // significant modification
             // Ptr<xphoto::WhiteBalancer> wb = xphoto::createGrayworldWB(); // not wonderful with my camera
             wb->balanceWhite(this->image, this->image);
             break;
         }
 #endif
         default:{
-            cerr << "MyImage::modulephoto(): Unknown type of photo operation "<<this->photo_method<<endl;
+            std::cerr << "MyImage::modulephoto(): Unknown type of photo operation "<<this->photo_method<<std::endl;
             break;
         }
     }
@@ -996,39 +1204,39 @@ void MyImage::panorama_pop_up_image() {
  * Performs the image stitching operation
  */
 std::string MyImage::panorama_compute_result() {
-    Stitcher::Mode mode = Stitcher::PANORAMA; // PANORAMA or SCANS
+    cv::Stitcher::Mode mode = cv::Stitcher::PANORAMA; // PANORAMA or SCANS
     std::string return_status;
 
     if (this->Panorama_vector.size()==1)
-        this->Panorama_stitcher = Stitcher::create(mode);
-    Stitcher::Status status = Panorama_stitcher->stitch(this->Panorama_vector, this->panorama);
+        this->Panorama_stitcher = cv::Stitcher::create(mode);
+    cv::Stitcher::Status status = Panorama_stitcher->stitch(this->Panorama_vector, this->panorama);
     switch (status) {
-    case Stitcher::OK: {
-        cout << "Stitcher normal return status " << status << endl;
+    case cv::Stitcher::OK: {
+        std::cout << "Stitcher normal return status " << status << std::endl;
         return_status = "Stitcher normal return status "+std::to_string(status);
         break;
     }
-    case Stitcher::ERR_NEED_MORE_IMGS:{
-        cout << "Stitcher requires additionnal images " << status << endl;
+    case cv::Stitcher::ERR_NEED_MORE_IMGS:{
+        std::cout << "Stitcher requires additionnal images " << status << std::endl;
         return_status = "Stitcher requires additionnal images "+std::to_string(status);
         break;
     }
-    case Stitcher::ERR_HOMOGRAPHY_EST_FAIL:{
-        cout << "Stitcher error: homography estimation fail " << status << endl;
-        cout << "   Removing the problematic image from the panorama\n";
+    case cv::Stitcher::ERR_HOMOGRAPHY_EST_FAIL:{
+        std::cout << "Stitcher error: homography estimation fail " << status << std::endl;
+        std::cout << "   Removing the problematic image from the panorama" << std::endl;
         return_status = "Stitcher error: homography estimation fail "+std::to_string(status);
         this->Panorama_vector.pop_back();
         break;
     }
-    case Stitcher::ERR_CAMERA_PARAMS_ADJUST_FAIL:{
-        cout << "Stitcher error: camera parameters adjust fail " << status << endl;
-        cout << "   Removing the problematic image from the panorama\n";
+    case cv::Stitcher::ERR_CAMERA_PARAMS_ADJUST_FAIL:{
+        std::cout << "Stitcher error: camera parameters adjust fail " << status << std::endl;
+        std::cout << "   Removing the problematic image from the panorama" << std::endl;
         return_status = "Stitcher error: camera parameters adjust fail "+std::to_string(status);
         this->Panorama_vector.pop_back();
         break;
     }
     default:{
-        cout << "MyImage::panorama_compute_result(): Unknown type of return status from Panorama_stitcher.stitch()\n";
+        std::cout << "MyImage::panorama_compute_result(): Unknown type of return status from Panorama_stitcher.stitch()"<<std::endl;
         return_status = "Unknown type of return status from Panorama_stitcher.stitch()";
         break;
     }
@@ -1073,7 +1281,7 @@ void MyImage::getQRcode(){
     scanner.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
     
     // Convert image to grayscale
-    Mat imGray;
+    cv::Mat imGray;
     cv::cvtColor(this->image, imGray,cv::COLOR_BGR2GRAY); 
     
     // Wrap image data in a zbar image
@@ -1090,16 +1298,16 @@ void MyImage::getQRcode(){
             this->qrcodedata = symbol->get_data();
             this->qrcodetype = symbol->get_type_name() ;
             
-            cout << "Type : " << this->qrcodedata << endl;
-            cout << "Data : " << this->qrcodetype << endl << endl;
+            std::cout << "Type : " << this->qrcodedata << std::endl;
+            std::cout << "Data : " << this->qrcodetype << std::endl << std::endl;
             
             // Obtain location
-            vector <Point> location;
+            std::vector <cv::Point> location;
             for(int i = 0; i< symbol->get_location_size(); i++) {
-                location.push_back(Point(symbol->get_location_x(i),symbol->get_location_y(i)));
+                location.push_back(cv::Point(symbol->get_location_x(i),symbol->get_location_y(i)));
             }
             
-            vector<Point> hull;
+            std::vector<cv::Point> hull;
             // If the points do not form a quad, find convex hull
             if(location.size() > 4)
                 cv::convexHull(location, hull);
@@ -1109,7 +1317,7 @@ void MyImage::getQRcode(){
             // Plot the convex hull
             int n = hull.size();
             for(int j = 0; j < n; j++) {
-                cv::line(this->image, hull[j], hull[ (j+1) % n], Scalar(255,0,0), 3);
+                cv::line(this->image, hull[j], hull[ (j+1) % n], cv::Scalar(255,0,0), 3);
             }
             
             // Print the text
@@ -1144,7 +1352,7 @@ void MyImage::getQRcode(){
  * @param type string the content of the decoded code
  * @return true if a QR code or barcode has been decoded
  */
-bool MyImage::getQRcodedata(string &data, string &type) {
+bool MyImage::getQRcodedata(std::string &data, std::string &type) {
     if ( ! this->qrcodedata.empty() ){
         data = this->qrcodedata ;
         type = this->qrcodetype ;
