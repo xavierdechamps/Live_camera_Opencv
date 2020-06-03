@@ -59,12 +59,20 @@ Edit the file [Video.pro](SRC/Video.pro) and provide the path where your OpenCV 
 ```
 qmake Video.pro
 ```
+to generate a Makefile, which is used to compile the project.
 
 ## On Linux
-Not tested. Should be similar to what is done for MacOS
+Not tested. Should be similar to what is done for MacOS. Modify the file Video.pro accordingly to your availabilities and launch
+```
+qmake Video.pro
+```
 
 ## On Windows
-Not tested. No idea.
+Generating a Makefile through qmake has never been so easy. Simply modify the file Video.pro and execute
+```
+qmake.exe Video.pro
+```
+to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it!
 
 ## Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering
 ![Stitching operation done on my laptop with application of the Stylization filter from the module Photo / Non-Photorealistic Rendering](https://github.com/xavierdechamps/Live_camera_Opencv/blob/master/Images/panorama_stylization3.jpg)

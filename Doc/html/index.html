@@ -130,13 +130,18 @@ Installation</h1>
 <h2><a class="anchor" id="subsection_install_mac"></a>
 On a MacOS</h2>
 <p>This program has been developed on a old Mac. The graphic card supports only OpenCL 1.0 directives, which is not sufficient for for image stitching. Luckily the CPU managed version 1.2 of OpenCL. To set OpenCL to use the CPU, the environment variable OPENCV_OPENCL_DEVICE=":CPU:0" had to be exported. Moreover if your program complains about not finding OpenCV libraries, don't forget to export the path to the OpenCV libraries in the environment variable DYLD_LIBRARY_PATH.</p>
-<p>Edit the file Video.pro and provide the path where your OpenCV and ZBar libraries are installed. To create a Makefile or a XCode project, run the Qt command: qmake Video.pro</p>
+<p>Edit the file Video.pro and provide the path where your OpenCV and ZBar libraries are installed. To create a Makefile or a XCode project, run the Qt command:</p>
+<p>qmake Video.pro</p>
 <h2><a class="anchor" id="subsection_install_linux"></a>
 On Linux</h2>
-<p>Not tested. Should be similar to what is done for MacOS</p>
+<p>Not tested. Should be similar to what is done for MacOS. Modify the file Video.pro accordingly to your availabilities and launch</p>
+<p>qmake Video.pro</p>
+<p>to generate a Makefile, which is used to compile the project.</p>
 <h2><a class="anchor" id="subsection_install_windows"></a>
 On Windows</h2>
-<p>Not tested. No idea. </p>
+<p>Generating a Makefile through qmake has never been so easy. Simply modify the file Video.pro and execute</p>
+<p>qmake.exe Video.pro</p>
+<p>to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it! </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->

@@ -13,7 +13,7 @@
 /**
 \mainpage Welcome to Live_camera_OpenCV
 \section section_intro Introduction
- 
+
 This C++ program uses the built-in camera or any connected camera to perform image treatments. The image manipulations are performed by <a href="https://github.com/opencv/opencv">OpenCV</a> and the interface is managed by Qt. This multithreaded program launches a thread dedicated to image processing and another thread to pure Qt display.
 The implemented image manipulations are:
 - Black and white + colour inversion
@@ -73,14 +73,22 @@ Your C++ compiler must accept c++11 directives.
 This program has been developed on a old Mac. The graphic card supports only OpenCL 1.0 directives, which is not sufficient for for image stitching. Luckily the CPU managed version 1.2 of OpenCL. To set OpenCL to use the CPU, the environment variable OPENCV_OPENCL_DEVICE=":CPU:0" had to be exported. Moreover if your program complains about not finding OpenCV libraries, don't forget to export the path to the OpenCV libraries in the environment variable DYLD_LIBRARY_PATH.
 
 Edit the file Video.pro and provide the path where your OpenCV and ZBar libraries are installed. To create a Makefile or a XCode project, run the Qt command:
+
 qmake Video.pro
 
 \subsection subsection_install_linux On Linux
-Not tested. Should be similar to what is done for MacOS
+Not tested. Should be similar to what is done for MacOS. Modify the file Video.pro accordingly to your availabilities and launch
+
+qmake Video.pro
+
+to generate a Makefile, which is used to compile the project.
 
 \subsection subsection_install_windows On Windows
-Not tested. No idea.
+Generating a Makefile through qmake has never been so easy. Simply modify the file Video.pro and execute
 
+qmake.exe Video.pro
+
+to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it!
  */
 
 int main(int argc, char *argv[])

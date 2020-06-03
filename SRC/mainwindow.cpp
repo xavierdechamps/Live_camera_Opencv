@@ -34,7 +34,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
         }
         QMessageBox::information(this, "Cameras", info); 
     }
-    
+
+    if (cameras.size() == 0) {
+        std::cerr << "Error: the number of available cameras is equal to zero"<<std::endl;
+        QMessageBox::critical(this, "Cameras", "Error: the number of available cameras is equal to zero");
+        throw std::runtime_error("Error: the number of available cameras is equal to zero");
+    }
+
+//        throw MyException() ;
+
     int camID = cameras.size()-1;
     
     // For capture thread.

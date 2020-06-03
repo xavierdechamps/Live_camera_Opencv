@@ -67,30 +67,52 @@ HEADERS  += myimage.h \
             capturevideo.h
 stitching: HEADERS += dialog_panorama.h
 
-# Compilator flags
-QMAKE_CXXFLAGS += -std=c++11
-
 # Path to OpenCV include directory
 INCLUDEPATH += $${MY_OPENCV_DIR}/include/opencv4
 # Include the header from ZBar
 zbar: INCLUDEPATH += $${MY_ZBAR_DIR}/include
 
-# Linker flags
-QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
-# Include libraries from ZBar
-zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_ZBAR_DIR}/lib
+win32 {
+    message("Windows build")
 
-# Required OpenCV libraries
-LIBS = -L$${MY_OPENCV_DIR}/lib
-LIBS += -lopencv_imgcodecs \
-        -lopencv_core \
-        -lopencv_highgui \
-        -lopencv_videoio \
-        -lopencv_imgproc \
-        -lopencv_video\
-        -lopencv_photo
-stitching: LIBS += -lopencv_stitching
-objdetect: LIBS += -lopencv_objdetect
-xphoto: LIBS += -lopencv_xphoto
-face: LIBS += -lopencv_face
-zbar: LIBS += -L$${MY_ZBAR_DIR}/lib -lzbar
+    # Required OpenCV libraries
+    LIBS = $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgcodecs430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_core430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_highgui430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_videoio430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgproc430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_video430.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_photo430.lib
+    stitching: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_stitching430.lib
+    objdetect: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_objdetect430.lib
+    xphoto: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_xphoto430.lib
+    face: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_face430.lib
+    zbar: LIBS += $${MY_ZBAR_DIR}\lib\libzbar-0.lib
+}
+
+unix {
+    message("Unix build")
+
+    # Compilator flags
+    QMAKE_CXXFLAGS += -std=c++11
+    
+    # Linker flags
+    QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
+    # Include libraries from ZBar
+    zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_ZBAR_DIR}/lib
+    
+    # Required OpenCV libraries
+    LIBS = -L$${MY_OPENCV_DIR}/lib
+    LIBS += -lopencv_imgcodecs \
+            -lopencv_core \
+            -lopencv_highgui \
+            -lopencv_videoio \
+            -lopencv_imgproc \
+            -lopencv_video\
+            -lopencv_photo
+    stitching: LIBS += -lopencv_stitching
+    objdetect: LIBS += -lopencv_objdetect
+    xphoto: LIBS += -lopencv_xphoto
+    face: LIBS += -lopencv_face
+    zbar: LIBS += -L$${MY_ZBAR_DIR}/lib -lzbar
+}
