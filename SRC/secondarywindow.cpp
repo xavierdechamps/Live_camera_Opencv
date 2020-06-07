@@ -27,7 +27,8 @@ SecondaryWindow::SecondaryWindow(QWidget *parent): QDialog(parent)
 
     setLayout(grid);
     setWindowTitle(tr("Secondary window"));
-
+    
+    this->setMinimumSize(200,200);
     this->resize(this->window_width, this->window_height);
 }
 

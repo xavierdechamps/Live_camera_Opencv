@@ -83,9 +83,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ae54dca58067b2760d9bbbfe76ac0e310"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#ae54dca58067b2760d9bbbfe76ac0e310">set_Face_Cascade_Name</a> (cv::String &amp;new_name)</td></tr>
 <tr class="memdesc:ae54dca58067b2760d9bbbfe76ac0e310"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_my_image.html#ae54dca58067b2760d9bbbfe76ac0e310" title="MyImage::set_Face_Cascade_Name.">MyImage::set_Face_Cascade_Name</a>.  <a href="class_my_image.html#ae54dca58067b2760d9bbbfe76ac0e310">More...</a><br /></td></tr>
 <tr class="separator:ae54dca58067b2760d9bbbfe76ac0e310"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e4d9c62c0a00ea5b95de2f7f289929c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c">set_background_image</a> (cv::String &amp;filename)</td></tr>
-<tr class="memdesc:a0e4d9c62c0a00ea5b95de2f7f289929c"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c" title="MyImage::set_background_image.">MyImage::set_background_image</a>.  <a href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c">More...</a><br /></td></tr>
-<tr class="separator:a0e4d9c62c0a00ea5b95de2f7f289929c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a472648fcc36900aabb43e0e64fbc276d"><td class="memItemLeft" align="right" valign="top"><a id="a472648fcc36900aabb43e0e64fbc276d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>set_Face_Facemark_Name</b> (cv::String &amp;new_name)</td></tr>
+<tr class="separator:a472648fcc36900aabb43e0e64fbc276d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01f9c7eeee368a1e787f375cab3f29d9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#a01f9c7eeee368a1e787f375cab3f29d9">set_size_blur</a> (int)</td></tr>
 <tr class="memdesc:a01f9c7eeee368a1e787f375cab3f29d9"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_my_image.html#a01f9c7eeee368a1e787f375cab3f29d9" title="MyImage::set_size_blur.">MyImage::set_size_blur</a>.  <a href="class_my_image.html#a01f9c7eeee368a1e787f375cab3f29d9">More...</a><br /></td></tr>
 <tr class="separator:a01f9c7eeee368a1e787f375cab3f29d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -302,6 +302,15 @@ cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>motion</b></td></t
 <tr class="memitem:a6e6a182a9bf0ad8e5e12a3fd63800a0f"><td class="memItemLeft" align="right" valign="top"><a id="a6e6a182a9bf0ad8e5e12a3fd63800a0f"></a>
 cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>background</b></td></tr>
 <tr class="separator:a6e6a182a9bf0ad8e5e12a3fd63800a0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fdad7a01fefc483463e538224df1cd3"><td class="memItemLeft" align="right" valign="top"><a id="a1fdad7a01fefc483463e538224df1cd3"></a>
+cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_glasses</b></td></tr>
+<tr class="separator:a1fdad7a01fefc483463e538224df1cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e485c9b0b74e4fdab046ba242610e80"><td class="memItemLeft" align="right" valign="top"><a id="a8e485c9b0b74e4fdab046ba242610e80"></a>
+cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_mustache</b></td></tr>
+<tr class="separator:a8e485c9b0b74e4fdab046ba242610e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7686cc7ce939193e7a3478999ce06fed"><td class="memItemLeft" align="right" valign="top"><a id="a7686cc7ce939193e7a3478999ce06fed"></a>
+cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_mouse_nose</b></td></tr>
+<tr class="separator:a7686cc7ce939193e7a3478999ce06fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e4ca35faa9de66784adb6585e511982"><td class="memItemLeft" align="right" valign="top"><a id="a0e4ca35faa9de66784adb6585e511982"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>blur_range</b></td></tr>
 <tr class="separator:a0e4ca35faa9de66784adb6585e511982"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -410,15 +419,6 @@ cv::CascadeClassifier&#160;</td><td class="memItemRight" valign="bottom"><b>face
 <tr class="memitem:ac6d9bc319eeb9dcd48a22668b164cace"><td class="memItemLeft" align="right" valign="top"><a id="ac6d9bc319eeb9dcd48a22668b164cace"></a>
 cv::Ptr&lt; cv::face::Facemark &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>mark_detector</b></td></tr>
 <tr class="separator:ac6d9bc319eeb9dcd48a22668b164cace"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fdad7a01fefc483463e538224df1cd3"><td class="memItemLeft" align="right" valign="top"><a id="a1fdad7a01fefc483463e538224df1cd3"></a>
-cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_glasses</b></td></tr>
-<tr class="separator:a1fdad7a01fefc483463e538224df1cd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8e485c9b0b74e4fdab046ba242610e80"><td class="memItemLeft" align="right" valign="top"><a id="a8e485c9b0b74e4fdab046ba242610e80"></a>
-cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_mustache</b></td></tr>
-<tr class="separator:a8e485c9b0b74e4fdab046ba242610e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7686cc7ce939193e7a3478999ce06fed"><td class="memItemLeft" align="right" valign="top"><a id="a7686cc7ce939193e7a3478999ce06fed"></a>
-cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><b>ornament_mouse_nose</b></td></tr>
-<tr class="separator:a7686cc7ce939193e7a3478999ce06fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0787e35a9063902e7983a3b9c91da67"><td class="memItemLeft" align="right" valign="top"><a id="af0787e35a9063902e7983a3b9c91da67"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>panorama_activated</b></td></tr>
 <tr class="separator:af0787e35a9063902e7983a3b9c91da67"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -801,7 +801,7 @@ cv::Ptr&lt; cv::BackgroundSubtractor &gt;&#160;</td><td class="memItemRight" val
 </div><div class="memdoc">
 
 <p><a class="el" href="class_my_image.html#ab1699e9b17b6f0195a1bb80cdeb98ebb" title="MyImage::getFace_Status.">MyImage::getFace_Status</a>. </p>
-<dl class="section return"><dt>Returns</dt><dd>true if a face has been detected. False otherwise </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true if face detection algorithm is activated. False otherwise </dd></dl>
 
 </div>
 </div>
@@ -1052,33 +1052,6 @@ cv::Ptr&lt; cv::BackgroundSubtractor &gt;&#160;</td><td class="memItemRight" val
 
 <p><a class="el" href="class_my_image.html#aa19e25b82308a562cc97f9c067820503" title="MyImage::panorama_reset.">MyImage::panorama_reset</a>. </p>
 <p>Empties the stack of images for stitching </p>
-
-</div>
-</div>
-<a id="a0e4d9c62c0a00ea5b95de2f7f289929c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0e4d9c62c0a00ea5b95de2f7f289929c">&#9670;&nbsp;</a></span>set_background_image()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool MyImage::set_background_image </td>
-          <td>(</td>
-          <td class="paramtype">cv::String &amp;&#160;</td>
-          <td class="paramname"><em>filename</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p><a class="el" href="class_my_image.html#a0e4d9c62c0a00ea5b95de2f7f289929c" title="MyImage::set_background_image.">MyImage::set_background_image</a>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">filename</td><td>String containing the name of a background to be applied during face detection </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true is the file is correctly loaded false otherwise </dd></dl>
 
 </div>
 </div>

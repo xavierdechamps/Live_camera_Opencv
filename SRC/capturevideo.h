@@ -13,6 +13,8 @@
 #include <QImage>
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QTime> // Calculate the FPS of the camera
+#include <QCoreApplication>
 
 // MyImage
 #include "myimage.h"
@@ -33,10 +35,9 @@ public:
     bool cameraIsOpen();
     void setThreadStatus(bool);
     void setParent(QMainWindow *parent);
-    void setCascadeFile();
 #ifdef withzbar
     bool getQRcodedata(std::string &, std::string &);
-#endif
+#endif // endif withzbar
     bool file_save_movie(bool);
     
 signals:
@@ -58,16 +59,16 @@ public slots:
     void toggleMotionDetection(bool);
 #ifdef withobjdetect
     void toggleFaceDetection(bool);
-#endif
+#endif // endif withobjdetect
     void toggleObjectDetection(bool);
 #ifdef withzbar
     void toggleQRcode(bool);
-#endif
+#endif // endif withzbar
     void toggleTransformation(bool);
     void toggleHistogramEqualization(bool);
 #ifdef withstitching
     void togglePanorama(bool);
-#endif
+#endif // endif withstitching
     void togglePhoto(bool);
     
     void change_blur_range(int);
@@ -106,7 +107,7 @@ public slots:
     void panorama_reset();
     void panorama_update();
     void panorama_save();
-#endif
+#endif // endif withstitching
     
     void file_save_image();
     
@@ -121,17 +122,23 @@ private:
     int camID,record_time_blink;
     cv::VideoCapture capture;
     cv::VideoWriter video_out;
-    cv::String file_name_save, main_directory, file_background, file_cascade,video_out_name;
+    cv::String file_name_save, main_directory, file_background, file_cascade,file_facemark,video_out_name;
     bool recording,running,motion_active,objects_active,qrdecoder_active;
     bool histo_active,panorama_active;
     QImage myQimage,motionQimage,objectsQimage,histoQimage,panorama_Qimage;
     QMainWindow *mainWindowParent;
     QMutex *data_lock;
+    double cameraFPS ;
+    bool cameraFPScalculated;
     
     // Private functions
+#ifdef withobjdetect
+    bool setCascadeFile();
+#endif // endif withobjdetect
+    bool loadOrnaments();
 #ifdef withface
-    void loadOrnaments();
-#endif
+    bool setFacemarkFile();
+#endif // endif withface
 };
 
 #endif // CAPTUREVIDEO_H

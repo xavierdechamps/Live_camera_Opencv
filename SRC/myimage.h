@@ -41,8 +41,11 @@ public:
     void set_image_content(cv::Mat &content);
 #ifdef withobjdetect
     bool set_Face_Cascade_Name(cv::String &new_name);
-    bool set_background_image(cv::String &filename);
-#endif
+//    bool set_background_image(cv::String &filename);
+#ifdef withface
+    bool set_Face_Facemark_Name(cv::String &new_name);
+#endif // endif withface
+#endif // endif withobjdetect
 
     void set_size_blur(int);
     void set_blur_method(int);
@@ -98,10 +101,9 @@ public:
 #ifdef withobjdetect
     void toggleFace_Recon(bool);
     bool getFace_Status();
-#ifdef withface
+#endif // endif withobjdetect
     void loadOrnaments(std::vector<cv::Mat> Mat2receive);
-#endif
-#endif
+
     void toggleHistoEq(bool);
     void toggleObjectDetection(bool);
 #ifdef withstitching
@@ -116,6 +118,8 @@ public:
 
 private:
     cv::Mat image, previmage, image2export , mask , smoothed, histogram, objects, panorama, motion, background ;
+    // Mask ornaments to put over face detected
+    cv::Mat ornament_glasses, ornament_mustache, ornament_mouse_nose;
     int blur_range,blur_method,morpho_element;
     int edge_method;
     int canny_threshold;
@@ -136,8 +140,6 @@ private:
     
 #ifdef withface
     cv::Ptr<cv::face::Facemark> mark_detector;
-    // Mask ornaments to put over face detected
-    cv::Mat ornament_glasses, ornament_mustache, ornament_mouse_nose;
 #endif
     
 #endif

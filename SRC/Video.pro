@@ -1,23 +1,51 @@
-# Path to global OpenCV installation directory
-MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install
 #
+# Adapt the following parameters depending on your platform and the installed libraries (OpenCV + ZBar)
+#
+unix {
+    # Path to global OpenCV installation directory
+    MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install
+    #
+    # If you don't have the OpenCV object detect library, comment the following 2 lines
+    CONFIG += objdetect
+    # (Macro) Path to the directory containing the cascade classifier files for face detection
+    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/\\\"
+    #
+    # If you don't have the OpenCV extra module Face, comment the following line
+    CONFIG += face
+    # https://github.com/kurnianggoro/GSOC2017/blob/master/data/lbfmodel.yaml
+    # (Macro) Path to the directory containing the facemark file "lbfmodel.yaml"
+    DEFINES += OPENCV_FACEMARK_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/lbfmodel/\\\"
+    #
+    # If you don't have the ZBar library, comment the following line
+    CONFIG += zbar
+    MY_ZBAR_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/zbar-0.10/install
+}
+
+win32 {
+    # Path to global OpenCV installation directory
+    MY_OPENCV_DIR = D:\Libraries\opencv-4.3.0\build\install
+    #
+    # If you don't have the OpenCV object detect library, comment the following 2 lines
+    CONFIG += objdetect
+    # (Macro) Path to the directory containing the cascade classifier files for face detection
+    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"D:/Libraries/opencv-4.3.0/build/install/etc/haarcascades/\\\"
+    #
+    # If you don't have the OpenCV extra module Face, comment the following line
+    CONFIG += face
+    # https://github.com/kurnianggoro/GSOC2017/blob/master/data/lbfmodel.yaml
+    # (Macro) Path to the directory containing the facemark file "lbfmodel.yaml"
+    DEFINES += OPENCV_FACEMARK_DIR=\\\"D:/Libraries/opencv-4.3.0/build/install/etc/facemark/\\\"
+    #
+    # If you don't have the ZBar library, comment the following line
+    #CONFIG += zbar
+    #MY_ZBAR_DIR = 
+}
+
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
-#
-# If you don't have the OpenCV object detect library, comment the following 2 lines
-CONFIG += objdetect
-# (Macro) Path to the directory containing the cascade classifier files for face detection
-DEFINES += OPENCV_DATA_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/\\\"
-#
+# 
 # If you don't have the OpenCV extra module Xphoto, comment the following line
 CONFIG += xphoto
-#
-# If you don't have the OpenCV extra module Face, comment the following line
-CONFIG += face
-#
-# If you don't have the ZBar library, comment the following line
-CONFIG += zbar
-MY_ZBAR_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/zbar-0.10/install
 #
 ############# DO NOT MODIFY BELOW THIS LINE #############
 #
@@ -30,13 +58,11 @@ face: DEFINES+=withface
 QT       = core gui multimedia concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-#!versionAtLeast(QT_VERSION, 4.6):error("Use at least Qt version 4.6")
-
 TARGET = Video
 TEMPLATE = app
 
 # Resource collection
-face: RESOURCES = images.qrc
+RESOURCES = images.qrc
 
 SOURCES = main.cpp \
         myimage.cpp \
@@ -67,13 +93,14 @@ HEADERS  += myimage.h \
             capturevideo.h
 stitching: HEADERS += dialog_panorama.h
 
-# Path to OpenCV include directory
-INCLUDEPATH += $${MY_OPENCV_DIR}/include/opencv4
 # Include the header from ZBar
 zbar: INCLUDEPATH += $${MY_ZBAR_DIR}/include
 
 win32 {
     message("Windows build")
+
+    # Path to OpenCV include directory
+    INCLUDEPATH += $${MY_OPENCV_DIR}\include
 
     # Required OpenCV libraries
     LIBS = $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgcodecs430.lib \
@@ -92,6 +119,9 @@ win32 {
 
 unix {
     message("Unix build")
+
+    # Path to OpenCV include directory
+    INCLUDEPATH += $${MY_OPENCV_DIR}/include/opencv4
 
     # Compilator flags
     QMAKE_CXXFLAGS += -std=c++11

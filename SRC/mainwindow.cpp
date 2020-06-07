@@ -41,30 +41,31 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
         throw std::runtime_error("Error: the number of available cameras is equal to zero");
     }
 
-//        throw MyException() ;
-
     int camID = cameras.size()-1;
     
     // For capture thread.
     this->data_lock = new QMutex();
-    worker = new captureVideo(this,this->data_lock);
+    this->worker = new captureVideo(this,this->data_lock);
     
     // Links signals from the video capturer to functions that update the display
-    connect(worker, &captureVideo::frameCaptured,     this, &MainWindow::updateFrame );
-    connect(worker, &captureVideo::changeInfo   ,     this, &MainWindow::updateMainStatusLabel );
-    connect(worker, &captureVideo::motionCaptured,    this, &MainWindow::update_motion_window );
-    connect(worker, &captureVideo::objectsCaptured,   this, &MainWindow::update_objects_window );
-    connect(worker, &captureVideo::histogramCaptured, this, &MainWindow::update_histogram_window );
+    connect(this->worker, &captureVideo::frameCaptured,     this, &MainWindow::updateFrame );
+    connect(this->worker, &captureVideo::changeInfo   ,     this, &MainWindow::updateMainStatusLabel );
+    connect(this->worker, &captureVideo::motionCaptured,    this, &MainWindow::update_motion_window );
+    connect(this->worker, &captureVideo::objectsCaptured,   this, &MainWindow::update_objects_window );
+    connect(this->worker, &captureVideo::histogramCaptured, this, &MainWindow::update_histogram_window );
 #ifdef withstitching
-    connect(worker, &captureVideo::panoramaCaptured,  this, &MainWindow::update_panorama_window );
+    connect(this->worker, &captureVideo::panoramaCaptured,  this, &MainWindow::update_panorama_window );
 #endif
     
     // Initialization of the OpenCV thread
-    worker->setCamera(camID);
-    worker->openCamera() ;
-//    worker->setParent(this);
-//    worker->setCascadeFile(); // call this one AFTER setparent() because worker needs a pointer to mainwindow
-    this->worker->start(); // Launch the new thread (call to run() in capturevideo)
+    this->worker->setCamera(camID);
+    if (this->worker->openCamera())
+        this->worker->start(); // Launch the new thread (call to run() in capturevideo)
+    else {
+        std::cerr << "Error: could not open the camera"<<std::endl;
+        QMessageBox::critical(this, "Cameras", "Error: could not open the camera");
+        throw std::runtime_error("Error: could not open the camera");
+    }
     
     this->resize(800, 600); 
     

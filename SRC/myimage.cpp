@@ -145,13 +145,13 @@ void MyImage::toggleFace_Recon(bool state) {
 
 /**
  * @brief MyImage::getFace_Status
- * @return true if a face has been detected. False otherwise
+ * @return true if face detection algorithm is activated. False otherwise
  */
 bool MyImage::getFace_Status(){
     return this->face_recon;
 }
+#endif // endif withobjdetect
 
-#ifdef withface
 /**
  * @brief MyImage::loadOrnaments
  * @param Mat2receive vector<cv::Mat> vector of OpenCV matrices containing the ornamental pictures
@@ -163,9 +163,8 @@ void MyImage::loadOrnaments(std::vector<cv::Mat> Mat2receive){
     this->ornament_glasses    = Mat2receive.at(0) ;
     this->ornament_mustache   = Mat2receive.at(1);
     this->ornament_mouse_nose = Mat2receive.at(2) ;
+    this->background          = Mat2receive.at(3) ; //cv::bitwise_not(this->background, this->background);
 }
-#endif // endif withface
-#endif // endif withobjdetect
 
 /**
  * @brief MyImage::toggleHistoEq
@@ -259,7 +258,10 @@ void MyImage::set_image_content(cv::Mat &content) {
 /*        this->image.copyTo( this->smoothed , this->mask ); // copy the region of interest to this->smoothed
         smoothImage(this->smoothed, 31, 1);                // smooth this region
         this->smoothed.copyTo(this->image , this->mask);   // replace the region in the original image by the smoothed one
-*/        
+*/      
+        if (this->background.size() != this->image.size())
+                    cv::resize(this->background, this->background, this->image.size(), 0, 0, cv::INTER_CUBIC);
+        
         this->background.copyTo(this->image, this->mask);
     }
 #endif
@@ -686,22 +688,24 @@ bool MyImage::set_Face_Cascade_Name(cv::String &new_name) {
         std::cerr << "MyImage::set_Face_Cascade_Name(): Error loading face cascade"<<std::endl;
         return false;
     }
-
-#ifdef withface    
-    mark_detector = cv::face::createFacemarkLBF();
-    cv::String model_data = "/Users/dechamps/Documents/Codes/Cpp/Images/Video-OpenCV-QMake/data/lbfmodel.yaml"; 
-    mark_detector->loadModel(model_data);
-#endif
-    
     return true;
 }
 
-/**
- * @brief MyImage::set_background_image
- * @param filename: String containing the name of a background to be applied during face detection 
- * @return true is the file is correctly loaded
- *        false otherwise
- */
+#ifdef withface
+bool MyImage::set_Face_Facemark_Name(cv::String &new_name){
+    this->mark_detector = cv::face::createFacemarkLBF();
+    this->mark_detector->loadModel(new_name); // how to test if successfully set?
+    return true;
+}
+#endif // endif withface
+
+// /**
+// * @brief MyImage::set_background_image
+// * @param filename: String containing the name of a background to be applied during face detection
+// * @return true is the file is correctly loaded
+// *        false otherwise
+// */
+/*
 bool MyImage::set_background_image(cv::String &filename){
     this->background = cv::imread(filename);
     if (!this->background.data) {
@@ -710,8 +714,9 @@ bool MyImage::set_background_image(cv::String &filename){
     cv::resize(this->background, this->background, this->image.size(), 0, 0, cv::INTER_CUBIC);
     return true;
 }
+*/
 
-#endif
+#endif // endif withobjdetect
 
 /**
  * @brief MyImage::toBlackandWhite

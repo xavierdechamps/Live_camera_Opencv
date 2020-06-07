@@ -31,17 +31,21 @@ captureVideo::captureVideo(QMainWindow *parent,QMutex *data_lock) : mainWindowPa
     this->camID = -1;
 
     // Initializations
-    this->main_directory = "/Users/dechamps/Documents/Codes/Cpp/Images/";
+    this->main_directory = QCoreApplication::applicationDirPath().toStdString();
     this->file_name_save = this->main_directory + "webcam.jpg";
 #ifdef withobjdetect
-    this->file_cascade = OPENCV_DATA_DIR"haarcascade_frontalface_default.xml" ;
-//    this->file_cascade = this->main_directory + "Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/haarcascade_frontalface_default.xml";
-#endif
+    this->file_cascade = OPENCV_HAARCASCADES_DIR"haarcascade_frontalface_default.xml" ;
+#ifdef withface
+    this->file_facemark = OPENCV_FACEMARK_DIR"lbfmodel.yaml";
+#endif // endif withface
+#endif // endif withobjdetect
     
     // Concerns the recording of the video
     this->record_time_blink = 0;
     this->recording = false;
-    this->video_out_name = this->main_directory + "Video-OpenCV-QMake/my_video.avi";
+    this->video_out_name = this->main_directory + "my_video.avi";
+    this->cameraFPS = 20.;
+    this->cameraFPScalculated = false;
 }
 
 /**
@@ -81,13 +85,27 @@ bool captureVideo::openCamera(){
     // myFrame is owned by mainWindow
     this->myFrame = new MyImage();
     
+#ifdef withobjdetect
     // Set the cascade file for face detection
-    this->setCascadeFile();
-    
+    if (!this->setCascadeFile()){
+        this->running = false;
+        return false;
+    }
+
 #ifdef withface
+    // Set the facemark file for face detection
+    if (!this->setFacemarkFile()){
+        this->running = false;
+        return false;
+    }
+#endif // endif withface
+#endif // endif withobjdetect
+
     // Load the ornaments for face and send them to myFrame
-    this->loadOrnaments();
-#endif
+    if (!this->loadOrnaments()){
+        this->running = false;
+        return false;
+    }
     
     return this->capture.open(this->camID);
 }
@@ -122,34 +140,6 @@ bool captureVideo::cameraIsOpen(){
     return this->capture.isOpened();
 }
 
-/**
- * @brief captureVideo::setCascadeFile
- *
- * Set the cascade file required by OpenCV. Active only if face detection is required in the .pro file.
- */
-void captureVideo::setCascadeFile(){
-#ifdef withobjdetect
-    if (this->mainWindowParent != nullptr) {
-        bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
-        while (!testCascade){
-            QString QfileNameLocal = QFileDialog::getOpenFileName(this->mainWindowParent,
-                                                             tr("Select the face cascade file haarcascade_frontalface_default.xml"),
-                                                             QString::fromStdString(this->main_directory),
-                                                             tr("Images (*.xml)") );
-            if ( ! QfileNameLocal.isEmpty() ) {
-                this->file_cascade = QfileNameLocal.toStdString() ;
-                testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
-            }
-
-        }
-    }
-    else {
-        qDebug() << "captureVideo::setCascadeFile() : mainWindowParent is not set";
-        qDebug() << "                                 call the function captureVideo::setParent(QMainWindow *parent)";
-    }
-#endif
-}
-
 #ifdef withzbar
 /**
  * @brief captureVideo::getQRcodedata
@@ -171,9 +161,17 @@ bool captureVideo::getQRcodedata(std::string &qrdata, std::string &qrtype){
 void captureVideo::run() {
     this->running = true;
     cv::Mat imageMat;
+    QTime timer;
+    const int count_2_read = 100; // 100 frames to compute the FPS
+    int current_count = 0;
+    bool first_time = true;
 
     while (this->running) {
         if(cameraIsOpen()) {
+            if (first_time){
+                timer.start();
+                first_time = false;
+            }
             this->capture >> imageMat;
             while (imageMat.empty()) {
                 this->capture >> imageMat;
@@ -195,6 +193,15 @@ void captureVideo::run() {
                 this->record_time_blink ++;
                 if (this->record_time_blink >= 40)
                     this->record_time_blink = 0;
+            }
+            current_count ++;
+            if (current_count == count_2_read) {
+                // Compute the FPS
+                int elapsed_ms = timer.elapsed();
+                this->cameraFPS = count_2_read / (elapsed_ms / 1000.0) ;
+                this->cameraFPScalculated = true;
+                emit changeInfo("The FPS of the camera has been computed: "+QString::number(this->cameraFPS));
+//                emit this->setFPSrate(this->cameraFPS);
             }
         }
         else
@@ -347,7 +354,7 @@ void captureVideo::toggleMotionDetection(bool state) {
  * Activate/desactivate the face detection algorithm. A background image is fetch from a local directory
  */
 void captureVideo::toggleFaceDetection(bool state) {
-
+/*
     if (!this->myFrame->getFace_Status()) {
         this->file_background = this->main_directory + "cartoon_background.jpg";
         bool test = this->myFrame->set_background_image(this->file_background);
@@ -362,7 +369,7 @@ void captureVideo::toggleFaceDetection(bool state) {
             }
         }
     }
-
+*/
     this->myFrame->toggleFace_Recon(state);
     if (state)
         emit changeInfo("Face detection activated");
@@ -692,8 +699,13 @@ bool captureVideo::file_save_movie(bool state) {
 
             this->video_out_name = QfileNameLocal.toStdString();
 
+            double local_fps;
+            if (this->cameraFPScalculated)
+                local_fps = this->cameraFPS ;
+            else
+                local_fps = 20;
             this->video_out.open(this->video_out_name,cv::VideoWriter::fourcc('X','V','I','D'),
-                                 10.,
+                                 local_fps,
                                  cv::Size(this->capture.get(cv::CAP_PROP_FRAME_WIDTH),
                                           this->capture.get(cv::CAP_PROP_FRAME_HEIGHT)),
                                  true);
@@ -710,19 +722,50 @@ bool captureVideo::file_save_movie(bool state) {
     return true;
 }
 
-#ifdef withface
+#ifdef withobjdetect
+/**
+ * @brief captureVideo::setCascadeFile
+ *
+ * Set the cascade file required by OpenCV. Active only if face detection is required in the .pro file.
+ */
+bool captureVideo::setCascadeFile(){
+    if (this->mainWindowParent != nullptr) {
+        bool testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
+        if (!testCascade){
+            QString QfileNameLocal = QFileDialog::getOpenFileName(this->mainWindowParent,
+                                                             tr("Select the face cascade file haarcascade_frontalface_default.xml"),
+                                                             QString::fromStdString(this->main_directory),
+                                                             tr("Images (*.xml)") );
+            if ( ! QfileNameLocal.isEmpty() ) {
+                this->file_cascade = QfileNameLocal.toStdString() ;
+                testCascade = this->myFrame->set_Face_Cascade_Name(this->file_cascade);
+            }
+            else
+                return false;
+
+        }
+    }
+    else {
+        qDebug() << "captureVideo::setCascadeFile() : mainWindowParent is not set";
+        qDebug() << "                                 call the function captureVideo::setParent(QMainWindow *parent)";
+        return false;
+    }
+    return true;
+}
+#endif // endif withobjdetect
+
 /**
  * @brief captureVideo::loadOrnaments
  * 
  * Load the ornaments from the Resources / images.qrc and send them to myFrame
  */
-void captureVideo::loadOrnaments(){
+bool captureVideo::loadOrnaments(){
     QImage image;
     image.load(":/images/glasses.jpg");
     image = image.convertToFormat(QImage::Format_RGB888);
     cv::Mat glasses = cv::Mat(image.height(), image.width(), CV_8UC3,
                               image.bits(), image.bytesPerLine()).clone();
-    
+
     image.load(":/images/mustache.jpg");
     image = image.convertToFormat(QImage::Format_RGB888);
     cv::Mat mustache = cv::Mat(image.height(), image.width(), CV_8UC3,
@@ -731,14 +774,56 @@ void captureVideo::loadOrnaments(){
     image.load(":/images/mouse-nose.jpg");
     image = image.convertToFormat(QImage::Format_RGB888);
     cv::Mat mouse_nose = cv::Mat(image.height(), image.width(), CV_8UC3,
-                                 image.bits(), image.bytesPerLine()).clone(); 
-    
+                                 image.bits(), image.bytesPerLine()).clone();
+
+    image.load(":/images/cartoon_background.jpg");
+    image = image.convertToFormat(QImage::Format_RGB888);
+    QImage swapped = image.rgbSwapped() ;
+    cv::Mat background = cv::Mat(swapped.height(),swapped.width(),CV_8UC3, const_cast<uchar*>(swapped.bits()), static_cast<size_t>(swapped.bytesPerLine()) ).clone() ;
+
     std::vector<cv::Mat> Mat2send;
-    if (!glasses.empty() && !mustache.empty() && !mouse_nose.empty()){
+    if (!glasses.empty() && !mustache.empty() && !mouse_nose.empty() && !background.empty()){
         Mat2send.push_back(glasses);
         Mat2send.push_back(mustache);
         Mat2send.push_back(mouse_nose);
+        Mat2send.push_back(background);
         this->myFrame->loadOrnaments(Mat2send);
     }
+    else {
+        std::cerr << " captureVideo::loadOrnaments(): couln't load all the images from the resource"<< std::endl;
+        return false;
+    }
+    return true;
 }
-#endif
+
+#ifdef withface
+/**
+ * @brief captureVideo::setFacemarkFile
+ *
+ * Set the Facemark file lbfmodel.yaml required by OpenCV. Active only if face detection is required in the .pro file.
+ */
+bool captureVideo::setFacemarkFile(){
+    if (this->mainWindowParent != nullptr) {
+        bool testCascade = this->myFrame->set_Face_Facemark_Name(this->file_facemark);
+        while (!testCascade){
+            QString QfileNameLocal = QFileDialog::getOpenFileName(this->mainWindowParent,
+                                                             tr("Select the facemark file lbfmodel.yaml"),
+                                                             QString::fromStdString(this->main_directory),
+                                                             tr("Images (*.yaml)") );
+            if ( ! QfileNameLocal.isEmpty() ) {
+                this->file_facemark = QfileNameLocal.toStdString() ;
+                testCascade = this->myFrame->set_Face_Cascade_Name(this->file_facemark);
+            }
+            else
+                return false;
+
+        }
+    }
+    else {
+        qDebug() << "captureVideo::setCascadeFile() : mainWindowParent is not set";
+        qDebug() << "                                 call the function captureVideo::setParent(QMainWindow *parent)";
+        return false;
+    }
+    return true;
+}
+#endif // endif withface
