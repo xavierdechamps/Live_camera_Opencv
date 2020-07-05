@@ -87,6 +87,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     this->mainStatusBar->addPermanentWidget(this->mainStatusLabel);
     this->mainStatusLabel->setText("Image Information will be here!");
     
+#ifdef withtesseract
+    this->window_tesseract = new Window_Tesseract(this);
+    connect(this->window_tesseract, SIGNAL(Signal_get_new_image(bool)) , this, SLOT(treat_Tesseract_get_new_image(bool)) );
+#endif 
+    
     createActions();
     createToolBars();
     createWindows();
@@ -101,11 +106,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
  * Kill the OpenCV thread when the main window is closed
  */
 MainWindow::~MainWindow() {
-    this->thread.quit(); // Nice way to tell the other thread to stop
-    if(!this->thread.wait(3000)) //Wait until it actually has terminated (max. 3 sec)
-    {
-        this->thread.terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
-        this->thread.wait(); //We have to wait again here!
+    // Delete the tesseract object    
+    delete this->window_tesseract;
+    
+    if (this->thread.isRunning() ) {
+        this->thread.quit(); // Nice way to tell the other thread to stop
+        if(!this->thread.wait(3000)) //Wait until it actually has terminated (max. 3 sec)
+        {
+            this->thread.terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
+            this->thread.wait(); //We have to wait again here!
+        }
     }
 }
 
@@ -179,6 +189,14 @@ void MainWindow::createActions() {
     connect(this->actionQRcode, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_QRcode(bool)) );
 #endif
     
+    // Detection / Tesseract text decoder
+#ifdef withtesseract
+    this->action_Tesseract = new QAction(tr("Tesseract text decoder"),this) ;
+    this->action_Tesseract->setToolTip(tr("Detect and decode text in the image"));
+    this->action_Tesseract->setCheckable(true);
+    connect(this->action_Tesseract, SIGNAL(triggered(bool)) , this, SLOT(treat_Button_Tesseract(bool)) );
+#endif
+    
     // Transformations / Transformation
     this->actionTransformation = new QAction(tr("&Transformation"), this);
     this->actionTransformation->setToolTip(tr("Apply geometric transformations to the image"));
@@ -246,6 +264,9 @@ void MainWindow::createToolBars() {
     this->menu_Detection->addAction(this->actionObjectDetection);
 #ifdef withzbar
     this->menu_Detection->addAction(this->actionQRcode);
+#endif
+#ifdef withtesseract
+    this->menu_Detection->addAction(this->action_Tesseract);
 #endif
     
 #ifdef withstitching
@@ -538,6 +559,28 @@ void MainWindow::treat_Histogram_show_histogram(bool checked) {
     else
         this->secondWindow->hide();
 }
+
+#ifdef withtesseract
+/**
+ * @brief MainWindow::treat_Button_Tesseract
+ * @param checked
+ */
+void MainWindow::treat_Button_Tesseract(bool checked) {
+    this->tesseract_window_opened = checked;
+    if (checked)
+        this->window_tesseract->show();
+    else
+        this->window_tesseract->hide();
+}
+
+void MainWindow::treat_Tesseract_get_new_image(bool detectArea){
+    std::vector<QRect> areas ;
+    QImage new_image = this->worker->detectTextAreas(areas,detectArea) ;
+    if (detectArea)
+        this->window_tesseract->setAreasText(areas);
+    this->window_tesseract->showImage(new_image);
+}
+#endif // endif withtesseract
 
 #ifdef withstitching
 /**

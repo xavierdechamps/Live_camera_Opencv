@@ -28,6 +28,10 @@
 #include "zbar.h"
 #endif
 
+#ifdef withtesseract
+#include "opencv2/dnn.hpp"
+#endif
+
 #include <iostream>
 
 //using namespace cv;
@@ -115,7 +119,10 @@ public:
     void toggleQRcode(bool);
     bool getQRcodedata(std::string &, std::string &);
 #endif
-
+#ifdef withtesseract
+    cv::Mat textAreasDetect(std::vector<cv::Rect> &areas, bool detectAreas) ;
+#endif
+    
 private:
     cv::Mat image, previmage, image2export , mask , smoothed, histogram, objects, panorama, motion, background ;
     // Mask ornaments to put over face detected
@@ -153,6 +160,10 @@ private:
     bool qrcodeactivated;
     cv::String qrcodedata,qrcodetype;
 #endif
+    
+#ifdef withtesseract
+    cv::dnn::Net net;
+#endif
 
     cv::Ptr<cv::BackgroundSubtractor> pMOG2;
 
@@ -175,6 +186,11 @@ private:
     void modulephoto();
 #ifdef withzbar
     void getQRcode();
+#endif
+    
+#ifdef withtesseract
+    void textAreasdecode(const cv::Mat& scores, const cv::Mat& geometry, float scoreThresh,
+                         std::vector<cv::RotatedRect>& detections, std::vector<float>& confidences);
 #endif
 };
 

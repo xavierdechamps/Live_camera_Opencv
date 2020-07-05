@@ -227,6 +227,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>set_Face_Facemark_Nam
 <tr class="memitem:a9fcbc290c6845d417f6ea6e98afae998"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#a9fcbc290c6845d417f6ea6e98afae998">getQRcodedata</a> (std::string &amp;, std::string &amp;)</td></tr>
 <tr class="memdesc:a9fcbc290c6845d417f6ea6e98afae998"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_my_image.html#a9fcbc290c6845d417f6ea6e98afae998" title="MyImage::getQRcodedata.">MyImage::getQRcodedata</a>.  <a href="class_my_image.html#a9fcbc290c6845d417f6ea6e98afae998">More...</a><br /></td></tr>
 <tr class="separator:a9fcbc290c6845d417f6ea6e98afae998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5aa0bc33405f61f5cdc01043e1fd39ea"><td class="memItemLeft" align="right" valign="top">cv::Mat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#a5aa0bc33405f61f5cdc01043e1fd39ea">textAreasDetect</a> (std::vector&lt; cv::Rect &gt; &amp;areas, bool detectAreas)</td></tr>
+<tr class="memdesc:a5aa0bc33405f61f5cdc01043e1fd39ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">MyImage::detectTextAreas.  <a href="class_my_image.html#a5aa0bc33405f61f5cdc01043e1fd39ea">More...</a><br /></td></tr>
+<tr class="separator:a5aa0bc33405f61f5cdc01043e1fd39ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-methods"></a>
 Private Member Functions</h2></td></tr>
@@ -269,6 +272,9 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:a528555ffdefe99e1632687eed93f314f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_my_image.html#a528555ffdefe99e1632687eed93f314f">getQRcode</a> ()</td></tr>
 <tr class="memdesc:a528555ffdefe99e1632687eed93f314f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_my_image.html#a528555ffdefe99e1632687eed93f314f" title="MyImage::getQRcode.">MyImage::getQRcode</a>.  <a href="class_my_image.html#a528555ffdefe99e1632687eed93f314f">More...</a><br /></td></tr>
 <tr class="separator:a528555ffdefe99e1632687eed93f314f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbfd018645a1a22ac233161c9cea5408"><td class="memItemLeft" align="right" valign="top"><a id="abbfd018645a1a22ac233161c9cea5408"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>textAreasdecode</b> (const cv::Mat &amp;scores, const cv::Mat &amp;geometry, float scoreThresh, std::vector&lt; cv::RotatedRect &gt; &amp;detections, std::vector&lt; float &gt; &amp;confidences)</td></tr>
+<tr class="separator:abbfd018645a1a22ac233161c9cea5408"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pri-attribs"></a>
 Private Attributes</h2></td></tr>
@@ -437,6 +443,9 @@ cv::String&#160;</td><td class="memItemRight" valign="bottom"><b>qrcodedata</b><
 <tr class="memitem:aa01490d25b2ec7b003b1a76547d4f257"><td class="memItemLeft" align="right" valign="top"><a id="aa01490d25b2ec7b003b1a76547d4f257"></a>
 cv::String&#160;</td><td class="memItemRight" valign="bottom"><b>qrcodetype</b></td></tr>
 <tr class="separator:aa01490d25b2ec7b003b1a76547d4f257"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a856950fbb913958745db3aa41a6568cc"><td class="memItemLeft" align="right" valign="top"><a id="a856950fbb913958745db3aa41a6568cc"></a>
+cv::dnn::Net&#160;</td><td class="memItemRight" valign="bottom"><b>net</b></td></tr>
+<tr class="separator:a856950fbb913958745db3aa41a6568cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada2efeb20f71340503f3cedc32237c55"><td class="memItemLeft" align="right" valign="top"><a id="ada2efeb20f71340503f3cedc32237c55"></a>
 cv::Ptr&lt; cv::BackgroundSubtractor &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>pMOG2</b></td></tr>
 <tr class="separator:ada2efeb20f71340503f3cedc32237c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1705,6 +1714,43 @@ cv::Ptr&lt; cv::BackgroundSubtractor &gt;&#160;</td><td class="memItemRight" val
   </dd>
 </dl>
 <p>Performs blurring on the input image </p>
+
+</div>
+</div>
+<a id="a5aa0bc33405f61f5cdc01043e1fd39ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5aa0bc33405f61f5cdc01043e1fd39ea">&#9670;&nbsp;</a></span>textAreasDetect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">cv::Mat MyImage::textAreasDetect </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; cv::Rect &gt; &amp;&#160;</td>
+          <td class="paramname"><em>areas</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>detectAreas</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>MyImage::detectTextAreas. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">areas</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
 
 </div>
 </div>

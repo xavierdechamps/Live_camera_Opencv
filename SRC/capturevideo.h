@@ -40,6 +40,10 @@ public:
 #endif // endif withzbar
     bool file_save_movie(bool);
     
+#ifdef withtesseract
+    QImage detectTextAreas(std::vector<QRect> &areas, bool detectArea);
+#endif // endif withtesseract
+    
 signals:
     void frameCaptured(QImage *image);
     void motionCaptured(QImage *image);

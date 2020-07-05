@@ -103,6 +103,7 @@ Introduction</h1>
 </ol>
 </li>
 <li>Barcode and QR code decoder (through the external library <a href="https://github.com/ZBar/ZBar">ZBar</a>)</li>
+<li>Text detection and recognition through OpenCV EAST text detector and the library Tesseract</li>
 </ul>
 <h1><a class="anchor" id="section_requirements"></a>
 Requirements</h1>
@@ -116,11 +117,12 @@ Requirements</h1>
 <li>libopencv_video</li>
 <li>libopencv_photo</li>
 </ul>
-<p>The code can also be compiled against four optional libraries:</p><ul>
+<p>The code can also be compiled against five optional libraries:</p><ul>
 <li>libopencv_objdetect (enables face detection)</li>
 <li>libopencv_stitching (enables the panorama creation)</li>
 <li>libopencv_xphoto (enables features from xphoto)</li>
 <li>libzbar (enables decryption of barcodes and QR codes)</li>
+<li>libtesseract (enables text recognition inside images)</li>
 </ul>
 <p>If you don't have these libraries, just comment the top lines in the file Video.pro. If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as "opencv-4.3.0/data/haarcascades/haarcascade_frontalface_default.xml" in the file capturevideo.cpp. This path must be adapted according to your installation. The ZBar library must also be compiled in order to be able to decode the barcodes / QR codes. For this library to function, it is not mandatory to compile ZBar with gtk, python or qt4 options enabled (only the headers and the library are required, not the executable).</p>
 <p>You must have Qt5 in order to fully take advantage of multithreading. If you only have Qt4, please download version 1.0 of this program.</p>
@@ -130,7 +132,7 @@ Installation</h1>
 <h2><a class="anchor" id="subsection_install_mac"></a>
 On a MacOS</h2>
 <p>This program has been developed on a old Mac. The graphic card supports only OpenCL 1.0 directives, which is not sufficient for for image stitching. Luckily the CPU managed version 1.2 of OpenCL. To set OpenCL to use the CPU, the environment variable OPENCV_OPENCL_DEVICE=":CPU:0" had to be exported. Moreover if your program complains about not finding OpenCV libraries, don't forget to export the path to the OpenCV libraries in the environment variable DYLD_LIBRARY_PATH.</p>
-<p>Edit the file Video.pro and provide the path where your OpenCV and ZBar libraries are installed. To create a Makefile or a XCode project, run the Qt command:</p>
+<p>Edit the file Video.pro and provide the path where your OpenCV, ZBar and Tesseract libraries are installed. To create a Makefile or a XCode project, run the Qt command:</p>
 <p>qmake Video.pro</p>
 <h2><a class="anchor" id="subsection_install_linux"></a>
 On Linux</h2>
@@ -144,6 +146,7 @@ On Windows</h2>
 <p>to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it! The list of required libraries is</p><ul>
 <li>OpenCV: opencv_calib3d430.dll opencv_core430.dll opencv_face430.dll opencv_features430.dll opencv_flann430.dll opencv_imgcodecs430.dll opencv_imgproc430.dll opencv_objdetect430.dll opencv_photo430.dll opencv_stitching430.dll opencv_video430.dll opencv_video_ffmpeg430_64.dll opencv_videoio430.dll opencv_xphoto430.dll</li>
 <li>ZBar: libzbar-0.dll</li>
+<li>Tesseract: tesseract41.dll opencv_dnn430.dll</li>
 <li>Qt5: Qt5Core.dll Qt5Gui.dll Qt5Multimedia.dll Qt5Network.dll Qt5Widgets.dll </li>
 </ul>
 </div></div><!-- PageDoc -->

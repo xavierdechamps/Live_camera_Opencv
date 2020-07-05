@@ -35,6 +35,9 @@
 #include "dialog_motion_detection.h"
 #include "dialog_photo.h"
 #include "secondarywindow.h"
+#ifdef withtesseract
+#include "window_tesseract.h"
+#endif
 
 #include "capturevideo.h"
 
@@ -82,7 +85,10 @@ private:
     SecondaryWindow *thirdWindow;
     SecondaryWindow *fourthWindow;
     SecondaryWindow *fifthWindow;
-
+#ifdef withtesseract
+    Window_Tesseract *window_tesseract;
+#endif
+    
 #ifdef withzbar
     bool qrdecoder_activated;
 #endif
@@ -91,6 +97,9 @@ private:
     bool object_detection_window_opened;
 #ifdef withstitching
     bool panorama_window_opened;
+#endif
+#ifdef withtesseract
+    bool tesseract_window_opened;
 #endif
     bool motion_detection_window_opened;
 
@@ -115,6 +124,9 @@ private:
     QAction *actionSaveImage;
 #ifdef withzbar
     QAction *actionQRcode;
+#endif
+#ifdef withtesseract
+    QAction *action_Tesseract;
 #endif
 
     void update_histogram_window(QImage *image);
@@ -151,7 +163,10 @@ private slots:
     void treat_Button_QRcode(bool);
 #endif
     void treat_Histogram_show_histogram(bool);
-
+#ifdef withtesseract
+    void treat_Button_Tesseract(bool);
+    void treat_Tesseract_get_new_image(bool);
+#endif // endif withtesseract
 };
 
 #endif // MAINWINDOW_H

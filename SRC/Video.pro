@@ -19,6 +19,13 @@ unix {
     # If you don't have the ZBar library, comment the following line
     CONFIG += zbar
     MY_ZBAR_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/zbar-0.10/install
+#
+#
+    CONFIG += tesseract
+    MY_TESSERACT_DIR = /Users/dechamps/Documents/Codes/Libraries/tesseract-4.1.1/install
+    DEFINES += TESSERACT_DATA=\\\"/Users/dechamps/Documents/Codes/Libraries/tesseract-4.1.1/tessdata-master/\\\"
+    DEFINES += TESSERACT_DNN=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/dnn/frozen_east_text_detection.pb\\\"
+    #
 }
 
 win32 {
@@ -54,6 +61,7 @@ objdetect: DEFINES+=withobjdetect
 xphoto: DEFINES+=withxphoto
 zbar: DEFINES+=withzbar
 face: DEFINES+=withface
+tesseract: DEFINES+=withtesseract
 
 QT       = core gui multimedia concurrent
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -76,8 +84,9 @@ SOURCES = main.cpp \
         dialog_motion_detection.cpp \
         secondarywindow.cpp \
         dialog_photo.cpp \
-        capturevideo.cpp
+        capturevideo.cpp 
 stitching: SOURCES+=dialog_panorama.cpp
+tesseract: SOURCES += window_tesseract.cpp
 
 HEADERS  += myimage.h \
             mainwindow.h \
@@ -90,11 +99,13 @@ HEADERS  += myimage.h \
             dialog_motion_detection.h \
             secondarywindow.h \
             dialog_photo.h \
-            capturevideo.h
+            capturevideo.h 
 stitching: HEADERS += dialog_panorama.h
+tesseract: HEADERS += window_tesseract.h
 
 # Include the header from ZBar
 zbar: INCLUDEPATH += $${MY_ZBAR_DIR}/include
+tesseract: INCLUDEPATH += $${MY_TESSERACT_DIR}/include
 
 win32 {
     message("Windows build")
@@ -115,6 +126,7 @@ win32 {
     xphoto: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_xphoto430.lib
     face: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_face430.lib
     zbar: LIBS += $${MY_ZBAR_DIR}\lib\libzbar-0.lib
+    tesseract: LIBS += $${MY_TESSERACT_DIR}\lib\tesseract41.lib $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_dnn430.lib
 }
 
 unix {
@@ -130,6 +142,8 @@ unix {
     QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
     # Include libraries from ZBar
     zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_ZBAR_DIR}/lib
+    # Include libraries from Tesseract
+    zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_TESSERACT_DIR}/lib
     
     # Required OpenCV libraries
     LIBS = -L$${MY_OPENCV_DIR}/lib
@@ -144,5 +158,6 @@ unix {
     objdetect: LIBS += -lopencv_objdetect
     xphoto: LIBS += -lopencv_xphoto
     face: LIBS += -lopencv_face
+    tesseract: LIBS += -lopencv_dnn -L$${MY_TESSERACT_DIR}/lib -ltesseract
     zbar: LIBS += -L$${MY_ZBAR_DIR}/lib -lzbar
 }

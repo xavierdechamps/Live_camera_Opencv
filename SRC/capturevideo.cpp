@@ -213,7 +213,7 @@ void captureVideo::run() {
         }
 
         // Convert the opencv image to a QImage that will be displayed on the main window
-        cvtColor(imageMat, imageMat, cv::COLOR_BGR2RGB);
+        cv::cvtColor(imageMat, imageMat, cv::COLOR_BGR2RGB);
 
         this->data_lock->lock();
         this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
@@ -254,6 +254,13 @@ void captureVideo::run() {
     this->running = false;
 }
 
+/**
+ * @brief captureVideo::setThreadStatus
+ * @param state: boolean the new status 
+ * 
+ * Change the status of the thread. If state=true, the thread is activated.
+ * If false, the while loop in run() is escaped and  
+ */
 void captureVideo::setThreadStatus(bool state){
     this->running = state;
 }
@@ -344,7 +351,6 @@ void captureVideo::toggleMotionDetection(bool state) {
     else
         emit changeInfo("Motion detection desactivated");
 }
-
 
 #ifdef withobjdetect
 /**
@@ -721,6 +727,31 @@ bool captureVideo::file_save_movie(bool state) {
     }
     return true;
 }
+
+#ifdef withtesseract
+/**
+     * @brief detectTextAreas
+     * @param areas
+     * @return 
+     */
+QImage captureVideo::detectTextAreas(std::vector<QRect> &areas, bool detectArea){
+    std::vector<cv::Rect> areas_cv ;
+    cv::Mat frame_cv = this->myFrame->textAreasDetect(areas_cv, detectArea);
+    
+    // Convert cv::Rect to QRect
+    for (int i=0; i<areas_cv.size(); i++) {
+        cv::Rect cur = areas_cv.at(i);
+        areas.push_back( QRect(cur.y , cur.x , cur.height , cur.width) ) ;// int left, int top, int width, int height
+    }
+    
+    // I don't know why I don't have to convert the colours this time
+//    if (!frame_cv.empty())
+//        cv::cvtColor(frame_cv, frame_cv, cv::COLOR_BGR2RGB);
+    QImage frame = QImage(frame_cv.data, frame_cv.cols, frame_cv.rows, frame_cv.cols*3, QImage::Format_RGB888);
+    
+    return frame;
+}
+#endif // endif withtesseract
 
 #ifdef withobjdetect
 /**

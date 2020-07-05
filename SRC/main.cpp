@@ -42,6 +42,7 @@ The implemented image manipulations are:
   -#   Non-Photorealistic Rendering (Edge preserving, Detail enhancing, Pencil sketch, Stylization)
   -#   White balancing (from module xphoto)
 - Barcode and QR code decoder (through the external library [ZBar](https://github.com/ZBar/ZBar))
+- Text detection and recognition through OpenCV EAST text detector and the library Tesseract
 
 \section section_requirements Requirements
 
@@ -55,11 +56,12 @@ This code requires an installed version of OpenCV. The program is linked against
 - libopencv_video
 - libopencv_photo
 
-The code can also be compiled against four optional libraries:
+The code can also be compiled against five optional libraries:
 - libopencv_objdetect (enables face detection)
 - libopencv_stitching (enables the panorama creation)
 - libopencv_xphoto (enables features from xphoto)
 - libzbar (enables decryption of barcodes and QR codes)
+- libtesseract (enables text recognition inside images)
 
 If you don't have these libraries, just comment the top lines in the file Video.pro. If you have the objdetect library, a face-detetection cascade from OpenCV is also required. In this program the face-detection cascade file is hard-coded as "opencv-4.3.0/data/haarcascades/haarcascade_frontalface_default.xml" in the file capturevideo.cpp. This path must be adapted according to your installation. The ZBar library must also be compiled in order to be able to decode the barcodes / QR codes. For this library to function, it is not mandatory to compile ZBar with gtk, python or qt4 options enabled (only the headers and the library are required, not the executable).
 
@@ -72,7 +74,7 @@ Your C++ compiler must accept c++11 directives.
 \subsection subsection_install_mac On a MacOS
 This program has been developed on a old Mac. The graphic card supports only OpenCL 1.0 directives, which is not sufficient for for image stitching. Luckily the CPU managed version 1.2 of OpenCL. To set OpenCL to use the CPU, the environment variable OPENCV_OPENCL_DEVICE=":CPU:0" had to be exported. Moreover if your program complains about not finding OpenCV libraries, don't forget to export the path to the OpenCV libraries in the environment variable DYLD_LIBRARY_PATH.
 
-Edit the file Video.pro and provide the path where your OpenCV and ZBar libraries are installed. To create a Makefile or a XCode project, run the Qt command:
+Edit the file Video.pro and provide the path where your OpenCV, ZBar and Tesseract libraries are installed. To create a Makefile or a XCode project, run the Qt command:
 
 qmake Video.pro
 
@@ -91,6 +93,7 @@ qmake.exe Video.pro
 to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it! The list of required libraries is
 - OpenCV: opencv_calib3d430.dll   opencv_core430.dll   opencv_face430.dll   opencv_features430.dll   opencv_flann430.dll   opencv_imgcodecs430.dll   opencv_imgproc430.dll   opencv_objdetect430.dll   opencv_photo430.dll   opencv_stitching430.dll   opencv_video430.dll   opencv_video_ffmpeg430_64.dll   opencv_videoio430.dll   opencv_xphoto430.dll
 - ZBar: libzbar-0.dll
+- Tesseract: tesseract41.dll   opencv_dnn430.dll
 - Qt5: Qt5Core.dll   Qt5Gui.dll   Qt5Multimedia.dll   Qt5Network.dll   Qt5Widgets.dll
  */
 

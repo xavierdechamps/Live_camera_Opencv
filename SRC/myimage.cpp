@@ -70,6 +70,20 @@ MyImage::MyImage()
     this->photo_method = 1;
     this->photo_sigmar = 0.15;
     this->photo_sigmas = 50;
+    
+    
+//    std::string model = TESSERACT_DNN;
+    cv::String model = TESSERACT_DNN ;
+//    cv::String model = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/dnn/frozen_east_text_detection.pb";
+    // Load DNN network.
+    if (this->net.empty()) {
+        this->net = cv::dnn::readNet(model);
+        
+        std::cout << "MyImage::MyImage(): DNN model loaded" << std::endl;
+        
+//        this->net = cv::dnn::readNetFromTensorflow(model);
+    }
+    
 }
 
 /**
@@ -1364,6 +1378,112 @@ bool MyImage::getQRcodedata(std::string &data, std::string &type) {
         return true;
     }
     return false;
+}
+
+#endif
+
+
+#ifdef withtesseract
+/**
+ * @brief MyImage::detectTextAreas
+ * @param areas
+ * @return 
+ */
+cv::Mat MyImage::textAreasDetect(std::vector<cv::Rect> &areas, bool detectAreas) {
+    float confThreshold = 0.5;
+    float nmsThreshold = 0.4;
+    int inputWidth = 320;
+    int inputHeight = 320;
+
+    std::vector<cv::Mat> outs;
+    std::vector<std::string> layerNames(2);
+    layerNames[0] = "feature_fusion/Conv_7/Sigmoid";
+    layerNames[1] = "feature_fusion/concat_3";
+
+    cv::Mat frame = this->image.clone();
+    
+    if (detectAreas) {
+        cv::Mat blob;
+    
+        cv::dnn::blobFromImage(frame, blob,
+                               1.0, cv::Size(inputWidth, inputHeight),
+                               cv::Scalar(123.68, 116.78, 103.94), true, false
+        );
+        this->net.setInput(blob);
+        this->net.forward(outs, layerNames);
+    
+        cv::Mat scores = outs[0];
+        cv::Mat geometry = outs[1];
+    
+        std::vector<cv::RotatedRect> boxes;
+        std::vector<float> confidences;
+        textAreasdecode(scores, geometry, confThreshold, boxes, confidences);
+    
+        std::vector<int> indices;
+        cv::dnn::NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
+    
+        // Render detections.
+        cv::Point2f ratio((float)frame.cols / inputWidth, (float)frame.rows / inputHeight);
+        cv::Scalar green = cv::Scalar(0, 255, 0);
+    
+        for (size_t i = 0; i < indices.size(); ++i) {
+            cv::RotatedRect& box = boxes[indices[i]];
+            cv::Rect area = box.boundingRect();
+            area.x *= ratio.x;
+            area.width *= ratio.x;
+            area.y *= ratio.y;
+            area.height *= ratio.y;
+            areas.push_back(area);
+            cv::rectangle(frame, area, green, 1);
+            cv::String index = std::to_string(i);
+            cv::putText( frame, index, cv::Point2f(area.x, area.y - 2),cv::FONT_HERSHEY_SIMPLEX, 0.5, green, 1 );
+        }
+    }
+    return frame;
+}
+
+void MyImage::textAreasdecode(const cv::Mat& scores, const cv::Mat& geometry, float scoreThresh,
+                              std::vector<cv::RotatedRect>& detections, std::vector<float>& confidences)
+{
+    CV_Assert(scores.dims == 4); CV_Assert(geometry.dims == 4);
+    CV_Assert(scores.size[0] == 1); CV_Assert(scores.size[1] == 1);
+    CV_Assert(geometry.size[0] == 1);  CV_Assert(geometry.size[1] == 5);
+    CV_Assert(scores.size[2] == geometry.size[2]);
+    CV_Assert(scores.size[3] == geometry.size[3]);
+
+    detections.clear();
+    const int height = scores.size[2];
+    const int width = scores.size[3];
+    for (int y = 0; y < height; ++y) {
+        const float* scoresData = scores.ptr<float>(0, 0, y);
+        const float* x0_data = geometry.ptr<float>(0, 0, y);
+        const float* x1_data = geometry.ptr<float>(0, 1, y);
+        const float* x2_data = geometry.ptr<float>(0, 2, y);
+        const float* x3_data = geometry.ptr<float>(0, 3, y);
+        const float* anglesData = geometry.ptr<float>(0, 4, y);
+        for (int x = 0; x < width; ++x) {
+            float score = scoresData[x];
+            if (score < scoreThresh)
+                continue;
+
+            // Decode a prediction.
+            // Multiple by 4 because feature maps are 4 time less than input image.
+            float offsetX = x * 4.0f, offsetY = y * 4.0f;
+            float angle = anglesData[x];
+            float cosA = std::cos(angle);
+            float sinA = std::sin(angle);
+            float h = x0_data[x] + x2_data[x];
+            float w = x1_data[x] + x3_data[x];
+
+            cv::Point2f offset(offsetX + cosA * x1_data[x] + sinA * x2_data[x],
+                offsetY - sinA * x1_data[x] + cosA * x2_data[x]);
+            cv::Point2f p1 = cv::Point2f(-sinA * h, -cosA * h) + offset;
+            cv::Point2f p3 = cv::Point2f(-cosA * w, sinA * w) + offset;
+            cv::RotatedRect r(0.5f * (p1 + p3), cv::Size2f(w, h), -angle * 180.0f / (float)CV_PI);
+            detections.push_back(r);
+            confidences.push_back(score);
+        }
+    }
 }
 
 #endif

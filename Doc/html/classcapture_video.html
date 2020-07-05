@@ -251,8 +251,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a0a2997769b4b9f5d2fd946a81396d99b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcapture_video.html#a0a2997769b4b9f5d2fd946a81396d99b">cameraIsOpen</a> ()</td></tr>
 <tr class="memdesc:a0a2997769b4b9f5d2fd946a81396d99b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classcapture_video.html#a0a2997769b4b9f5d2fd946a81396d99b" title="captureVideo::cameraIsOpen">captureVideo::cameraIsOpen</a>  <a href="classcapture_video.html#a0a2997769b4b9f5d2fd946a81396d99b">More...</a><br /></td></tr>
 <tr class="separator:a0a2997769b4b9f5d2fd946a81396d99b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa043caf591cd9c986bcb28743d451964"><td class="memItemLeft" align="right" valign="top"><a id="aa043caf591cd9c986bcb28743d451964"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setThreadStatus</b> (bool)</td></tr>
+<tr class="memitem:aa043caf591cd9c986bcb28743d451964"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcapture_video.html#aa043caf591cd9c986bcb28743d451964">setThreadStatus</a> (bool)</td></tr>
+<tr class="memdesc:aa043caf591cd9c986bcb28743d451964"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classcapture_video.html#aa043caf591cd9c986bcb28743d451964" title="captureVideo::setThreadStatus">captureVideo::setThreadStatus</a>  <a href="classcapture_video.html#aa043caf591cd9c986bcb28743d451964">More...</a><br /></td></tr>
 <tr class="separator:aa043caf591cd9c986bcb28743d451964"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab718499e86070891431bf305963cc2a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcapture_video.html#ab718499e86070891431bf305963cc2a5">setParent</a> (QMainWindow *parent)</td></tr>
 <tr class="memdesc:ab718499e86070891431bf305963cc2a5"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classcapture_video.html#ab718499e86070891431bf305963cc2a5" title="captureVideo::setParent">captureVideo::setParent</a>  <a href="classcapture_video.html#ab718499e86070891431bf305963cc2a5">More...</a><br /></td></tr>
@@ -263,6 +263,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setThreadStatus</b> (
 <tr class="memitem:ac9a082fe73b54c710647a86c0a4859c3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcapture_video.html#ac9a082fe73b54c710647a86c0a4859c3">file_save_movie</a> (bool)</td></tr>
 <tr class="memdesc:ac9a082fe73b54c710647a86c0a4859c3"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classcapture_video.html#ac9a082fe73b54c710647a86c0a4859c3" title="captureVideo::file_save_movie">captureVideo::file_save_movie</a>  <a href="classcapture_video.html#ac9a082fe73b54c710647a86c0a4859c3">More...</a><br /></td></tr>
 <tr class="separator:ac9a082fe73b54c710647a86c0a4859c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02acf5df57574f329573cd40736f4287"><td class="memItemLeft" align="right" valign="top">QImage&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcapture_video.html#a02acf5df57574f329573cd40736f4287">detectTextAreas</a> (std::vector&lt; QRect &gt; &amp;areas, bool detectArea)</td></tr>
+<tr class="memdesc:a02acf5df57574f329573cd40736f4287"><td class="mdescLeft">&#160;</td><td class="mdescRight">detectTextAreas  <a href="classcapture_video.html#a02acf5df57574f329573cd40736f4287">More...</a><br /></td></tr>
+<tr class="separator:a02acf5df57574f329573cd40736f4287"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -455,6 +458,43 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>cameraFPScalculated</
 <p><a class="el" href="classcapture_video.html#ab383ae08179db61aef214875b43a30de" title="captureVideo::closeCamera">captureVideo::closeCamera</a> </p>
 <dl class="section return"><dt>Returns</dt><dd>true if everything went well. False otherwise.</dd></dl>
 <p>Close the camera and delete the object of class <a class="el" href="class_my_image.html">MyImage</a>. Close also the current movie if active. </p>
+
+</div>
+</div>
+<a id="a02acf5df57574f329573cd40736f4287"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02acf5df57574f329573cd40736f4287">&#9670;&nbsp;</a></span>detectTextAreas()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">QImage captureVideo::detectTextAreas </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; QRect &gt; &amp;&#160;</td>
+          <td class="paramname"><em>areas</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>detectArea</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>detectTextAreas </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">areas</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd></dd></dl>
 
 </div>
 </div>
@@ -875,6 +915,34 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>cameraFPScalculated</
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aa043caf591cd9c986bcb28743d451964"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa043caf591cd9c986bcb28743d451964">&#9670;&nbsp;</a></span>setThreadStatus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void captureVideo::setThreadStatus </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>state</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><a class="el" href="classcapture_video.html#aa043caf591cd9c986bcb28743d451964" title="captureVideo::setThreadStatus">captureVideo::setThreadStatus</a> </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">state</td><td>boolean the new status</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Change the status of the thread. If state=true, the thread is activated. If false, the while loop in <a class="el" href="classcapture_video.html#a06a4e8a399f5a907b944527600fc7b1d" title="captureVideo::run">run()</a> is escaped and <br  />
+ </p>
 
 </div>
 </div>

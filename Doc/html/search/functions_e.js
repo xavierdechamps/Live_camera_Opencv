@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_7emainwindow_325',['~MainWindow',['../class_main_window.html#ae98d00a93bc118200eeef9f9bba1dba7',1,'MainWindow']]]
+  ['window_5ftesseract_350',['Window_Tesseract',['../class_window___tesseract.html#abf81274493b3b85647e478b41a0ef936',1,'Window_Tesseract']]]
 ];
