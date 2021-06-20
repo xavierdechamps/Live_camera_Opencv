@@ -24,50 +24,36 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
                                           menu_Filters(nullptr),
                                           currentImage(nullptr)
 {
-    // Get the number and name of the available cameras, if more than 1 camera available
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    if (cameras.size() > 1) {
-        QString info = QString("Available Cameras: \n");
-        foreach (const QCameraInfo &cameraInfo, cameras) {
-            info += " - " + cameraInfo.deviceName() + " : ";
-            info += cameraInfo.description() + " : " ;
-        }
-        QMessageBox::information(this, "Cameras", info); 
-    }
-
-    if (cameras.size() == 0) {
-        std::cerr << "Error: the number of available cameras is equal to zero"<<std::endl;
-        QMessageBox::critical(this, "Cameras", "Error: the number of available cameras is equal to zero");
-        throw std::runtime_error("Error: the number of available cameras is equal to zero");
-    }
-
-    int camID = cameras.size()-1;
-    
-    // For capture thread.
+    // Initialize the OpenCV Qthread
     this->data_lock = new QMutex();
     this->worker = new captureVideo(this,this->data_lock);
     
     // Links signals from the video capturer to functions that update the display
-    connect(this->worker, &captureVideo::frameCaptured,     this, &MainWindow::updateFrame );
-    connect(this->worker, &captureVideo::changeInfo   ,     this, &MainWindow::updateMainStatusLabel );
-    connect(this->worker, &captureVideo::motionCaptured,    this, &MainWindow::update_motion_window );
-    connect(this->worker, &captureVideo::objectsCaptured,   this, &MainWindow::update_objects_window );
-    connect(this->worker, &captureVideo::histogramCaptured, this, &MainWindow::update_histogram_window );
+    connect(worker, &captureVideo::frameCaptured,     this, &MainWindow::updateFrame );
+    connect(worker, &captureVideo::changeInfo   ,     this, &MainWindow::updateMainStatusLabel );
+    connect(worker, &captureVideo::motionCaptured,    this, &MainWindow::update_motion_window );
+    connect(worker, &captureVideo::objectsCaptured,   this, &MainWindow::update_objects_window );
+    connect(worker, &captureVideo::histogramCaptured, this, &MainWindow::update_histogram_window );
 #ifdef withstitching
-    connect(this->worker, &captureVideo::panoramaCaptured,  this, &MainWindow::update_panorama_window );
+    connect(worker, &captureVideo::panoramaCaptured,  this, &MainWindow::update_panorama_window );
 #endif
     
-    // Initialization of the OpenCV thread
-    this->worker->setCamera(camID);
-    if (this->worker->openCamera())
-        this->worker->start(); // Launch the new thread (call to run() in capturevideo)
-    else {
-        std::cerr << "Error: could not open the camera"<<std::endl;
-        QMessageBox::critical(this, "Cameras", "Error: could not open the camera");
-        throw std::runtime_error("Error: could not open the camera");
+    // Get the number and name of the available cameras, if more than 1 camera available
+    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+    this->dialog_choose_camera = new Dialog_choose_camera(cameras,this);
+    connect(this->dialog_choose_camera,SIGNAL(Signal_camera_chosen(int)), this, SLOT(launchCamera(int)) );
+    this->dialog_choose_camera->hide();
+    if (cameras.size() > 1) {
+        this->dialog_choose_camera->show();
     }
-    
-    this->resize(800, 600); 
+    else if (cameras.size() == 1) {
+        this->launchCamera(0);
+    }
+    else if (cameras.size() == 0) {
+        std::cerr << "Error: the number of available cameras is equal to zero"<<std::endl;
+        QMessageBox::critical(this, "Cameras", "Error: the number of available cameras is equal to zero");
+        throw std::runtime_error("Error: the number of available cameras is equal to zero");
+    }
     
     // Setup menubar
     this->menu_File            = menuBar()->addMenu(tr("&File"));
@@ -96,25 +82,52 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     createToolBars();
     createWindows();
 
-//    this->setFixedSize(740, 480);   
-    
+//    this->setFixedSize(740, 480);
 }
 
 /**
  * @brief MainWindow::~MainWindow
  * 
- * Kill the OpenCV thread when the main window is closed
+ * Stop the OpenCV thread when the main window is closed
  */
 MainWindow::~MainWindow() {
-    // Delete the tesseract object    
+    // Delete the tesseract object
     delete this->window_tesseract;
     
-    if (this->thread.isRunning() ) {
-        this->thread.quit(); // Nice way to tell the other thread to stop
-        if(!this->thread.wait(3000)) //Wait until it actually has terminated (max. 3 sec)
+    // Stop the thread
+    stopThread();
+}
+
+/**
+ * @brief MainWindow::closeEvent
+ * @param event
+ * 
+ * Overwrite the closeEvent event handler in order to stop the OpenCV thread in a safe way
+ * when the close button is clicked
+ */
+void MainWindow::closeEvent(QCloseEvent *event) {
+    event->accept();
+    
+    // Delete the tesseract object
+    delete this->window_tesseract;
+    
+    stopThread();
+    qDebug() << "QCloseEvent : MainWindow closed";
+}
+
+/**
+ * @brief MainWindow::stopThread
+ * 
+ * The code that actually stops the OpenCV thread
+ */
+void MainWindow::stopThread() {
+    this->worker->setThreadStatus(false);
+    if (this->worker->isRunning() ) {
+        this->worker->quit(); // Nice way to tell the other thread to stop
+        if(!this->worker->wait(3000)) //Wait until it actually has terminated (max. 3 sec)
         {
-            this->thread.terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
-            this->thread.wait(); //We have to wait again here!
+            this->worker->terminate(); //Thread didn't exit in time, probably deadlocked, terminate it!
+            this->worker->wait(); //We have to wait again here!
         }
     }
 }
@@ -237,6 +250,11 @@ void MainWindow::createActions() {
     this->actionSaveImage = new QAction(tr("&Save"), this );
     this->actionSaveImage->setToolTip(tr("Save the current image"));
     connect(this->actionSaveImage, SIGNAL(triggered()), this->worker, SLOT(file_save_image()) );
+    
+    // File / Change camera
+    this->actionChangeCamera = new QAction(tr("Change camera"),this);
+    this->actionChangeCamera->setToolTip(tr("Change the camera that is used as an input"));
+    connect(this->actionChangeCamera, SIGNAL(triggered()), this, SLOT(showCameraSettings()) );
 }
 
 /**
@@ -247,6 +265,7 @@ void MainWindow::createActions() {
 void MainWindow::createToolBars() {
     this->menu_File->addAction(this->actionSaveImage);
     this->menu_File->addAction(this->actionRecord);
+    this->menu_File->addAction(this->actionChangeCamera);
     
     this->menu_Filters->addAction(this->actionColour_BW);
     this->menu_Filters->addAction(this->actionInverse);
@@ -385,6 +404,40 @@ void MainWindow::createWindows(){
     this->fifthWindow->setWindowFlags(Qt::Window); // to show the close/minimize/maximize buttons
     this->fifthWindow->hide();
     this->motion_detection_window_opened = false;
+}
+
+/**
+ * @brief MainWindow::launchCamera
+ * @param camID: integer, ID of the camera
+ * 
+ * Send the camera ID to the OpenCV thread and launch it
+ */
+void MainWindow::launchCamera(int camID){
+    // Initialization of the OpenCV thread
+    this->worker->setCamera(camID);
+    this->worker->setThreadStatus(false);
+    int width,height ; // will hold the dimensions of the camera frame
+    if (this->worker->openCamera(width,height)) {
+        stopThread();// stop any running thread
+        this->worker->start(); // Launch the new thread (call to run() in capturevideo)
+        this->dialog_choose_camera->hide();// hide the dialog window
+        setWindowTitle(this->dialog_choose_camera->get_info_camera());//change the title of the main window to the camera name
+        this->resize(width+25, height+70); // add some space around the frame
+    }
+    else {
+        std::cerr << "Error: could not open the camera"<<std::endl;
+        QMessageBox::critical(this, "Cameras", "Error: could not open the camera");
+        throw std::runtime_error("Error: could not open the camera");
+    }
+}
+
+/**
+ * @brief MainWindow::showCameraSettings
+ * 
+ * Show the camera listing window
+ */
+void MainWindow::showCameraSettings() {
+    this->dialog_choose_camera->show();
 }
 
 /**

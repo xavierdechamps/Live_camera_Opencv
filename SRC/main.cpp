@@ -91,9 +91,9 @@ Generating a Makefile through qmake has never been so easy. Simply modify the fi
 qmake.exe Video.pro
 
 to generate a Makefile (MinGW) or a project for VisualStudio. Don't forget to put the required *.dll libraries in the same directory as the executable before launching it! The list of required libraries is
-- OpenCV: opencv_calib3d430.dll   opencv_core430.dll   opencv_face430.dll   opencv_features430.dll   opencv_flann430.dll   opencv_imgcodecs430.dll   opencv_imgproc430.dll   opencv_objdetect430.dll   opencv_photo430.dll   opencv_stitching430.dll   opencv_video430.dll   opencv_video_ffmpeg430_64.dll   opencv_videoio430.dll   opencv_xphoto430.dll
+- OpenCV: opencv_calib3d452.dll   opencv_core452.dll   opencv_face452.dll   opencv_features452.dll   opencv_flann452.dll   opencv_imgcodecs452.dll   opencv_imgproc452.dll   opencv_objdetect452.dll   opencv_photo452.dll   opencv_stitching452.dll   opencv_video452.dll   opencv_video_ffmpeg452_64.dll   opencv_videoio452.dll   opencv_xphoto452.dll
 - ZBar: libzbar-0.dll
-- Tesseract: tesseract41.dll   opencv_dnn430.dll
+- Tesseract: tesseract41.dll   opencv_dnn452.dll
 - Qt5: Qt5Core.dll   Qt5Gui.dll   Qt5Multimedia.dll   Qt5Network.dll   Qt5Widgets.dll
  */
 

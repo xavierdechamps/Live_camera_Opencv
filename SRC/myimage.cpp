@@ -16,7 +16,7 @@
  */
 MyImage::MyImage()
 {
-    // Initializations for the all image operations
+    // Initializations for all the image operations
 #ifdef withobjdetect
     this->face_cascade_name = "";
 #endif
@@ -35,10 +35,10 @@ MyImage::MyImage()
     this->threshold_method    = 1;
     this->threshold_value     = 127;
     this->threshold_blocksize = 3; // for adaptive methods
-    this->threshold_type      = 1; // 1 Normal, 0 inverted
+    this->threshold_type      = 1; // [1] Normal, [0] inverted
 
     this->transformed           = false;
-    this->transformation_method = 1;
+    this->transformation_method = 1; // [1] Rotation
     this->transf_rotation_value = 0;
 
     this->coloured    = true;
@@ -70,20 +70,6 @@ MyImage::MyImage()
     this->photo_method = 1;
     this->photo_sigmar = 0.15;
     this->photo_sigmas = 50;
-    
-    
-//    std::string model = TESSERACT_DNN;
-    cv::String model = TESSERACT_DNN ;
-//    cv::String model = "/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/dnn/frozen_east_text_detection.pb";
-    // Load DNN network.
-    if (this->net.empty()) {
-        this->net = cv::dnn::readNet(model);
-        
-        std::cout << "MyImage::MyImage(): DNN model loaded" << std::endl;
-        
-//        this->net = cv::dnn::readNetFromTensorflow(model);
-    }
-    
 }
 
 /**
@@ -173,7 +159,7 @@ bool MyImage::getFace_Status(){
  * Receives the ornamental pictures from the database images.qrc, they have been loaded by the OpenCV thread
  */
 void MyImage::loadOrnaments(std::vector<cv::Mat> Mat2receive){
-    assert ( Mat2receive.size() >2 );
+    assert ( Mat2receive.size() >3 );
     this->ornament_glasses    = Mat2receive.at(0) ;
     this->ornament_mustache   = Mat2receive.at(1);
     this->ornament_mouse_nose = Mat2receive.at(2) ;
@@ -519,14 +505,15 @@ cv::Mat& MyImage::get_image_content() {
  */
 cv::Mat& MyImage::get_image_histogram() {
     std::vector<cv::Mat> bgr_planes;
-    cv::split( this->image, bgr_planes );
+    cv::split( this->image, bgr_planes ); // split the BGR content of the image into different layers
 
-    int histSize = 256;
+    int histSize = 256; // max size for the range [0-255]
     float range[] = { 0, 256 } ;
     const float* histRange = { range };
     bool uniform = true; bool accumulate = false;
 
     cv::Mat b_hist, g_hist, r_hist;
+    // Get the histogram for each of the BGR content
     cv::calcHist( &bgr_planes[0], 1, 0, cv::Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate );
     cv::calcHist( &bgr_planes[1], 1, 0, cv::Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate );
     cv::calcHist( &bgr_planes[2], 1, 0, cv::Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate );
@@ -542,12 +529,15 @@ cv::Mat& MyImage::get_image_histogram() {
     cv::normalize(r_hist, r_hist, 0, this->histogram.rows, cv::NORM_MINMAX, -1, cv::Mat() );
     for( int i = 1; i < histSize; i++ )
     {
+        // Plot the blue histogram
         cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ) ,
                                    cv::Point( bin_w*(i),   hist_h - cvRound(b_hist.at<float>(i)) ),
                                    cv::Scalar( 255, 0, 0), 2, 8, 0  );
+        // Plot the green histogram
         cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ) ,
                                    cv::Point( bin_w*(i),   hist_h - cvRound(g_hist.at<float>(i)) ),
                                    cv::Scalar( 0, 255, 0), 2, 8, 0  );
+        // Plot the red histogram
         cv::line( this->histogram, cv::Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ) ,
                                    cv::Point( bin_w*(i),   hist_h - cvRound(r_hist.at<float>(i)) ),
                                    cv::Scalar( 0, 0, 255), 2, 8, 0  );
@@ -883,7 +873,7 @@ void MyImage::detect_faces() {
 #ifdef withface
         // Detect the facial land marks
         std::vector< std::vector<cv::Point2f> > shapes;
-        cv::Scalar color = cv::Scalar(0, 0, 255); // red
+//        cv::Scalar color = cv::Scalar(0, 0, 255); // red
         
         if (mark_detector->fit(this->image, faces, shapes)) {
             // draw facial land marks
@@ -1382,7 +1372,6 @@ bool MyImage::getQRcodedata(std::string &data, std::string &type) {
 
 #endif
 
-
 #ifdef withtesseract
 /**
  * @brief MyImage::detectTextAreas
@@ -1407,8 +1396,7 @@ cv::Mat MyImage::textAreasDetect(std::vector<cv::Rect> &areas, bool detectAreas)
     
         cv::dnn::blobFromImage(frame, blob,
                                1.0, cv::Size(inputWidth, inputHeight),
-                               cv::Scalar(123.68, 116.78, 103.94), true, false
-        );
+                               cv::Scalar(123.68, 116.78, 103.94), true, false);
         this->net.setInput(blob);
         this->net.forward(outs, layerNames);
     

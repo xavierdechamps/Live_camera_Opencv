@@ -2,7 +2,7 @@
  * Copyright (C) 2019-2020 Xavier Dechamps
  *
  * PURPOSE
- *   Management of thread that takes care of capturing the camera, applying image
+ *   Management of the Qthread that takes care of capturing the camera, applying image
  *   processes on it and sending the treated image to the GUI MainWindow through signals
  *
  *   Multithreaded implementation. The class captureVideo is solely dedicated to the treatment
@@ -70,11 +70,12 @@ void captureVideo::setCamera(int camera){
 
 /**
  * @brief captureVideo::openCamera
+ * @param integers width and height passed as parameters are set when the camera is opened
  * @return true if the camera is open. False if the camera ID is not set yet
  *
  * Open the camera anad initialize a new object of class MyImage
  */
-bool captureVideo::openCamera(){
+bool captureVideo::openCamera(int &width, int &height){
     if (this->camID<0) {
         qDebug() << "captureVideo::openCamera - Cannot open camera";
         return false;
@@ -107,7 +108,16 @@ bool captureVideo::openCamera(){
         return false;
     }
     
-    return this->capture.open(this->camID);
+    // Open the camera in OpenCV
+    bool test = this->capture.open(this->camID);
+    
+    // Get the dimensions of the camera frame
+    if (test) {
+        width  = capture.get(cv::CAP_PROP_FRAME_WIDTH);
+        height = capture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    }
+    
+    return test;
 }
 
 /**
@@ -127,7 +137,7 @@ bool captureVideo::closeCamera() {
         }
 
         // Stop saving the movie
-        file_save_movie(false);
+        if (this->recording) file_save_movie(false);
     }
     return true;
 }
@@ -155,8 +165,9 @@ bool captureVideo::getQRcodedata(std::string &qrdata, std::string &qrtype){
 /**
  * @brief captureVideo::run
  *
- * The core of the class captureVideo. It loops indefenitely to capture frames from the camera and
- * to apply image processings on them. The treated images are sent to the GUI through signals.
+ * The core of the class captureVideo. It is called by mainWindow through this->worker->start()
+ * It loops indefenitely to capture frames from the camera and to apply image processings on them.
+ * The treated images are sent to the GUI through signals.
  */
 void captureVideo::run() {
     this->running = true;
@@ -166,13 +177,16 @@ void captureVideo::run() {
     int current_count = 0;
     bool first_time = true;
 
+    // While loop as long as running is true
     while (this->running) {
         if(cameraIsOpen()) {
             if (first_time){
                 timer.start();
                 first_time = false;
             }
+            // capture the camera frame and save it in imageMat
             this->capture >> imageMat;
+            // Stay in the while loop as long as the camera has not started
             while (imageMat.empty()) {
                 this->capture >> imageMat;
                 qDebug() << "captureVideo::run() : Empty image";
@@ -204,8 +218,7 @@ void captureVideo::run() {
 //                emit this->setFPSrate(this->cameraFPS);
             }
         }
-        else
-        {
+        else {
             qDebug() << "captureVideo::run() : Camera is not open";
             imageMat = cv::Mat::zeros(480, 640, CV_8UC1);
             myFrame->set_image_content(imageMat);
@@ -213,10 +226,14 @@ void captureVideo::run() {
         }
 
         // Convert the opencv image to a QImage that will be displayed on the main window
+        // The first step is to convert the colour from BGR to RGB
         cv::cvtColor(imageMat, imageMat, cv::COLOR_BGR2RGB);
 
+        // Lock mechanism to ensure that the data is not overwritten by another thread
         this->data_lock->lock();
+        // Create the QImage on the basis of the data from the OpenCV image
         this->myQimage = QImage(imageMat.data, imageMat.cols, imageMat.rows, imageMat.cols*3, QImage::Format_RGB888);
+        // Unlock the data
         this->data_lock->unlock();
         
         // Launch the motion detection algorithm and send the result to the Qt manager
@@ -259,7 +276,7 @@ void captureVideo::run() {
  * @param state: boolean the new status 
  * 
  * Change the status of the thread. If state=true, the thread is activated.
- * If false, the while loop in run() is escaped and  
+ * If false, the while loop in run() is terminated  
  */
 void captureVideo::setThreadStatus(bool state){
     this->running = state;
@@ -360,22 +377,6 @@ void captureVideo::toggleMotionDetection(bool state) {
  * Activate/desactivate the face detection algorithm. A background image is fetch from a local directory
  */
 void captureVideo::toggleFaceDetection(bool state) {
-/*
-    if (!this->myFrame->getFace_Status()) {
-        this->file_background = this->main_directory + "cartoon_background.jpg";
-        bool test = this->myFrame->set_background_image(this->file_background);
-        while (!test){
-            QString QfileNameLocal = QFileDialog::getOpenFileName(this->mainWindowParent,
-                                                             tr("Select a background image"),
-                                                             QString::fromStdString(this->main_directory),
-                                                             tr("Images (*.bmp *.png *.jpg *.jpeg *.jpe *.jp2 *.webp *.pbm *.pgm *.ppm *.pnm *.pfm *.src *.tiff *.tif *.exr *.hdr *.pic)") );
-            if ( ! QfileNameLocal.isEmpty() ) {
-                this->file_background = QfileNameLocal.toStdString() ;
-                test = this->myFrame->set_background_image(this->file_background);
-            }
-        }
-    }
-*/
     this->myFrame->toggleFace_Recon(state);
     if (state)
         emit changeInfo("Face detection activated");
@@ -773,7 +774,6 @@ bool captureVideo::setCascadeFile(){
             }
             else
                 return false;
-
         }
     }
     else {
@@ -843,11 +843,10 @@ bool captureVideo::setFacemarkFile(){
                                                              tr("Images (*.yaml)") );
             if ( ! QfileNameLocal.isEmpty() ) {
                 this->file_facemark = QfileNameLocal.toStdString() ;
-                testCascade = this->myFrame->set_Face_Cascade_Name(this->file_facemark);
+                testCascade = this->myFrame->set_Face_Facemark_Name(this->file_facemark);
             }
             else
                 return false;
-
         }
     }
     else {

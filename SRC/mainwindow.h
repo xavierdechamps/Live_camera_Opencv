@@ -6,6 +6,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QCloseEvent>
 #include <QImage>
 #include <QPainter>
 #include <QAction>
@@ -23,6 +24,7 @@
 #include <QMutex>
 #include <QThread>
 
+#include "dialog_choose_camera.h"
 #include "dialog_blur.h"
 #include "dialog_edge.h"
 #include "dialog_threshold.h"
@@ -55,7 +57,7 @@ public:
 private:
     // For capture thread
     captureVideo *worker;
-    QThread thread;
+//    QThread thread;
     QMutex *data_lock;
     
     QImage myQimage;
@@ -69,6 +71,7 @@ private:
     QStatusBar *mainStatusBar;
     QLabel *mainStatusLabel;
     
+    Dialog_choose_camera    *dialog_choose_camera;
     Dialog_Blur             *dialog_blur;
     Dialog_Edge             *dialog_edge;
     Dialog_Threshold        *dialog_threshold;
@@ -122,6 +125,7 @@ private:
     QAction *actionPhoto;
     QAction *actionRecord;
     QAction *actionSaveImage;
+    QAction *actionChangeCamera;
 #ifdef withzbar
     QAction *actionQRcode;
 #endif
@@ -135,14 +139,18 @@ private:
     void createActions();
     void createToolBars();
     void createWindows();
+    void stopThread();
 #ifdef withzbar
     void look_for_qrURL();
 #endif
 
 protected:
     void paintEvent(QPaintEvent* );
+    void closeEvent(QCloseEvent * event);
 
 private slots:
+    void launchCamera(int);
+    void showCameraSettings();
     void updateFrame(QImage *image);
     void updateMainStatusLabel(QString);
 

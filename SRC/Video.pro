@@ -3,18 +3,18 @@
 #
 unix {
     # Path to global OpenCV installation directory
-    MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install
+    MY_OPENCV_DIR = /Users/dechamps/Documents/Codes/Libraries/opencv-4.5.2/install
     #
     # If you don't have the OpenCV object detect library, comment the following 2 lines
     CONFIG += objdetect
     # (Macro) Path to the directory containing the cascade classifier files for face detection
-    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/haarcascades/\\\"
+    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"/Users/dechamps/Documents/Codes/Libraries/opencv-4.5.2/install/share/opencv4/haarcascades/\\\"
     #
     # If you don't have the OpenCV extra module Face, comment the following line
     CONFIG += face
     # https://github.com/kurnianggoro/GSOC2017/blob/master/data/lbfmodel.yaml
     # (Macro) Path to the directory containing the facemark file "lbfmodel.yaml"
-    DEFINES += OPENCV_FACEMARK_DIR=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/lbfmodel/\\\"
+    DEFINES += OPENCV_FACEMARK_DIR=\\\"/Users/dechamps/Documents/Codes/Libraries/opencv-4.5.2/install/share/opencv4/lbfmodel/\\\"
     #
     # If you don't have the ZBar library, comment the following line
     CONFIG += zbar
@@ -24,33 +24,33 @@ unix {
     CONFIG += tesseract
     MY_TESSERACT_DIR = /Users/dechamps/Documents/Codes/Libraries/tesseract-4.1.1/install
     DEFINES += TESSERACT_DATA=\\\"/Users/dechamps/Documents/Codes/Libraries/tesseract-4.1.1/tessdata-master/\\\"
-    DEFINES += TESSERACT_DNN=\\\"/Users/dechamps/Documents/Codes/Cpp/Images/Libraries/opencv-4.3.0/install/share/opencv4/dnn/frozen_east_text_detection.pb\\\"
+    DEFINES += TESSERACT_DNN=\\\"/Users/dechamps/Documents/Codes/Libraries/opencv-4.5.2/install/share/opencv4/dnn/frozen_east_text_detection.pb\\\"
     #
 }
 
 win32 {
     # Path to global OpenCV installation directory
-    MY_OPENCV_DIR = D:\Libraries\opencv-4.3.0\build\install
+    MY_OPENCV_DIR = D:\Libraries\opencv-4.5.2\build\install
     #
     # If you don't have the OpenCV object detect library, comment the following 2 lines
     CONFIG += objdetect
     # (Macro) Path to the directory containing the cascade classifier files for face detection
-    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"D:/Libraries/opencv-4.3.0/build/install/etc/haarcascades/\\\"
+    DEFINES += OPENCV_HAARCASCADES_DIR=\\\"D:/Libraries/opencv-4.5.2/build/install/etc/haarcascades/\\\"
     #
     # If you don't have the OpenCV extra module Face, comment the following line
     CONFIG += face
     # https://github.com/kurnianggoro/GSOC2017/blob/master/data/lbfmodel.yaml
     # (Macro) Path to the directory containing the facemark file "lbfmodel.yaml"
-    DEFINES += OPENCV_FACEMARK_DIR=\\\"D:/Libraries/opencv-4.3.0/build/install/etc/facemark/\\\"
+    DEFINES += OPENCV_FACEMARK_DIR=\\\"D:/Libraries/opencv-4.5.2/build/install/etc/facemark/\\\"
     #
     # If you don't have the ZBar library, comment the following line
     #CONFIG += zbar
-    #MY_ZBAR_DIR = 
+    #MY_ZBAR_DIR =
 }
 
 # If you don't have the OpenCV stiching library, comment the following line
 CONFIG += stitching
-# 
+#
 # If you don't have the OpenCV extra module Xphoto, comment the following line
 CONFIG += xphoto
 #
@@ -73,6 +73,7 @@ TEMPLATE = app
 RESOURCES = images.qrc
 
 SOURCES = main.cpp \
+        dialog_choose_camera.cpp \
         myimage.cpp \
         mainwindow.cpp \
         dialog_blur.cpp \
@@ -84,11 +85,12 @@ SOURCES = main.cpp \
         dialog_motion_detection.cpp \
         secondarywindow.cpp \
         dialog_photo.cpp \
-        capturevideo.cpp 
+        capturevideo.cpp
 stitching: SOURCES+=dialog_panorama.cpp
 tesseract: SOURCES += window_tesseract.cpp
 
 HEADERS  += myimage.h \
+            dialog_choose_camera.h \
             mainwindow.h \
             dialog_blur.h \
             dialog_edge.h \
@@ -99,7 +101,7 @@ HEADERS  += myimage.h \
             dialog_motion_detection.h \
             secondarywindow.h \
             dialog_photo.h \
-            capturevideo.h 
+            capturevideo.h
 stitching: HEADERS += dialog_panorama.h
 tesseract: HEADERS += window_tesseract.h
 
@@ -114,19 +116,19 @@ win32 {
     INCLUDEPATH += $${MY_OPENCV_DIR}\include
 
     # Required OpenCV libraries
-    LIBS = $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgcodecs430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_core430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_highgui430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_videoio430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgproc430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_video430.lib \
-           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_photo430.lib
-    stitching: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_stitching430.lib
-    objdetect: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_objdetect430.lib
-    xphoto: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_xphoto430.lib
-    face: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_face430.lib
+    LIBS = $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgcodecs452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_core452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_highgui452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_videoio452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_imgproc452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_video452.lib \
+           $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_photo452.lib
+    stitching: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_stitching452.lib
+    objdetect: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_objdetect452.lib
+    xphoto: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_xphoto452.lib
+    face: LIBS += $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_face452.lib
     zbar: LIBS += $${MY_ZBAR_DIR}\lib\libzbar-0.lib
-    tesseract: LIBS += $${MY_TESSERACT_DIR}\lib\tesseract41.lib $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_dnn430.lib
+    tesseract: LIBS += $${MY_TESSERACT_DIR}\lib\tesseract41.lib $${MY_OPENCV_DIR}\x64\vc15\lib\opencv_dnn452.lib
 }
 
 unix {
@@ -137,14 +139,14 @@ unix {
 
     # Compilator flags
     QMAKE_CXXFLAGS += -std=c++11
-    
+
     # Linker flags
     QMAKE_LFLAGS += -Wl,-rpath,$${MY_OPENCV_DIR}/lib
     # Include libraries from ZBar
     zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_ZBAR_DIR}/lib
     # Include libraries from Tesseract
     zbar: QMAKE_LFLAGS += -Wl,-rpath,$${MY_TESSERACT_DIR}/lib
-    
+
     # Required OpenCV libraries
     LIBS = -L$${MY_OPENCV_DIR}/lib
     LIBS += -lopencv_imgcodecs \

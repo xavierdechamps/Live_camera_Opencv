@@ -30,7 +30,7 @@ class captureVideo : public QThread
 public:
     explicit captureVideo(QMainWindow *parent=nullptr,QMutex* data_lock=nullptr);
     void setCamera(int camID);
-    bool openCamera();
+    bool openCamera(int &width, int &height);
     bool closeCamera();
     bool cameraIsOpen();
     void setThreadStatus(bool);
@@ -114,7 +114,6 @@ public slots:
 #endif // endif withstitching
     
     void file_save_image();
-    
     
 protected:
     void run() override; 
